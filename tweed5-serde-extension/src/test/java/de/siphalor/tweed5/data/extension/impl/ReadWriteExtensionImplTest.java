@@ -16,7 +16,7 @@ import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.hjson.HjsonLexer;
 import de.siphalor.tweed5.data.hjson.HjsonReader;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
+import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,7 +96,7 @@ class ReadWriteExtensionImplTest {
 		assertEquals(Arrays.asList(true, false, true), result.get("list"));
 	}
 
-	private TweedDataWriter setupWriter(Function<Writer, TweedDataWriter> writerFactory) {
+	private TweedDataVisitor setupWriter(Function<Writer, TweedDataVisitor> writerFactory) {
 		stringWriter = new StringWriter();
 		return writerFactory.apply(stringWriter);
 	}

@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.core.api.middleware;
 
 import de.siphalor.tweed5.core.api.sort.AcyclicGraphSorter;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.function.Function;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 	private static final String CONTAINER_ID = "";
 
+	@Getter
 	private List<Middleware<M>> middlewares = new ArrayList<>();
 	private final Set<String> middlewareIds = new HashSet<>();
 	private boolean sealed = false;
@@ -20,19 +22,37 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 	}
 
 	@Override
-	public void register(Middleware<M> middleware) {
-		if (sealed) {
-			throw new IllegalStateException("Middleware container has already been sealed");
+	public void registerAll(Collection<Middleware<M>> middlewares) {
+		requireUnsealed();
+
+		for (Middleware<M> middleware : middlewares) {
+			if (middleware.id().isEmpty()) {
+				throw new IllegalArgumentException("Middleware id cannot be empty");
+			}
+			if (!this.middlewareIds.add(middleware.id())) {
+				throw new IllegalArgumentException("Middleware id already registered: " + middleware.id());
+			}
 		}
+		this.middlewares.addAll(middlewares);
+	}
+
+	@Override
+	public void register(Middleware<M> middleware) {
+		requireUnsealed();
+
 		if (middleware.id().isEmpty()) {
 			throw new IllegalArgumentException("Middleware id cannot be empty");
 		}
-		if (middlewareIds.contains(middleware.id())) {
+		if (!middlewareIds.add(middleware.id())) {
 			throw new IllegalArgumentException("Middleware id already registered: " + middleware.id());
 		}
-
 		middlewares.add(middleware);
-		middlewareIds.add(middleware.id());
+	}
+
+	private void requireUnsealed() {
+		if (sealed) {
+			throw new IllegalStateException("Middleware container has already been sealed");
+		}
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
+import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HjsonWriter implements TweedDataWriter {
+public class HjsonWriter implements TweedDataVisitor {
 	private static final int PREFILL_INDENT = 10;
 	private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\\n|\\r\\n");
 

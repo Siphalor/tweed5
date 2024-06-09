@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.lang.invoke.MethodHandle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	@Getter
 	private ConfigContainerSetupPhase setupPhase = ConfigContainerSetupPhase.EXTENSIONS_SETUP;
-	private final HashMap<Class<? extends TweedExtension>, TweedExtension> extensions = new HashMap<>();
+	private final Map<Class<? extends TweedExtension>, TweedExtension> extensions = new HashMap<>();
 	private ConfigEntry<T> rootEntry;
 	private PatchworkClass<EntryExtensionsData> entryExtensionsDataPatchworkClass;
 	private Map<Class<?>, RegisteredExtensionDataImpl<EntryExtensionsData, ?>> registeredEntryDataExtensions;
@@ -33,7 +34,11 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	@Override
 	public void registerExtension(TweedExtension extension) {
 		requireSetupPhase(ConfigContainerSetupPhase.EXTENSIONS_SETUP);
-		extensions.put(extension.getClass(), extension);
+
+		TweedExtension previous = extensions.put(extension.getClass(), extension);
+		if (previous != null) {
+			throw new IllegalArgumentException("Extension " + extension.getClass().getName() + " is already registered");
+		}
 	}
 
 	@Override
@@ -41,6 +46,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 		requireSetupPhase(ConfigContainerSetupPhase.EXTENSIONS_SETUP);
 		registeredEntryDataExtensions = new HashMap<>();
 
+		Collection<TweedExtension> additionalExtensions = new ArrayList<>();
 		TweedExtensionSetupContext extensionSetupContext = new TweedExtensionSetupContext() {
 			@Override
 			public ConfigContainer<T> configContainer() {
@@ -56,10 +62,26 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 				registeredEntryDataExtensions.put(dataClass, registered);
 				return registered;
 			}
+
+			@Override
+			public void registerExtension(TweedExtension extension) {
+				if (!extensions.containsKey(extension.getClass())) {
+					additionalExtensions.add(extension);
+				}
+			}
 		};
 
-		for (TweedExtension extension : extensions.values()) {
-			extension.setup(extensionSetupContext);
+		Collection<TweedExtension> extensionsToSetup = extensions.values();
+		while (!extensionsToSetup.isEmpty()) {
+			for (TweedExtension extension : extensionsToSetup) {
+				extension.setup(extensionSetupContext);
+			}
+
+			for (TweedExtension additionalExtension : additionalExtensions) {
+				extensions.put(additionalExtension.getClass(), additionalExtension);
+			}
+			extensionsToSetup = new ArrayList<>(additionalExtensions);
+			additionalExtensions.clear();
 		}
 
 		PatchworkClassCreator<EntryExtensionsData> entryExtensionsDataGenerator = PatchworkClassCreator.<EntryExtensionsData>builder()

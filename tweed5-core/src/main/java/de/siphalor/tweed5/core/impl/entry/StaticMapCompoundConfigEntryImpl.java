@@ -2,6 +2,7 @@ package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +63,22 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 				}
 			});
 			visitor.leaveCompoundEntry(this);
+		}
+	}
+
+	@Override
+	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
+		if (visitor.enterCompoundEntry(this, value)) {
+			if (value != null) {
+				compoundEntries.forEach((key, entry) -> {
+					if (visitor.enterCompoundSubEntry(key)) {
+						//noinspection unchecked
+						((ConfigEntry<Object>) entry).visitInOrder(visitor, value.get(key));
+						visitor.leaveCompoundSubEntry(key);
+					}
+				});
+			}
+			visitor.leaveCompoundEntry(this, value);
 		}
 	}
 }

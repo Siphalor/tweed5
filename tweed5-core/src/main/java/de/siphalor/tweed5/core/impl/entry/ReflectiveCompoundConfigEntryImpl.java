@@ -2,8 +2,8 @@ package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
-import de.siphalor.tweed5.core.api.validation.ConfigEntryValueValidationException;
 import lombok.Getter;
 import lombok.Value;
 
@@ -52,11 +52,8 @@ public class ReflectiveCompoundConfigEntryImpl<T> extends BaseConfigEntryImpl<T>
 		}
 
 		try {
-			compoundEntry.configEntry().validate(value);
 			compoundEntry.field().set(compoundValue, value);
 
-		} catch (ConfigEntryValueValidationException e) {
-			throw new IllegalArgumentException("Invalid value for config entry: " + key, e);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
@@ -96,6 +93,23 @@ public class ReflectiveCompoundConfigEntryImpl<T> extends BaseConfigEntryImpl<T>
 				}
 			}
 			visitor.leaveCompoundEntry(this);
+		}
+	}
+
+	@Override
+	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
+		if (visitor.enterCompoundEntry(this, value)) {
+			compoundEntries.forEach((key, entry) -> {
+				if (visitor.enterCompoundSubEntry(key)) {
+					try {
+						visitor.visitEntry(entry.configEntry(), entry.field().get(value));
+					} catch (IllegalAccessException ignored) {
+						// ignored
+					}
+					visitor.leaveCompoundSubEntry(key);
+				}
+			});
+			visitor.leaveCompoundEntry(this, value);
 		}
 	}
 

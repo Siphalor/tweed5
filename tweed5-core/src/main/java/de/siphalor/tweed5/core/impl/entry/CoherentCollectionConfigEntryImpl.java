@@ -2,6 +2,7 @@ package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 
 import java.util.Collection;
@@ -37,6 +38,18 @@ public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> exten
 		if (visitor.enterCollectionEntry(this)) {
 			elementEntry.visitInOrder(visitor);
 			visitor.leaveCollectionEntry(this);
+		}
+	}
+
+	@Override
+	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
+		if (visitor.enterCollectionEntry(this, value)) {
+			if (value != null) {
+				for (E element : value) {
+					visitor.visitEntry(elementEntry, element);
+				}
+			}
+			visitor.leaveCollectionEntry(this, value);
 		}
 	}
 }

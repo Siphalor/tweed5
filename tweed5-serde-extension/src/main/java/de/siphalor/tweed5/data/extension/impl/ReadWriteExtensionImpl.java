@@ -13,7 +13,7 @@ import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension
 import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
+import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
@@ -132,7 +132,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public <T> void write(TweedDataWriter writer, T value, ConfigEntry<T> entry, ReadWriteContextExtensionsData contextExtensionsData) throws TweedEntryWriteException {
+	public <T> void write(TweedDataVisitor writer, T value, ConfigEntry<T> entry, ReadWriteContextExtensionsData contextExtensionsData) throws TweedEntryWriteException {
 		try {
 			getWriterChain(entry).write(writer, value, entry, new TweedReadWriteContextImpl(contextExtensionsData));
 		} catch (TweedDataWriteException e) {

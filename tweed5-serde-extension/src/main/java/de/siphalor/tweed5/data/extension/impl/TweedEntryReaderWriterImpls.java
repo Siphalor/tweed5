@@ -34,7 +34,7 @@ public class TweedEntryReaderWriterImpls {
 	@RequiredArgsConstructor
 	private static class PrimitiveReaderWriter<T> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
 		private final Function<TweedDataToken, T> readerCall;
-		private final BiConsumer<TweedDataWriter, T> writerCall;
+		private final BiConsumer<TweedDataVisitor, T> writerCall;
 
 		@Override
 		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) throws TweedDataReadException {
@@ -42,7 +42,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataWriter writer, T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 			writerCall.accept(writer, value);
 		}
@@ -79,7 +79,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataWriter writer, C value, CoherentCollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, C value, CoherentCollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 
 			if (value.isEmpty()) {
@@ -126,7 +126,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataWriter writer, T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 
 			writer.visitMapStart();
@@ -178,7 +178,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataWriter writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) throws TweedDataWriteException {
+		public void write(TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) throws TweedDataWriteException {
 			writer.visitNull();
 		}
 

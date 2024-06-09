@@ -4,7 +4,7 @@ import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
+import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,12 +22,12 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 		//noinspection unchecked
 		TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted = (TweedEntryWriter<Object, ConfigEntry<Object>>) inner;
 		return (TweedEntryWriter<Object, ConfigEntry<Object>>) (writer, value, entry, context) -> {
-			if (writer instanceof CompoundDataWriter) {
+			if (writer instanceof CompoundDataVisitor) {
 				// Comment is already written in front of the key by the CompoundDataWriter,
 				// so we don't have to write it here.
 				// We also want to unwrap the original writer,
 				// so that the special comment writing is limited to compounds.
-				writer = ((CompoundDataWriter) writer).delegate;
+				writer = ((CompoundDataVisitor) writer).delegate;
 			} else {
 				String comment = getEntryComment(entry);
 				if (comment != null) {
@@ -37,7 +37,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 
 			if (entry instanceof CompoundConfigEntry) {
 				innerCasted.write(
-						new CompoundDataWriter(writer, ((CompoundConfigEntry<?>) entry)),
+						new CompoundDataVisitor(writer, ((CompoundConfigEntry<?>) entry)),
 						value,
 						entry,
 						context
@@ -49,8 +49,8 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 	}
 
 	@RequiredArgsConstructor
-	private static class CompoundDataWriter implements TweedDataWriter {
-		private final TweedDataWriter delegate;
+	private static class CompoundDataVisitor implements TweedDataVisitor {
+		private final TweedDataVisitor delegate;
 		private final CompoundConfigEntry<?> compoundConfigEntry;
 
 		@Override
