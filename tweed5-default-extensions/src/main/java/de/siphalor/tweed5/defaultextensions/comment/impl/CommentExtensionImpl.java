@@ -10,10 +10,7 @@ import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.defaultextensions.comment.api.AComment;
-import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
-import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
-import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.*;
 import lombok.Getter;
 import lombok.Value;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +29,7 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	@Override
 	public void setup(TweedExtensionSetupContext context) {
 		internalEntryDataExtension = context.registerEntryExtensionData(InternalCommentEntryData.class);
-		context.registerEntryExtensionData(AComment.class);
+		context.registerEntryExtensionData(EntryComment.class);
 
 		middlewareContainer = new DefaultMiddlewareContainer<>();
 
@@ -54,8 +51,8 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	public void initEntry(ConfigEntry<?> configEntry) {
 		EntryExtensionsData entryExtensionsData = configEntry.extensionsData();
 		String baseComment;
-		if (entryExtensionsData.isPatchworkPartSet(AComment.class)) {
-			baseComment = ((AComment) entryExtensionsData).value();
+		if (entryExtensionsData.isPatchworkPartSet(EntryComment.class)) {
+			baseComment = ((EntryComment) entryExtensionsData).comment();
 		} else {
 			baseComment = "";
 		}

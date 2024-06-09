@@ -16,16 +16,15 @@ import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.data.hjson.HjsonCommentType;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
-import de.siphalor.tweed5.defaultextensions.comment.api.AComment;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
-import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
+import de.siphalor.tweed5.defaultextensions.comment.api.EntryComment;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,11 +59,11 @@ class CommentExtensionImplTest {
 		configContainer.attachAndSealTree(rootEntry);
 
 		//noinspection unchecked
-		RegisteredExtensionData<EntryExtensionsData, AComment> commentData = (RegisteredExtensionData<EntryExtensionsData, AComment>) configContainer.entryDataExtensions().get(AComment.class);
+		RegisteredExtensionData<EntryExtensionsData, EntryComment> commentData = (RegisteredExtensionData<EntryExtensionsData, EntryComment>) configContainer.entryDataExtensions().get(EntryComment.class);
 
-		commentData.set(rootEntry.extensionsData(), new ACommentImpl("This is the root value.\nIt is the topmost value in the tree."));
-		commentData.set(intEntry.extensionsData(), new ACommentImpl("It is an integer"));
-		commentData.set(stringEntry.extensionsData(), new ACommentImpl("It is a string"));
+		commentData.set(rootEntry.extensionsData(), new CommentImpl("This is the root value.\nIt is the topmost value in the tree."));
+		commentData.set(intEntry.extensionsData(), new CommentImpl("It is an integer"));
+		commentData.set(stringEntry.extensionsData(), new CommentImpl("It is a string"));
 	}
 
 	@Test
@@ -123,13 +122,8 @@ class CommentExtensionImplTest {
 	}
 
 	@Value
-	private static class ACommentImpl implements AComment {
-		String value;
-
-		@Override
-		public Class<? extends Annotation> annotationType() {
-			return null;
-		}
+	private static class CommentImpl implements EntryComment {
+		String comment;
 	}
 
 	private static class TestCommentModifyingExtension implements TweedExtension, CommentModifyingExtension {

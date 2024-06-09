@@ -3,14 +3,12 @@ package de.siphalor.tweed5.defaultextensions.validation.impl;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
-import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
-import de.siphalor.tweed5.defaultextensions.comment.api.AComment;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.EntryComment;
 import de.siphalor.tweed5.defaultextensions.comment.impl.CommentExtensionImpl;
-import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
@@ -23,8 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -60,38 +60,22 @@ class ValidationExtensionImplTest {
 		configContainer.attachAndSealTree(rootEntry);
 
 		//noinspection unchecked
-		RegisteredExtensionData<EntryExtensionsData, AComment> commentData = (RegisteredExtensionData<EntryExtensionsData, AComment>) configContainer.entryDataExtensions().get(AComment.class);
-		commentData.set(intEntry.extensionsData(), new AComment() {
-			@Override
-			public Class<? extends Annotation> annotationType() {
-				return null;
-			}
-
-			@Override
-			public String value() {
-				return "This is the main comment!";
-			}
-		});
+		RegisteredExtensionData<EntryExtensionsData, EntryComment> commentData = (RegisteredExtensionData<EntryExtensionsData, EntryComment>) configContainer.entryDataExtensions().get(EntryComment.class);
+		commentData.set(intEntry.extensionsData(), () -> "This is the main comment!");
 		//noinspection unchecked
 		RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation> entrySpecificValidation = (RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation>) configContainer.entryDataExtensions().get(EntrySpecificValidation.class);
-		entrySpecificValidation.set(byteEntry.extensionsData(), new EntrySpecificValidation() {
-			@Override
-			public Collection<Middleware<ConfigEntryValidator>> validators() {
-				return Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Byte.class, (byte) 10, (byte) 100)));
-			}
-		});
-		entrySpecificValidation.set(intEntry.extensionsData(), new EntrySpecificValidation() {
-			@Override
-			public Collection<Middleware<ConfigEntryValidator>> validators() {
-				return Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Integer.class, null, 123)));
-			}
-		});
-		entrySpecificValidation.set(doubleEntry.extensionsData(), new EntrySpecificValidation() {
-			@Override
-			public Collection<Middleware<ConfigEntryValidator>> validators() {
-				return Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Double.class, 0.5, null)));
-			}
-		});
+		entrySpecificValidation.set(
+				byteEntry.extensionsData(),
+				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Byte.class, (byte) 10, (byte) 100)))
+		);
+		entrySpecificValidation.set(
+				intEntry.extensionsData(),
+				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Integer.class, null, 123)))
+		);
+		entrySpecificValidation.set(
+				doubleEntry.extensionsData(),
+				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Double.class, 0.5, null)))
+		);
 
 		configContainer.initialize();
 	}
