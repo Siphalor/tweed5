@@ -72,6 +72,9 @@ public class AcyclicGraphSorter {
 				break;
 			}
 			if (!visitedIter.hasNext()) {
+				if (lastVisited == -1) {
+					break;
+				}
 				visitedIter.restart();
 			}
 		}

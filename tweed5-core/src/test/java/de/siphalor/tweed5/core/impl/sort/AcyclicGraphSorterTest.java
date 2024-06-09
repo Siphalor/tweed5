@@ -63,4 +63,14 @@ class AcyclicGraphSorterTest {
 		AcyclicGraphSorter.GraphCycleException exception = assertThrows(AcyclicGraphSorter.GraphCycleException.class, sorter::sort);
 		assertEquals(Arrays.asList(2, 4, 5), exception.cycleIndeces());
 	}
+
+	@Test
+	void minimalCycle() {
+		AcyclicGraphSorter sorter = new AcyclicGraphSorter(2);
+		sorter.addEdge(0, 1);
+		sorter.addEdge(1, 0);
+
+		AcyclicGraphSorter.GraphCycleException exception = assertThrows(AcyclicGraphSorter.GraphCycleException.class, sorter::sort);
+		assertEquals(Arrays.asList(0, 1), exception.cycleIndeces());
+	}
 }
