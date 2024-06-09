@@ -81,4 +81,17 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 			visitor.leaveCompoundEntry(this, value);
 		}
 	}
+
+	@Override
+	public @NotNull T deepCopy(@NotNull T value) {
+		T copy = instantiateCompoundValue();
+		value.forEach((String key, Object element) -> {
+			//noinspection unchecked
+			ConfigEntry<Object> elementEntry = (ConfigEntry<Object>) compoundEntries.get(key);
+			if (elementEntry != null) {
+				copy.put(key, elementEntry.deepCopy(element));
+			}
+		});
+		return copy;
+	}
 }

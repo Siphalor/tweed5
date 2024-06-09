@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.function.IntFunction;
@@ -51,5 +52,14 @@ public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> exten
 			}
 			visitor.leaveCollectionEntry(this, value);
 		}
+	}
+
+	@Override
+	public @NotNull T deepCopy(@NotNull T value) {
+		T copy = collectionConstructor.apply(value.size());
+		for (E element : value) {
+			copy.add(elementEntry().deepCopy(element));
+		}
+		return copy;
 	}
 }

@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import lombok.Getter;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -110,6 +111,19 @@ public class ReflectiveCompoundConfigEntryImpl<T> extends BaseConfigEntryImpl<T>
 				}
 			});
 			visitor.leaveCompoundEntry(this, value);
+		}
+	}
+
+	@Override
+	public @NotNull T deepCopy(@NotNull T value) {
+		try {
+			T copy = instantiateCompoundValue();
+			for (CompoundEntry compoundEntry : compoundEntries.values()) {
+				compoundEntry.field.set(copy, compoundEntry.field.get(value));
+			}
+			return copy;
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
