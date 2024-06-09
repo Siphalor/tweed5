@@ -4,13 +4,16 @@ import java.util.Collections;
 import java.util.Set;
 
 public interface Middleware<M> {
+	String DEFAULT_START = "$default.start";
+	String DEFAULT_END = "$default.end";
+
 	String id();
 
 	default Set<String> mustComeBefore() {
-		return Collections.emptySet();
+		return Collections.singleton(DEFAULT_END);
 	}
 	default Set<String> mustComeAfter() {
-		return Collections.emptySet();
+		return Collections.singleton(DEFAULT_START);
 	}
 
 	M process(M inner);
