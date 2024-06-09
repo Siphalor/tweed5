@@ -36,5 +36,10 @@ allprojects {
 
     tasks.test {
         useJUnitPlatform()
+        systemProperties(
+            "junit.jupiter.execution.timeout.mode" to "disabled_on_debug",
+            "junit.jupiter.execution.timeout.testable.method.default" to "10s",
+            "junit.jupiter.execution.timeout.thread.mode.default" to "SEPARATE_THREAD",
+        )
     }
 }

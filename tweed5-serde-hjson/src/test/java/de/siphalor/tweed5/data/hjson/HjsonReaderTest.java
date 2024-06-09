@@ -2,7 +2,6 @@ package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
 import de.siphalor.tweed5.dataapi.api.TweedDataToken;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -11,7 +10,6 @@ import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Timeout(value = 10, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
 class HjsonReaderTest {
 	private static final double DOUBLE_PRECISION = 0.000000001D;
 
