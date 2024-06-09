@@ -8,7 +8,8 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.defaultextensions.comment.api.AComment;
-import de.siphalor.tweed5.defaultextensions.comment.impl.CommentExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
+import de.siphalor.tweed5.defaultextensions.comment.impl.CommentExtensionImpl;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
@@ -40,7 +41,7 @@ class ValidationExtensionImplTest {
 	void setUp() {
 		configContainer = new DefaultConfigContainer<>();
 
-		commentExtension = new CommentExtension();
+		commentExtension = new CommentExtensionImpl();
 		configContainer.registerExtension(commentExtension);
 		validationExtension = new ValidationExtensionImpl();
 		configContainer.registerExtension(validationExtension);

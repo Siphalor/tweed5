@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.defaultextensions.validation.impl;
 
+import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
@@ -21,7 +22,7 @@ import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherData;
-import de.siphalor.tweed5.defaultextensions.pather.impl.PatherExtension;
+import de.siphalor.tweed5.defaultextensions.pather.impl.PatherExtensionImpl;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+@AutoService(ValidationExtension.class)
 public class ValidationExtensionImpl implements ReadWriteRelatedExtension, ValidationExtension, CommentModifyingExtension {
 	private static final ValidationResult<?> PRIMITIVE_IS_NULL_RESULT = ValidationResult.withIssues(
 			null,
@@ -83,7 +85,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	@Override
 	public void setup(TweedExtensionSetupContext context) {
-		context.registerExtension(new PatherExtension());
+		context.registerExtension(new PatherExtensionImpl());
 
 		validationEntryDataExtension = context.registerEntryExtensionData(InternalValidationEntryData.class);
 		context.registerEntryExtensionData(EntrySpecificValidation.class);

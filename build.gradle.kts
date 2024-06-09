@@ -25,6 +25,9 @@ allprojects {
         testCompileOnly(lombok)
         testAnnotationProcessor(lombok)
 
+        compileOnly("com.google.auto.service:auto-service-annotations:${properties["auto_service.version"]}")
+        annotationProcessor("com.google.auto.service:auto-service:${properties["auto_service.version"]}")
+
         implementation("org.jetbrains:annotations:${properties["jetbrains_annotations.version"]}")
 
         testImplementation(platform("org.junit:junit-bom:5.10.0"))

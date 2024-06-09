@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.defaultextensions.pather.impl;
 
+import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
@@ -13,10 +14,12 @@ import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataReader;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
+import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PatherExtension implements TweedExtension, ReadWriteRelatedExtension {
+@AutoService(PatherExtension.class)
+public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
 	private static final String PATHER_ID = "pather";
 
 	private RegisteredExtensionData<ReadWriteContextExtensionsData, PathTracking> rwContextPathTrackingData;

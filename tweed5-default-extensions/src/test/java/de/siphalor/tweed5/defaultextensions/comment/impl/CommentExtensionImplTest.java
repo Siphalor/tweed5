@@ -17,6 +17,7 @@ import de.siphalor.tweed5.data.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.data.hjson.HjsonCommentType;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.comment.api.AComment;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CommentExtensionTest {
+class CommentExtensionImplTest {
 
 	private DefaultConfigContainer<Map<String, Object>> configContainer;
 	private CommentExtension commentExtension;
@@ -41,7 +42,7 @@ class CommentExtensionTest {
 	void setupContainer(Collection<TweedExtension> extraExtensions) {
 		configContainer = new DefaultConfigContainer<>();
 
-		commentExtension = new CommentExtension();
+		commentExtension = new CommentExtensionImpl();
 		configContainer.registerExtension(commentExtension);
 		extraExtensions.forEach(configContainer::registerExtension);
 		configContainer.finishExtensionSetup();
@@ -71,9 +72,9 @@ class CommentExtensionTest {
 		setupContainer(Collections.emptyList());
 		configContainer.initialize();
 
-		assertEquals("It is an integer", commentExtension.getComment(intEntry));
-		assertEquals("It is a string", commentExtension.getComment(stringEntry));
-		assertNull(commentExtension.getComment(noCommentEntry));
+		assertEquals("It is an integer", commentExtension.getFullComment(intEntry));
+		assertEquals("It is a string", commentExtension.getFullComment(stringEntry));
+		assertNull(commentExtension.getFullComment(noCommentEntry));
 	}
 
 	@Test
@@ -81,9 +82,9 @@ class CommentExtensionTest {
 		setupContainer(Collections.singletonList(new TestCommentModifyingExtension()));
 		configContainer.initialize();
 
-		assertEquals("The comment is:\nIt is an integer\nEND", commentExtension.getComment(intEntry));
-		assertEquals("The comment is:\nIt is a string\nEND", commentExtension.getComment(stringEntry));
-		assertEquals("The comment is:\n\nEND", commentExtension.getComment(noCommentEntry));
+		assertEquals("The comment is:\nIt is an integer\nEND", commentExtension.getFullComment(intEntry));
+		assertEquals("The comment is:\nIt is a string\nEND", commentExtension.getFullComment(stringEntry));
+		assertEquals("The comment is:\n\nEND", commentExtension.getFullComment(noCommentEntry));
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.data.extension.impl;
 
+import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
@@ -26,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@AutoService(ReadWriteExtension.class)
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 	private RegisteredExtensionData<EntryExtensionsData, ReadWriteEntryDataExtension> readWriteEntryDataExtension;
