@@ -34,7 +34,6 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResu
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.var;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +74,6 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	private RegisteredExtensionData<EntryExtensionsData, InternalValidationEntryData> validationEntryDataExtension;
 	private MiddlewareContainer<ConfigEntryValidator> entryValidatorMiddlewareContainer;
-	private EntryValidationReaderMiddleware readerMiddleware;
 	private RegisteredExtensionData<ReadWriteContextExtensionsData, ValidationIssues> readContextValidationIssuesExtensionData;
 
 	@Override
@@ -97,8 +95,6 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			}
 		}
 		entryValidatorMiddlewareContainer.seal();
-
-		readerMiddleware = new EntryValidationReaderMiddleware();
 	}
 
 	@Override
@@ -143,7 +139,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		ConfigEntryValidator entryValidator;
-		var entrySpecificValidators = getEntrySpecificValidators(configEntry);
+		Collection<Middleware<ConfigEntryValidator>> entrySpecificValidators = getEntrySpecificValidators(configEntry);
 		if (entrySpecificValidators.isEmpty()) {
 			entryValidator = entryValidatorMiddlewareContainer.process(baseValidator);
 		} else {
@@ -166,7 +162,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	@Override
 	public @Nullable Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware() {
-		return readerMiddleware;
+		return new EntryValidationReaderMiddleware();
 	}
 
 	@Override

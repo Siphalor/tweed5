@@ -98,7 +98,11 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 		} catch (AcyclicGraphSorter.GraphCycleException e) {
-			throw new IllegalStateException(e);
+			StringBuilder messageBuilder = new StringBuilder("Found cycle in middleware dependencies: ");
+			e.cycleIndeces().forEach(index -> messageBuilder.append(allMentionedMiddlewareIds[index]).append(" -> "));
+			messageBuilder.append(allMentionedMiddlewareIds[e.cycleIndeces().iterator().next()]);
+
+			throw new IllegalStateException(messageBuilder.toString(), e);
 		}
 	}
 

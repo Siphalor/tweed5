@@ -43,6 +43,10 @@ public class TweedEntryReaderWriters {
 		return TweedEntryReaderWriterImpls.STRING_READER_WRITER;
 	}
 
+	public static <T, C extends ConfigEntry<T>> TweedEntryReaderWriter<T, C> nullableReaderWriter(TweedEntryReaderWriter<T, C> delegate) {
+		return new TweedEntryReaderWriterImpls.NullableReaderWriter<>(delegate);
+	}
+
 	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T, C>> coherentCollectionReaderWriter() {
 		//noinspection unchecked
 		return (TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T,C>>)(TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COHERENT_COLLECTION_READER_WRITER;

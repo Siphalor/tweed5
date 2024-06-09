@@ -32,6 +32,28 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
 
 	@RequiredArgsConstructor
+	public static class NullableReaderWriter<T, C extends ConfigEntry<T>> implements TweedEntryReaderWriter<T, C> {
+		private final TweedEntryReaderWriter<T, C> delegate;
+
+		@Override
+		public T read(TweedDataReader reader, C entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
+			if (reader.peekToken().isNull()) {
+				return null;
+			}
+			return delegate.read(reader, entry, context);
+		}
+
+		@Override
+		public void write(TweedDataVisitor writer, T value, C entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+			if (value == null) {
+				writer.visitNull();
+			} else {
+				delegate.write(writer, value, entry, context);
+			}
+		}
+	}
+
+	@RequiredArgsConstructor
 	private static class PrimitiveReaderWriter<T> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
 		private final Function<TweedDataToken, T> readerCall;
 		private final BiConsumer<TweedDataVisitor, T> writerCall;

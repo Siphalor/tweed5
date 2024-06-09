@@ -19,6 +19,7 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
+import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
 import lombok.Setter;
 import lombok.Value;
 
@@ -91,6 +92,10 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 		try {
 			readWriteContextExtensionsDataPatchwork = patchworkClassCreator.createClass(readWriteContextExtensionsDataClasses.keySet());
+			for (PatchworkClassPart patchworkClassPart : readWriteContextExtensionsDataPatchwork.parts()) {
+				RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?> registeredExtension = readWriteContextExtensionsDataClasses.get(patchworkClassPart.partInterface());
+				registeredExtension.setter = patchworkClassPart.fieldSetter();
+			}
 		} catch (PatchworkClassGenerator.GenerationException e) {
 			throw new IllegalStateException("Failed to generate read write context extensions' data patchwork class", e);
 		}
