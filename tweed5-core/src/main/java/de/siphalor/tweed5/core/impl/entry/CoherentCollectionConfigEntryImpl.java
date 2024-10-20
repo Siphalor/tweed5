@@ -1,15 +1,12 @@
 package de.siphalor.tweed5.core.impl.entry;
 
-import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
+import de.siphalor.tweed5.core.api.entry.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.function.IntFunction;
 
-public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntryImpl<T> implements CoherentCollectionConfigEntry<E, T> {
+public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements CoherentCollectionConfigEntry<E, T> {
 	private final IntFunction<T> collectionConstructor;
 	private ConfigEntry<E> elementEntry;
 

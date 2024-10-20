@@ -1,16 +1,13 @@
 package de.siphalor.tweed5.core.impl.entry;
 
-import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
+import de.siphalor.tweed5.core.api.entry.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
 
-public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> extends BaseConfigEntryImpl<T> implements CompoundConfigEntry<T> {
+public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> extends BaseConfigEntry<T> implements CompoundConfigEntry<T> {
 	private final IntFunction<T> mapConstructor;
 	private final Map<String, ConfigEntry<?>> compoundEntries = new LinkedHashMap<>();
 

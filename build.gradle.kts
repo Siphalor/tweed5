@@ -25,13 +25,19 @@ allprojects {
         testCompileOnly(lombok)
         testAnnotationProcessor(lombok)
 
-        compileOnly("com.google.auto.service:auto-service-annotations:${properties["auto_service.version"]}")
-        annotationProcessor("com.google.auto.service:auto-service:${properties["auto_service.version"]}")
+        val autoServiceAnnotations = "com.google.auto.service:auto-service-annotations:${properties["auto_service.version"]}"
+        val autoService = "com.google.auto.service:auto-service:${properties["auto_service.version"]}"
+        compileOnly(autoServiceAnnotations)
+        annotationProcessor(autoService)
+        testCompileOnly(autoServiceAnnotations)
+        testAnnotationProcessor(autoService)
 
         implementation("org.jetbrains:annotations:${properties["jetbrains_annotations.version"]}")
 
-        testImplementation(platform("org.junit:junit-bom:5.10.0"))
+        testImplementation(platform("org.junit:junit-bom:${properties["junit.version"]}"))
         testImplementation("org.junit.jupiter:junit-jupiter")
+        testImplementation("org.mockito:mockito-core:${properties["mockito.version"]}")
+        testImplementation("org.assertj:assertj-core:${properties["assertj.version"]}")
     }
 
     tasks.test {

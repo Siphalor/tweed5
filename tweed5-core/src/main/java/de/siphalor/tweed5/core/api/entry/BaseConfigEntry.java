@@ -1,7 +1,6 @@
-package de.siphalor.tweed5.core.impl.entry;
+package de.siphalor.tweed5.core.api.entry;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 @Getter
-abstract class BaseConfigEntryImpl<T> implements ConfigEntry<T> {
+public abstract class BaseConfigEntry<T> implements ConfigEntry<T> {
 
 	@NotNull
 	private final Class<T> valueClass;

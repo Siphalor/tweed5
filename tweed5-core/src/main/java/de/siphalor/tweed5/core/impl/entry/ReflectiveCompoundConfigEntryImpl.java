@@ -1,9 +1,6 @@
 package de.siphalor.tweed5.core.impl.entry;
 
-import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
+import de.siphalor.tweed5.core.api.entry.*;
 import lombok.Getter;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
-public class ReflectiveCompoundConfigEntryImpl<T> extends BaseConfigEntryImpl<T> implements CompoundConfigEntry<T> {
+public class ReflectiveCompoundConfigEntryImpl<T> extends BaseConfigEntry<T> implements CompoundConfigEntry<T> {
 	private final Constructor<T> noArgsConstructor;
 	private final Map<String, CompoundEntry> compoundEntries;
 

@@ -110,16 +110,18 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	}
 
 	private void finishEntrySetup() {
-		setupPhase = ConfigContainerSetupPhase.SEALING_TREE;
-
-		rootEntry.visitInOrder(entry -> entry.seal(DefaultConfigContainer.this));
+		rootEntry.visitInOrder(entry -> {
+			if (!entry.sealed()) {
+				entry.seal(DefaultConfigContainer.this);
+			}
+		});
 
 		setupPhase = ConfigContainerSetupPhase.TREE_SEALED;
 	}
 
 	@Override
 	public EntryExtensionsData createExtensionsData() {
-		requireSetupPhase(ConfigContainerSetupPhase.SEALING_TREE);
+		requireSetupPhase(ConfigContainerSetupPhase.TREE_SETUP);
 
 		try {
 			return (EntryExtensionsData) entryExtensionsDataPatchworkClass.constructor().invoke();

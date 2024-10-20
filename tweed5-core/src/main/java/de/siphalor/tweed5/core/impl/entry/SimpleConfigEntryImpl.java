@@ -1,11 +1,12 @@
 package de.siphalor.tweed5.core.impl.entry;
 
+import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import org.jetbrains.annotations.NotNull;
 
-public class SimpleConfigEntryImpl<T> extends BaseConfigEntryImpl<T> implements SimpleConfigEntry<T> {
+public class SimpleConfigEntryImpl<T> extends BaseConfigEntry<T> implements SimpleConfigEntry<T> {
 	public SimpleConfigEntryImpl(Class<T> valueClass) {
 		super(valueClass);
 	}
