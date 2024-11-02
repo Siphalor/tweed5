@@ -60,7 +60,7 @@ public class TypedMultimap<T> implements Collection<T> {
 					keptAnyElementInList = true;
 				}
 				if (listIterator == null || !listIterator.hasNext()) {
-					if (!keptAnyElementInList) {
+					if (listIterator != null && !keptAnyElementInList) {
 						classIterator.remove();
 					}
 					listIterator = classIterator.next().getValue().iterator();
@@ -157,9 +157,9 @@ public class TypedMultimap<T> implements Collection<T> {
 
 	@Override
 	public boolean retainAll(@NotNull Collection<?> values) {
-		Map<? extends Class<?>, ? extends List<?>> valuesByClass = values.stream()
+		Map<Class<?>, ? extends List<?>> valuesByClass = values.stream()
 				.collect(Collectors.groupingBy(Object::getClass));
-		delegate.putAll((Map<Class<? extends T>, List<T>>) valuesByClass);
+		delegate.putAll((Map<Class<? extends T>, List<T>>)(Object) valuesByClass);
 		delegate.keySet().removeIf(key -> !valuesByClass.containsKey(key));
 		return true;
 	}
