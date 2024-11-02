@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("maven-publish")
+    id("de.siphalor.tweed5.local-runtime-only")
 }
 
 group = "de.siphalor.tweed5"
@@ -10,6 +11,7 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
+    apply(plugin = "de.siphalor.tweed5.local-runtime-only")
 
     group = rootProject.group
     version = properties["version"]!!
@@ -22,9 +24,6 @@ allprojects {
     repositories {
         mavenCentral()
     }
-
-    val localRuntimeOnly = configurations.create("localRuntimeOnly")
-    sourceSets.main.get().runtimeClasspath += localRuntimeOnly
 
     sourceSets.test.get().runtimeClasspath += sourceSets.main.get().runtimeClasspath
 

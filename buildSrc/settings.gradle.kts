@@ -1,0 +1,1 @@
+rootProject.name = "tweed5-conventions"
