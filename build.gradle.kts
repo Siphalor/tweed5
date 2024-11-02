@@ -1,13 +1,18 @@
 plugins {
     id("java")
+    id("maven-publish")
 }
 
-group = "de.siphalor"
-version = "1.0-SNAPSHOT"
+group = "de.siphalor.tweed5"
+version = properties["version"]!!
 
 allprojects {
     apply(plugin = "java")
     apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+
+    group = rootProject.group
+    version = properties["version"]!!
 
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -18,7 +23,12 @@ allprojects {
         mavenCentral()
     }
 
-    dependencies {
+    val localRuntimeOnly = configurations.create("localRuntimeOnly")
+    sourceSets.main.get().runtimeClasspath += localRuntimeOnly
+
+    sourceSets.test.get().runtimeClasspath += sourceSets.main.get().runtimeClasspath
+
+        dependencies {
         val lombok = "org.projectlombok:lombok:${properties["lombok.version"]}"
         compileOnly(lombok)
         annotationProcessor(lombok)
@@ -34,6 +44,9 @@ allprojects {
 
         implementation("org.jetbrains:annotations:${properties["jetbrains_annotations.version"]}")
 
+        implementation("org.slf4j:slf4j-api:${properties["slf4j.version"]}")
+        localRuntimeOnly("org.slf4j:slf4j-simple:${properties["slf4j.version"]}")
+
         testImplementation(platform("org.junit:junit-bom:${properties["junit.version"]}"))
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("org.mockito:mockito-core:${properties["mockito.version"]}")
@@ -47,5 +60,17 @@ allprojects {
             "junit.jupiter.execution.timeout.testable.method.default" to "10s",
             "junit.jupiter.execution.timeout.thread.mode.default" to "SEPARATE_THREAD",
         )
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                groupId = project.group.toString()
+                artifactId = project.name
+                version = project.version.toString()
+
+                from(components["java"])
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class PojoClassIntrospector {
 	private final Class<?> clazz;
@@ -67,11 +69,23 @@ public class PojoClassIntrospector {
 					Property property = introspectProperty(field);
 					properties.put(property.field.getName(), property);
 				} else {
-					// TODO: logging
+					Property existingProperty = properties.get(field.getName());
+					log.error(
+							"Duplicate property \"{}\" detected in hierarchy of {} in classes: {} and {}",
+							field.getName(),
+							clazz.getName(),
+							existingProperty.field().getDeclaringClass().getName(),
+							targetClass.getName()
+					);
 				}
 			}
 		} catch (Exception e) {
-			// TODO: logging
+			log.error(
+					"Got unexpected error introspecting the properties of class {} (in hierarchy of {})",
+					targetClass.getName(),
+					clazz.getName(),
+					e
+			);
 		}
 	}
 
@@ -178,7 +192,13 @@ public class PojoClassIntrospector {
 		} catch (NoSuchMethodException e) {
 			return null;
 		} catch (IllegalAccessException e) {
-			// TODO: logging
+			log.warn(
+					"Failed to access method \"{}\" of class {} in hierarchy of {}",
+					methodDescriptor,
+					targetClass.getName(),
+					clazz.getName(),
+					e
+			);
 			return null;
 		}
 	}
@@ -190,7 +210,13 @@ public class PojoClassIntrospector {
 		} catch (NoSuchFieldException e) {
 			return null;
 		} catch (IllegalAccessException e) {
-			// TODO: logging
+			log.warn(
+					"Failed to access getter for field \"{}\" of class {} in hierarchy of {}",
+					field.getName(),
+					field.getDeclaringClass().getName(),
+					clazz.getName(),
+					e
+			);
 			return null;
 		}
 	}
@@ -202,7 +228,13 @@ public class PojoClassIntrospector {
 		} catch (NoSuchFieldException e) {
 			return null;
 		} catch (IllegalAccessException e) {
-			// TODO: logging
+			log.warn(
+					"Failed to access setter for field \"{}\" of class {} in hierarchy of {}",
+					field.getName(),
+					field.getDeclaringClass().getName(),
+					clazz.getName(),
+					e
+			);
 			return null;
 		}
 	}
