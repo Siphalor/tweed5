@@ -1,4 +1,4 @@
-package de.siphalor.tweed5.core.api.collection;
+package de.siphalor.tweed5.utils.api.collection;
 
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -10,18 +10,18 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 @RequiredArgsConstructor
-public class TypedMultimap<T> implements Collection<T> {
-	private static final TypedMultimap<Object> EMPTY = unmodifiable(new TypedMultimap<>(Collections.emptyMap(), ArrayList::new));
+public class ClassToInstancesMultimap<T> implements Collection<T> {
+	private static final ClassToInstancesMultimap<Object> EMPTY = unmodifiable(new ClassToInstancesMultimap<>(Collections.emptyMap(), ArrayList::new));
 
 	protected final Map<Class<? extends T>, Collection<T>> delegate;
 	protected final Supplier<Collection<T>> collectionSupplier;
 
-	public static <T> TypedMultimap<T> unmodifiable(TypedMultimap<T> map) {
+	public static <T> ClassToInstancesMultimap<T> unmodifiable(ClassToInstancesMultimap<T> map) {
 		return new Unmodifiable<>(map.delegate, map.collectionSupplier);
 	}
 
-	public static <T> TypedMultimap<T> empty() {
-		return (TypedMultimap<T>) EMPTY;
+	public static <T> ClassToInstancesMultimap<T> empty() {
+		return (ClassToInstancesMultimap<T>) EMPTY;
 	}
 
 	public int size() {
@@ -169,7 +169,7 @@ public class TypedMultimap<T> implements Collection<T> {
 		delegate.clear();
 	}
 
-	protected static class Unmodifiable<T> extends TypedMultimap<T> {
+	protected static class Unmodifiable<T> extends ClassToInstancesMultimap<T> {
 		public Unmodifiable(
 				Map<Class<? extends T>, Collection<T>> delegate,
 				Supplier<Collection<T>> collectionSupplier

@@ -1,6 +1,5 @@
-package de.siphalor.tweed5.weaver.pojo.api;
+package de.siphalor.tweed5.utils.api.collection;
 
-import de.siphalor.tweed5.core.api.collection.TypedMultimap;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -9,11 +8,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings("java:S5838") // Since we're testing collections methods here, AssertJ's shorthands are not applicable
-class TypedMultimapTest {
+class ClassToInstancesMultimapTest {
 
 	@Test
 	void size() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		assertThat(map).isEmpty();
 		map.add("abc");
 		assertThat(map.size()).isEqualTo(1);
@@ -27,7 +26,7 @@ class TypedMultimapTest {
 
 	@Test
 	void isEmpty() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		assertThat(map.isEmpty()).isTrue();
 		map.add("def");
 		assertThat(map.isEmpty()).isFalse();
@@ -37,7 +36,7 @@ class TypedMultimapTest {
 
 	@Test
 	void contains() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		assertThat(map.contains(123)).isFalse();
 		map.add(456);
 		assertThat(map.contains(123)).isFalse();
@@ -47,14 +46,14 @@ class TypedMultimapTest {
 
 	@Test
 	void classes() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, "abc", "def", "ghi", 789L));
 		assertThat(map.classes()).containsExactlyInAnyOrder(Integer.class, String.class, Long.class);
 	}
 
 	@Test
 	void iterator() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new LinkedHashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new LinkedHashMap<>(), ArrayList::new);
 		map.add("abc");
 		map.add(123);
 		map.add("def");
@@ -78,7 +77,7 @@ class TypedMultimapTest {
 
 	@Test
 	void toArray() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new LinkedHashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new LinkedHashMap<>(), ArrayList::new);
 		map.add("abc");
 		map.add(123);
 		map.add("def");
@@ -89,7 +88,7 @@ class TypedMultimapTest {
 
 	@Test
 	void toArrayProvided() {
-		TypedMultimap<Number> map = new TypedMultimap<>(new LinkedHashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Number> map = new ClassToInstancesMultimap<>(new LinkedHashMap<>(), ArrayList::new);
 		map.add(12);
 		map.add(34L);
 		map.add(56);
@@ -100,7 +99,7 @@ class TypedMultimapTest {
 
 	@Test
 	void add() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), HashSet::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), HashSet::new);
 		assertThat(map).isEmpty();
 		map.add(123);
 		assertThat(map).hasSize(1);
@@ -114,7 +113,7 @@ class TypedMultimapTest {
 
 	@Test
 	void remove() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, "abc", "def"));
 		assertThat(map).hasSize(4);
 		map.remove("def");
@@ -125,7 +124,7 @@ class TypedMultimapTest {
 
 	@Test
 	void getAll() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, "abc", "def"));
 		assertThat(map.getAll(Integer.class)).containsExactly(123, 456);
 		assertThat(map.getAll(String.class)).containsExactly("abc", "def");
@@ -134,7 +133,7 @@ class TypedMultimapTest {
 
 	@Test
 	void removeAll() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def"));
 		map.removeAll(Arrays.asList(456, "def"));
 		assertThat(map).hasSize(3);
@@ -146,7 +145,7 @@ class TypedMultimapTest {
 
 	@Test
 	void containsAll() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def"));
 		assertThat(map.containsAll(Arrays.asList(456, "def"))).isTrue();
 		assertThat(map.containsAll(Arrays.asList(123, 789))).isTrue();
@@ -155,7 +154,7 @@ class TypedMultimapTest {
 
 	@Test
 	void addAll() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def"));
 		assertThat(map).hasSize(5);
 		assertThat(map.getAll(Integer.class)).containsExactlyElementsOf(Arrays.asList(123, 456, 789));
@@ -165,7 +164,7 @@ class TypedMultimapTest {
 
 	@Test
 	void removeAllByClass() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new HashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def", 123L));
 		map.removeAll(Integer.class);
 		assertThat(map).hasSize(3);
@@ -177,7 +176,7 @@ class TypedMultimapTest {
 
 	@Test
 	void retainAll() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new LinkedHashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new LinkedHashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def", 123L));
 		map.retainAll(Arrays.asList("abc", 456));
 		assertThat(map).hasSize(2);
@@ -188,7 +187,7 @@ class TypedMultimapTest {
 
 	@Test
 	void clear() {
-		TypedMultimap<Object> map = new TypedMultimap<>(new LinkedHashMap<>(), ArrayList::new);
+		ClassToInstancesMultimap<Object> map = new ClassToInstancesMultimap<>(new LinkedHashMap<>(), ArrayList::new);
 		map.addAll(Arrays.asList(123, 456, 789, "abc", "def", 123L));
 		map.clear();
 		assertThat(map.isEmpty()).isTrue();

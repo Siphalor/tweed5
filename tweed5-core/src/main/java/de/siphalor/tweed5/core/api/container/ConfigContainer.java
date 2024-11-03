@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -15,10 +16,6 @@ import java.util.Map;
  * @see ConfigContainerSetupPhase
  */
 public interface ConfigContainer<T> {
-	ConfigContainerSetupPhase setupPhase();
-	default boolean isReady() {
-		return setupPhase() == ConfigContainerSetupPhase.READY;
-	}
 
 	default void registerExtensions(TweedExtension... extensions) {
 		for (TweedExtension extension : extensions) {
@@ -27,6 +24,10 @@ public interface ConfigContainer<T> {
 	}
 
 	void registerExtension(TweedExtension extension);
+
+	@Nullable
+	<E extends TweedExtension> E extension(Class<E> extensionClass);
+	Collection<TweedExtension> extensions();
 
 	void finishExtensionSetup();
 
@@ -37,7 +38,5 @@ public interface ConfigContainer<T> {
 	void initialize();
 
 	ConfigEntry<T> rootEntry();
-
-	Collection<TweedExtension> extensions();
 	Map<Class<?>, ? extends RegisteredExtensionData<EntryExtensionsData, ?>> entryDataExtensions();
 }
