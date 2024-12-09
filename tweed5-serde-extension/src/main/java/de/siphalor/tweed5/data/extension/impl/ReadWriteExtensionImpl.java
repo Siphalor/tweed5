@@ -31,6 +31,7 @@ import java.util.Map;
 @AutoService(ReadWriteExtension.class)
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
+	private RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterDefinitionExtension;
 	private RegisteredExtensionData<EntryExtensionsData, ReadWriteEntryDataExtension> readWriteEntryDataExtension;
 	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>> entryReaderMiddlewareContainer;
 	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>> entryWriterMiddlewareContainer;
@@ -44,8 +45,8 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 	@Override
 	public void setup(TweedExtensionSetupContext context) {
+		readerWriterDefinitionExtension = context.registerEntryExtensionData(EntryReaderWriterDefinition.class);
 		readWriteEntryDataExtension = context.registerEntryExtensionData(ReadWriteEntryDataExtension.class);
-		context.registerEntryExtensionData(EntryReaderWriterDefinition.class);
 
 		Collection<TweedExtension> extensions = context.configContainer().extensions();
 
@@ -118,6 +119,11 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 				entryReaderMiddlewareContainer.process(baseReader),
 				entryWriterMiddlewareContainer.process(baseWriter)
 		));
+	}
+
+	@Override
+	public void setEntryReaderWriterDefinition(ConfigEntry<?> entry, EntryReaderWriterDefinition readerWriterDefinition) {
+		readerWriterDefinitionExtension.set(entry.extensionsData(), readerWriterDefinition);
 	}
 
 	@Override

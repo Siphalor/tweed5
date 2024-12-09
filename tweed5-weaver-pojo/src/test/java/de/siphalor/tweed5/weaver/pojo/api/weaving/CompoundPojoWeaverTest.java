@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
@@ -11,6 +12,8 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+
+import java.lang.annotation.ElementType;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isSimpleEntryForClass;
@@ -30,9 +33,10 @@ class CompoundPojoWeaverTest {
 			}
 		});
 
-		WeavingContext weavingContext = WeavingContext.builder()
-				.extensionsData(new ExtensionsDataMock(null))
-				.weavingFunction(new TweedPojoWeavingFunction.NonNull() {
+		Annotations annotations = new Annotations();
+		annotations.addAnnotationsFrom(ElementType.TYPE, Compound.class);
+
+		WeavingContext weavingContext = WeavingContext.builder(new TweedPojoWeavingFunction.NonNull() {
 					@Override
 					public @NotNull <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context) {
 						ConfigEntry<T> entry = compoundWeaver.weaveEntry(valueClass, context);
@@ -45,7 +49,9 @@ class CompoundPojoWeaverTest {
 							return configEntry;
 						}
 					}
-				})
+				}, mock(ConfigContainer.class))
+				.extensionsData(new ExtensionsDataMock(null))
+				.annotations(annotations)
 				.build();
 
 		ConfigEntry<Compound> resultEntry = compoundWeaver.weaveEntry(Compound.class, weavingContext);

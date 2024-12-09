@@ -119,12 +119,12 @@ class ValidationFallbackExtensionImplTest {
 		readerWriterData.set(intEntry.extensionsData(), new EntryReaderWriterDefinition() {
 			@Override
 			public TweedEntryReader<?, ?> reader() {
-				return TweedEntryReaderWriters.nullableReaderWriter(TweedEntryReaderWriters.intReaderWriter());
+				return TweedEntryReaderWriters.nullableReader(TweedEntryReaderWriters.intReaderWriter());
 			}
 
 			@Override
 			public TweedEntryWriter<?, ?> writer() {
-				return TweedEntryReaderWriters.nullableReaderWriter(TweedEntryReaderWriters.intReaderWriter());
+				return TweedEntryReaderWriters.nullableWriter(TweedEntryReaderWriters.intReaderWriter());
 			}
 		});
 

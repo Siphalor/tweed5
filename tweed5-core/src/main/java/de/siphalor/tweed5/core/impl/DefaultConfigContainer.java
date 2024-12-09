@@ -9,7 +9,7 @@ import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
-import de.siphalor.tweed5.utils.api.collection.ClassToInstanceMap;
+import de.siphalor.tweed5.utils.api.collection.InheritanceMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -20,14 +20,18 @@ import java.util.*;
 public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	@Getter
 	private ConfigContainerSetupPhase setupPhase = ConfigContainerSetupPhase.EXTENSIONS_SETUP;
-	private final ClassToInstanceMap<TweedExtension> extensions = new ClassToInstanceMap<>();
+	private final InheritanceMap<TweedExtension> extensions = new InheritanceMap<>(TweedExtension.class);
 	private ConfigEntry<T> rootEntry;
 	private PatchworkClass<EntryExtensionsData> entryExtensionsDataPatchworkClass;
 	private Map<Class<?>, RegisteredExtensionDataImpl<EntryExtensionsData, ?>> registeredEntryDataExtensions;
 
 	@Override
 	public <E extends TweedExtension> @Nullable E extension(Class<E> extensionClass) {
-		return extensions.get(extensionClass);
+		try {
+			return extensions.getSingleInstance(extensionClass);
+		} catch (InheritanceMap.NonUniqueResultException e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -39,8 +43,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public void registerExtension(TweedExtension extension) {
 		requireSetupPhase(ConfigContainerSetupPhase.EXTENSIONS_SETUP);
 
-		TweedExtension previous = extensions.put(extension);
-		if (previous != null) {
+		if (!extensions.putIfAbsent(extension)) {
 			throw new IllegalArgumentException("Extension " + extension.getClass().getName() + " is already registered");
 		}
 	}
@@ -69,7 +72,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 
 			@Override
 			public void registerExtension(TweedExtension extension) {
-				if (!extensions.containsClass(extension.getClass())) {
+				if (!extensions.containsAnyInstanceForClass(extension.getClass())) {
 					additionalExtensions.add(extension);
 				}
 			}
@@ -82,7 +85,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 			}
 
 			for (TweedExtension additionalExtension : additionalExtensions) {
-				extensions.put(additionalExtension);
+				extensions.putIfAbsent(additionalExtension);
 			}
 			extensionsToSetup = new ArrayList<>(additionalExtensions);
 			additionalExtensions.clear();

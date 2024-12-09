@@ -14,7 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
@@ -46,7 +46,7 @@ public class PojoClassIntrospector {
 
 	public Map<String, Property> properties() {
 		if (this.properties == null) {
-			this.properties = new HashMap<>();
+			this.properties = new LinkedHashMap<>();
 			Class<?> currentClass = clazz;
 			while (currentClass != null) {
 				appendClassProperties(currentClass);

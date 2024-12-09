@@ -1,8 +1,8 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
-import de.siphalor.tweed5.core.api.collection.TypedMultimap;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -14,26 +14,30 @@ import java.util.Arrays;
 public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 	@Nullable
 	WeavingContext parent;
-	ExtensionsData extensionsData;
 	@Getter(AccessLevel.NONE)
+	@NotNull
 	TweedPojoWeavingFunction.NonNull weavingFunction;
+	@NotNull
+	ConfigContainer<?> configContainer;
+	@NotNull
 	String[] path;
-	TypedMultimap<Object> additionalData;
+	@NotNull
+	ExtensionsData extensionsData;
+	@NotNull
+	Annotations annotations;
 
-	public static Builder builder() {
-		return new Builder(null, new String[0]);
+	public static Builder builder(TweedPojoWeavingFunction.NonNull weavingFunction, ConfigContainer<?> configContainer) {
+		return new Builder(null, weavingFunction, configContainer, new String[0]);
 	}
 
-	public static Builder builder(String baseName) {
-		return new Builder(null, new String[]{ baseName });
+	public static Builder builder(TweedPojoWeavingFunction.NonNull weavingFunction, ConfigContainer<?> configContainer, String baseName) {
+		return new Builder(null, weavingFunction, configContainer, new String[]{ baseName });
 	}
 
 	public Builder subContextBuilder(String subPathName) {
 		String[] newPath = Arrays.copyOf(path, path.length + 1);
 		newPath[path.length] = subPathName;
-		return new Builder(this, newPath)
-				.extensionsData(extensionsData)
-				.weavingFunction(weavingFunction);
+		return new Builder(this, weavingFunction, configContainer, newPath).extensionsData(extensionsData);
 	}
 
 	@Override
@@ -49,18 +53,20 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 	public static class Builder {
 		@Nullable
 		private final WeavingContext parent;
+		private final TweedPojoWeavingFunction.NonNull weavingFunction;
+		private final ConfigContainer<?> configContainer;
 		private final String[] path;
 		private ExtensionsData extensionsData;
-		private TweedPojoWeavingFunction.NonNull weavingFunction;
-		private TypedMultimap<Object> additionalData;
+		private Annotations annotations;
 
 		public WeavingContext build() {
 			return new WeavingContext(
 					parent,
-					extensionsData,
 					weavingFunction,
+					configContainer,
 					path,
-					additionalData
+					extensionsData,
+					annotations
 			);
 		}
 	}

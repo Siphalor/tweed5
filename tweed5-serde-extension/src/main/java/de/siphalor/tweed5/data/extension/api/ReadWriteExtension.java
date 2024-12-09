@@ -7,6 +7,8 @@ import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 
 public interface ReadWriteExtension extends TweedExtension {
+	void setEntryReaderWriterDefinition(ConfigEntry<?> entry, EntryReaderWriterDefinition readerWriterDefinition);
+
 	ReadWriteContextExtensionsData createReadWriteContextExtensionsData();
 
 	<T> T read(TweedDataReader reader, ConfigEntry<T> entry, ReadWriteContextExtensionsData contextExtensionsData) throws TweedEntryReadException;

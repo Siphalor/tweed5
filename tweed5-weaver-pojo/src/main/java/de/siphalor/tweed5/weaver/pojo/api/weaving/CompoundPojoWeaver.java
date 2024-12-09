@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
-import de.siphalor.tweed5.core.api.collection.TypedMultimap;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.namingformat.api.NamingFormat;
@@ -8,19 +7,18 @@ import de.siphalor.tweed5.namingformat.api.NamingFormatCollector;
 import de.siphalor.tweed5.namingformat.api.NamingFormats;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.impl.entry.StaticPojoCompoundConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoClassIntrospector;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
-import de.siphalor.tweed5.weaver.pojo.impl.entry.StaticPojoCompoundConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfig;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfigImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * A weaver that weaves classes with the {@link CompoundWeaving} annotation as compound entries.
@@ -43,11 +41,11 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 	@Override
 	public @Nullable <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context) {
-		if (!valueClass.isAnnotationPresent(CompoundWeaving.class)) {
+		if (context.annotations().getAnnotation(CompoundWeaving.class) == null) {
 			return null;
 		}
 		try {
-			CompoundWeavingConfig weavingConfig = getOrCreateWeavingConfig(valueClass, context);
+			CompoundWeavingConfig weavingConfig = getOrCreateWeavingConfig(context);
 			WeavingContext.ExtensionsData newExtensionsData = context.extensionsData().copy();
 			weavingConfigAccess.set(newExtensionsData, weavingConfig);
 
@@ -68,7 +66,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		}
 	}
 
-	private CompoundWeavingConfig getOrCreateWeavingConfig(Class<?> valueClass, WeavingContext context) {
+	private CompoundWeavingConfig getOrCreateWeavingConfig(WeavingContext context) {
 		CompoundWeavingConfig parent;
 		if (context.extensionsData().isPatchworkPartSet(CompoundWeavingConfig.class)) {
 			parent = (CompoundWeavingConfig) context.extensionsData();
@@ -76,7 +74,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			parent = DEFAULT_WEAVING_CONFIG;
 		}
 
-		CompoundWeavingConfig local = getWeavingConfigFromClassAnnotation(valueClass);
+		CompoundWeavingConfig local = createWeavingConfigFromAnnotations(context.annotations());
 		if (local == null) {
 			return parent;
 		}
@@ -91,23 +89,21 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			WeavingContext parentContext
 	) {
 		return parentContext.subContextBuilder(name)
-				.additionalData(createAdditionalDataFromAnnotations(property.field().getAnnotations()))
+				.annotations(collectAnnotationsForField(property.field()))
 				.extensionsData(newExtensionsData)
 				.build();
 	}
 
-	private TypedMultimap<Object> createAdditionalDataFromAnnotations(Annotation[] annotations) {
-		if (annotations.length == 0) {
-			return TypedMultimap.empty();
-		}
-		TypedMultimap<Object> additionalData = new TypedMultimap<>(new HashMap<>(), ArrayList::new);
-		Collections.addAll(additionalData, annotations);
-		return TypedMultimap.unmodifiable(additionalData);
+	private Annotations collectAnnotationsForField(Field field) {
+		Annotations annotations = new Annotations();
+		annotations.addAnnotationsFrom(ElementType.TYPE, field.getType());
+		annotations.addAnnotationsFrom(ElementType.FIELD, field);
+		return annotations;
 	}
 
 	@Nullable
-	private CompoundWeavingConfig getWeavingConfigFromClassAnnotation(Class<?> clazz) {
-		CompoundWeaving annotation = clazz.getAnnotation(CompoundWeaving.class);
+	private CompoundWeavingConfig createWeavingConfigFromAnnotations(Annotations annotations) {
+		CompoundWeaving annotation = annotations.getAnnotation(CompoundWeaving.class);
 		if (annotation == null) {
 			return null;
 		}

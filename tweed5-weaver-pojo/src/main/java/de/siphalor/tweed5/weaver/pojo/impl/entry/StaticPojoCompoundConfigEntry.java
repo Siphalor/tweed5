@@ -9,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> implements WeavableCompoundConfigEntry<T> {
 	private final MethodHandle noArgsConstructor;
-	private final Map<String, SubEntry> subEntries = new HashMap<>();
-	private final Map<String, ConfigEntry<?>> subConfigEntries = new HashMap<>();
+	private final Map<String, SubEntry> subEntries = new LinkedHashMap<>();
+	private final Map<String, ConfigEntry<?>> subConfigEntries = new LinkedHashMap<>();
 
 	public StaticPojoCompoundConfigEntry(@NotNull Class<T> valueClass, @NotNull MethodHandle noArgsConstructor) {
 		super(valueClass);
@@ -67,7 +67,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	public T instantiateCompoundValue() {
 		try {
 			//noinspection unchecked
-			return (T) noArgsConstructor.invokeExact();
+			return (T) noArgsConstructor.invoke();
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to instantiate compound class", e);
 		}

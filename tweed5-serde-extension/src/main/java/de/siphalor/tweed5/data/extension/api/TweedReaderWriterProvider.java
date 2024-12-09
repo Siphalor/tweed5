@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.data.extension.api;
 
-import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -13,14 +12,11 @@ public interface TweedReaderWriterProvider {
 	/**
 	 * The context where reader and writer factories may be registered.<br />
 	 * The reader and writer ids must be globally unique. It is therefore recommended to scope custom reader and writer ids in your own namespace (e.g. "de.siphalor.custom.blub")
+	 * Ids may consist of alphanumeric characters and dots.
 	 */
 	interface ProviderContext {
-		void registerReaderFactory(String id, ReaderWriterFactory<? extends TweedEntryReader<?, ?>> readerFactory);
-		void registerWriterFactory(String id, ReaderWriterFactory<? extends TweedEntryWriter<?, ?>> writerFactory);
-		default void registerReaderWriterFactory(String id, ReaderWriterFactory<? extends TweedEntryReaderWriter<?, ?>> readerWriterFactory) {
-			registerReaderFactory(id, readerWriterFactory);
-			registerWriterFactory(id, readerWriterFactory);
-		}
+		void registerReaderFactory(String id, ReaderWriterFactory<TweedEntryReader<?, ?>> readerFactory);
+		void registerWriterFactory(String id, ReaderWriterFactory<TweedEntryWriter<?, ?>> writerFactory);
 	}
 
 	/**

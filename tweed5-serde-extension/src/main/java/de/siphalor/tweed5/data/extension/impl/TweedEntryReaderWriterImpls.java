@@ -32,16 +32,22 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
 
 	@RequiredArgsConstructor
-	public static class NullableReaderWriter<T, C extends ConfigEntry<T>> implements TweedEntryReaderWriter<T, C> {
-		private final TweedEntryReaderWriter<T, C> delegate;
+	public static class NullableReader<T, C extends ConfigEntry<T>> implements TweedEntryReader<T, C> {
+		private final TweedEntryReader<T, C> delegate;
 
 		@Override
 		public T read(TweedDataReader reader, C entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			if (reader.peekToken().isNull()) {
+				reader.readToken();
 				return null;
 			}
 			return delegate.read(reader, entry, context);
 		}
+	}
+
+	@RequiredArgsConstructor
+	public static class NullableWriter<T, C extends ConfigEntry<T>> implements TweedEntryWriter<T, C> {
+		private final TweedEntryWriter<T, C> delegate;
 
 		@Override
 		public void write(TweedDataVisitor writer, T value, C entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
@@ -137,9 +143,10 @@ public class TweedEntryReaderWriterImpls {
 					//noinspection unchecked
 					ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
 					TweedEntryReader<Object, ConfigEntry<Object>> subEntryReaderChain = ReadWriteExtensionImpl.getReaderChain(subEntry);
-
-					Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
-					entry.set(compoundValue, key, subEntryValue);
+					if (subEntryReaderChain != null) {
+						Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
+						entry.set(compoundValue, key, subEntryValue);
+					}
 				} else {
 					throw new TweedEntryReadException("Unexpected token " + token + ": Expected map key or map end");
 				}
@@ -159,10 +166,12 @@ public class TweedEntryReaderWriterImpls {
 				String key = e.getKey();
 				ConfigEntry<Object> subEntry = e.getValue();
 
-				writer.visitMapEntryKey(key);
-
 				TweedEntryWriter<Object, ConfigEntry<Object>> subEntryWriterChain = ReadWriteExtensionImpl.getWriterChain(subEntry);
-				subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);
+
+				if (subEntryWriterChain != null) {
+					writer.visitMapEntryKey(key);
+					subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);
+				}
 			}
 
 			writer.visitMapEnd();

@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.CompoundPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TrivialPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeaver;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -21,6 +22,8 @@ public @interface PojoWeaving {
 			CompoundPojoWeaver.class,
 			TrivialPojoWeaver.class,
 	};
+
+	Class<? extends TweedPojoWeavingPostProcessor>[] postProcessors() default {};
 
 	Class<? extends TweedExtension>[] extensions() default {};
 }

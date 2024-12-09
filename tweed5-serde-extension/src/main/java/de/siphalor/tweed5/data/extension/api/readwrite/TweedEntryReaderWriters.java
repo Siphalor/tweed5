@@ -3,6 +3,8 @@ package de.siphalor.tweed5.data.extension.api.readwrite;
 import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -43,8 +45,12 @@ public class TweedEntryReaderWriters {
 		return TweedEntryReaderWriterImpls.STRING_READER_WRITER;
 	}
 
-	public static <T, C extends ConfigEntry<T>> TweedEntryReaderWriter<T, C> nullableReaderWriter(TweedEntryReaderWriter<T, C> delegate) {
-		return new TweedEntryReaderWriterImpls.NullableReaderWriter<>(delegate);
+	public static <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> nullableReader(TweedEntryReader<T, C> delegate) {
+		return new TweedEntryReaderWriterImpls.NullableReader<>(delegate);
+	}
+
+	public static <T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> nullableWriter(TweedEntryWriter<T, C> delegate) {
+		return new TweedEntryReaderWriterImpls.NullableWriter<>(delegate);
 	}
 
 	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T, C>> coherentCollectionReaderWriter() {
