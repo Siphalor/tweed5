@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    java
 }
 
 val localRuntimeOnly = configurations.create("localRuntimeOnly")

@@ -1,4 +1,8 @@
+plugins {
+    id("de.siphalor.tweed5.base-module")
+}
+
 dependencies {
-    implementation("org.ow2.asm:asm:${properties["asm.version"]}")
-    implementation("org.ow2.asm:asm-commons:${properties["asm.version"]}")
+    implementation(libs.asm.core)
+    implementation(libs.asm.commons)
 }
