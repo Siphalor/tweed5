@@ -17,10 +17,10 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    test {
-        runtimeClasspath = main.get().runtimeClasspath
-    }
+val testAgent = configurations.dependencyScope("mockitoAgent")
+val testAgentClasspath = configurations.resolvable("testAgentClasspath") {
+    isTransitive = false
+    extendsFrom(testAgent.get())
 }
 
 dependencies {
@@ -38,16 +38,22 @@ dependencies {
 
     implementation(libs.slf4j.api)
     "localRuntimeOnly"(libs.slf4j.rt)
+    testRuntimeOnly(libs.slf4j.rt)
 
     testImplementation(platform(libs.junit.platform))
     testImplementation(libs.junit.core)
+    testRuntimeOnly(libs.junit.launcher)
     testImplementation(libs.mockito)
+    testAgent(libs.mockito)
     testImplementation(libs.assertj)
 }
 
 
 tasks.test {
+    dependsOn(testAgentClasspath)
+
     useJUnitPlatform()
+    jvmArgs(testAgentClasspath.get().files.map { file -> "-javaagent:${file.absolutePath}" })
     systemProperties(
         "junit.jupiter.execution.timeout.mode" to "disabled_on_debug",
         "junit.jupiter.execution.timeout.testable.method.default" to "10s",
