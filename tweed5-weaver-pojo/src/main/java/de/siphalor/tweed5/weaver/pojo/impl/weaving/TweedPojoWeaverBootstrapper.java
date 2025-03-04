@@ -8,10 +8,8 @@ import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
-import de.siphalor.tweed5.utils.api.collection.ClassToInstancesMultimap;
-import de.siphalor.tweed5.utils.api.collection.InheritanceMap;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.Annotations;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
@@ -20,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -168,7 +165,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 		setupWeavers();
 		WeavingContext weavingContext = createWeavingContext();
 
-		ConfigEntry<T> rootEntry = this.weaveEntry(pojoClass, weavingContext);
+		ConfigEntry<T> rootEntry = this.weaveEntry(ActualType.ofClass(pojoClass), weavingContext);
 		configContainer.attachAndSealTree(rootEntry);
 
 		return configContainer;
@@ -214,19 +211,16 @@ public class TweedPojoWeaverBootstrapper<T> {
 		try {
 			WeavingContext.ExtensionsData extensionsData = (WeavingContext.ExtensionsData) contextExtensionsDataClass.constructor().invoke();
 
-			Annotations annotations = new Annotations();
-			annotations.addAnnotationsFrom(ElementType.TYPE, pojoClass);
-
 			return WeavingContext.builder(this::weaveEntry, configContainer)
 					.extensionsData(extensionsData)
-					.annotations(annotations)
+					.annotations(pojoClass)
 					.build();
 		} catch (Throwable e) {
 			throw new PojoWeavingException("Failed to create weaving context's extension data");
 		}
 	}
 
-	private <U> ConfigEntry<U> weaveEntry(Class<U> dataClass, WeavingContext context) {
+	private <U> ConfigEntry<U> weaveEntry(ActualType<U> dataClass, WeavingContext context) {
 		for (TweedPojoWeaver weaver : weavers) {
 			ConfigEntry<U> configEntry = weaver.weaveEntry(dataClass, context);
 			if (configEntry != null) {
@@ -238,7 +232,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 			}
 		}
 
-		throw new PojoWeavingException("Failed to weave " + dataClass.getName() + ": No matching weavers found");
+		throw new PojoWeavingException("Failed to weave " + dataClass + ": No matching weavers found");
 	}
 
 	private void applyPostProcessors(ConfigEntry<?> configEntry, WeavingContext context) {

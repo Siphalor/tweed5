@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Marks this class as a class that should be woven as a {@link de.siphalor.tweed5.core.api.entry.CompoundConfigEntry}.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.TYPE_USE})
 public @interface CompoundWeaving {
 	/**
 	 * The naming format to use for this POJO.

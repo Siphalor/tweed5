@@ -7,6 +7,9 @@ import de.siphalor.tweed5.namingformat.api.NamingFormatCollector;
 import de.siphalor.tweed5.namingformat.api.NamingFormats;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
+import de.siphalor.tweed5.typeutils.api.type.LayeredTypeAnnotations;
+import de.siphalor.tweed5.typeutils.api.type.TypeAnnotationLayer;
 import de.siphalor.tweed5.weaver.pojo.impl.entry.StaticPojoCompoundConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoClassIntrospector;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
@@ -15,8 +18,8 @@ import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfi
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.ElementType;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -40,7 +43,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	}
 
 	@Override
-	public @Nullable <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context) {
+	public @Nullable <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		if (context.annotations().getAnnotation(CompoundWeaving.class) == null) {
 			return null;
 		}
@@ -49,7 +52,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			WeavingContext.ExtensionsData newExtensionsData = context.extensionsData().copy();
 			weavingConfigAccess.set(newExtensionsData, weavingConfig);
 
-			PojoClassIntrospector introspector = PojoClassIntrospector.forClass(valueClass);
+			PojoClassIntrospector introspector = PojoClassIntrospector.forClass(valueType.declaredType());
 
 			WeavableCompoundConfigEntry<T> compoundEntry = instantiateCompoundEntry(introspector, weavingConfig);
 
@@ -62,7 +65,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 			return compoundEntry;
 		} catch (Exception e) {
-			throw new PojoWeavingException("Exception occurred trying to weave compound for class " + valueClass.getName(), e);
+			throw new PojoWeavingException("Exception occurred trying to weave compound for class " + valueType, e);
 		}
 	}
 
@@ -82,27 +85,8 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		return CompoundWeavingConfigImpl.withOverrides(parent, local);
 	}
 
-	private WeavingContext createSubContextForProperty(
-			PojoClassIntrospector.Property property,
-			String name,
-			WeavingContext.ExtensionsData newExtensionsData,
-			WeavingContext parentContext
-	) {
-		return parentContext.subContextBuilder(name)
-				.annotations(collectAnnotationsForField(property.field()))
-				.extensionsData(newExtensionsData)
-				.build();
-	}
-
-	private Annotations collectAnnotationsForField(Field field) {
-		Annotations annotations = new Annotations();
-		annotations.addAnnotationsFrom(ElementType.TYPE, field.getType());
-		annotations.addAnnotationsFrom(ElementType.FIELD, field);
-		return annotations;
-	}
-
 	@Nullable
-	private CompoundWeavingConfig createWeavingConfigFromAnnotations(Annotations annotations) {
+	private CompoundWeavingConfig createWeavingConfigFromAnnotations(@NotNull AnnotatedElement annotations) {
 		CompoundWeaving annotation = annotations.getAnnotation(CompoundWeaving.class);
 		if (annotation == null) {
 			return null;
@@ -163,7 +147,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			// TODO
 			throw new UnsupportedOperationException("Final config entries are not supported in weaving yet.");
 		} else {
-			subEntry = subContext.weaveEntry(property.field().getType(), subContext);
+			subEntry = subContext.weaveEntry(ActualType.ofUsedType(property.field().getAnnotatedType()), subContext);
 		}
 
 		return new StaticPojoCompoundConfigEntry.SubEntry(
@@ -191,5 +175,25 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			);
 		}
 		return namingFormat;
+	}
+
+	private WeavingContext createSubContextForProperty(
+			PojoClassIntrospector.Property property,
+			String name,
+			WeavingContext.ExtensionsData newExtensionsData,
+			WeavingContext parentContext
+	) {
+		return parentContext.subContextBuilder(name)
+				.annotations(collectAnnotationsForField(property.field()))
+				.extensionsData(newExtensionsData)
+				.build();
+	}
+
+	private AnnotatedElement collectAnnotationsForField(Field field) {
+		LayeredTypeAnnotations annotations = new LayeredTypeAnnotations();
+		annotations.appendLayerFrom(TypeAnnotationLayer.TYPE_DECLARATION, field.getType());
+		annotations.appendLayerFrom(TypeAnnotationLayer.TYPE_USE, field);
+		annotations.appendLayerFrom(TypeAnnotationLayer.TYPE_USE, field.getAnnotatedType());
+		return annotations;
 	}
 }

@@ -12,21 +12,25 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 public class ConfigEntryAssertions {
 	public static Consumer<Object> isSimpleEntryForClass(Class<?> valueClass) {
 		return object -> assertThat(object)
+				.as("Should be a simple config entry for class  " + valueClass.getName())
 				.asInstanceOf(type(SimpleConfigEntry.class))
 				.extracting(ConfigEntry::valueClass)
 				.isEqualTo(valueClass);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> Consumer<Object> isCompoundEntryForClassWith(
 			Class<T> compoundClass,
 			Consumer<CompoundConfigEntry<T>> condition
 	) {
 		return object -> assertThat(object)
+				.as("Should be a compound config entry for class " + compoundClass.getSimpleName())
 				.asInstanceOf(type(CompoundConfigEntry.class))
-				.satisfies(compoundEntry -> {
-					assertThat(compoundEntry.valueClass()).isEqualTo(compoundClass);
-					condition.accept(compoundEntry);
-				});
+				.as("Compound entry for class " + compoundClass.getSimpleName())
+				.satisfies(
+						compoundEntry -> assertThat(compoundEntry.valueClass())
+								.as("Value class of compound entry should match")
+								.isEqualTo(compoundClass),
+						condition::accept
+				);
 	}
 }

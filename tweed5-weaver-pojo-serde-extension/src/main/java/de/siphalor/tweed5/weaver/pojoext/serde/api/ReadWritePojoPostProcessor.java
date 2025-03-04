@@ -74,9 +74,13 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			return;
 		}
 
-		readWriteExtension.setEntryReaderWriterDefinition(configEntry, createDefinitionFromEntryConfig(entryConfig, context));
+		EntryReaderWriterDefinition definition = createDefinitionFromEntryConfig(entryConfig, context);
+		if (definition != null) {
+			readWriteExtension.setEntryReaderWriterDefinition(configEntry, definition);
+		}
 	}
 
+	@Nullable
 	private EntryReaderWriterDefinition createDefinitionFromEntryConfig(EntryReadWriteConfig entryConfig, WeavingContext context) {
 		String readerSpecText = entryConfig.reader().isEmpty() ? entryConfig.value() : entryConfig.reader();
 		String writerSpecText = entryConfig.writer().isEmpty() ? entryConfig.value() : entryConfig.writer();
@@ -88,6 +92,10 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		} else {
 			readerSpec = specFromText(readerSpecText, context);
 			writerSpec = specFromText(writerSpecText, context);
+		}
+
+		if (readerSpec == null && writerSpec == null) {
+			return null;
 		}
 
 		//noinspection unchecked
@@ -165,10 +173,10 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 	private <T> T loadClassIfExists(Class<T> baseClass, String className, T[] arguments) {
 		try {
 			Class<?> clazz = Class.forName(className);
-			Class<?>[] argClassses = new Class<?>[arguments.length];
-			Arrays.fill(argClassses, baseClass);
+			Class<?>[] argClasses = new Class<?>[arguments.length];
+			Arrays.fill(argClasses, baseClass);
 
-			Constructor<?> constructor = clazz.getConstructor(argClassses);
+			Constructor<?> constructor = clazz.getConstructor(argClasses);
 
 			//noinspection unchecked
 			return (T) constructor.newInstance((Object[]) arguments);

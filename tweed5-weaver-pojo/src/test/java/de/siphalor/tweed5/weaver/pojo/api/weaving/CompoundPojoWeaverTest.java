@@ -7,13 +7,12 @@ import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.namingformat.api.NamingFormat;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfig;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-
-import java.lang.annotation.ElementType;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isSimpleEntryForClass;
@@ -33,28 +32,25 @@ class CompoundPojoWeaverTest {
 			}
 		});
 
-		Annotations annotations = new Annotations();
-		annotations.addAnnotationsFrom(ElementType.TYPE, Compound.class);
-
 		WeavingContext weavingContext = WeavingContext.builder(new TweedPojoWeavingFunction.NonNull() {
 					@Override
-					public @NotNull <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context) {
-						ConfigEntry<T> entry = compoundWeaver.weaveEntry(valueClass, context);
+					public @NotNull <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+						ConfigEntry<T> entry = compoundWeaver.weaveEntry(valueType, context);
 						if (entry != null) {
 							return entry;
 						} else {
 							//noinspection unchecked
 							ConfigEntry<T> configEntry = mock((Class<SimpleConfigEntry<T>>) (Class<?>) SimpleConfigEntry.class);
-							when(configEntry.valueClass()).thenReturn(valueClass);
+							when(configEntry.valueClass()).thenReturn(valueType.declaredType());
 							return configEntry;
 						}
 					}
 				}, mock(ConfigContainer.class))
 				.extensionsData(new ExtensionsDataMock(null))
-				.annotations(annotations)
+				.annotations(Compound.class)
 				.build();
 
-		ConfigEntry<Compound> resultEntry = compoundWeaver.weaveEntry(Compound.class, weavingContext);
+		ConfigEntry<Compound> resultEntry = compoundWeaver.weaveEntry(ActualType.ofClass(Compound.class), weavingContext);
 
 		assertThat(resultEntry).satisfies(isCompoundEntryForClassWith(Compound.class, compoundEntry -> assertThat(compoundEntry.subEntries())
 				.hasEntrySatisfying("an-integer", isSimpleEntryForClass(int.class))

@@ -3,11 +3,13 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 
 @Value
@@ -24,7 +26,7 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 	@NotNull
 	ExtensionsData extensionsData;
 	@NotNull
-	Annotations annotations;
+	AnnotatedElement annotations;
 
 	public static Builder builder(TweedPojoWeavingFunction.NonNull weavingFunction, ConfigContainer<?> configContainer) {
 		return new Builder(null, weavingFunction, configContainer, new String[0]);
@@ -41,8 +43,8 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 	}
 
 	@Override
-	public @NotNull <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context) {
-		return weavingFunction.weaveEntry(valueClass, context);
+	public @NotNull <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+		return weavingFunction.weaveEntry(valueType, context);
 	}
 
 	public interface ExtensionsData extends Patchwork<ExtensionsData> {}
@@ -57,7 +59,7 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 		private final ConfigContainer<?> configContainer;
 		private final String[] path;
 		private ExtensionsData extensionsData;
-		private Annotations annotations;
+		private AnnotatedElement annotations;
 
 		public WeavingContext build() {
 			return new WeavingContext(

@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +13,7 @@ public interface TweedPojoWeavingFunction {
 	 * @return The resulting, sealed config entry or {@code null}, if the weaving function is not applicable to the given parameters.
 	 */
 	@Nullable
-	<T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context);
+	<T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context);
 
 	@FunctionalInterface
 	interface NonNull extends TweedPojoWeavingFunction {
@@ -24,6 +25,6 @@ public interface TweedPojoWeavingFunction {
 		 * @throws RuntimeException when a valid config entry could not be resolved.
 		 */
 		@Override
-		@NotNull <T> ConfigEntry<T> weaveEntry(Class<T> valueClass, WeavingContext context);
+		@NotNull <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context);
 	}
 }
