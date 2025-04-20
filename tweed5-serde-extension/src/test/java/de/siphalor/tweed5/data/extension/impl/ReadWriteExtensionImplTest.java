@@ -4,7 +4,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
-import de.siphalor.tweed5.core.impl.entry.CoherentCollectionConfigEntryImpl;
+import de.siphalor.tweed5.core.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.data.extension.api.EntryReaderWriterDefinition;
@@ -49,7 +49,7 @@ class ReadWriteExtensionImplTest {
 		SimpleConfigEntryImpl<Integer> intEntry = new SimpleConfigEntryImpl<>(Integer.class);
 		rootEntry.addSubEntry("int", intEntry);
 
-		CoherentCollectionConfigEntryImpl<Boolean, List<Boolean>> listEntry = new CoherentCollectionConfigEntryImpl<>((Class<List<Boolean>>) (Class<?>) List.class, ArrayList::new);
+		CollectionConfigEntryImpl<Boolean, List<Boolean>> listEntry = new CollectionConfigEntryImpl<>((Class<List<Boolean>>) (Class<?>) List.class, ArrayList::new);
 		rootEntry.addSubEntry("list", listEntry);
 
 		SimpleConfigEntryImpl<Boolean> booleanEntry = new SimpleConfigEntryImpl<>(Boolean.class);
@@ -60,7 +60,7 @@ class ReadWriteExtensionImplTest {
 		RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterData = (RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>) configContainer.entryDataExtensions().get(EntryReaderWriterDefinition.class);
 		readerWriterData.set(rootEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.compoundReaderWriter()));
 		readerWriterData.set(intEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.intReaderWriter()));
-		readerWriterData.set(listEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.coherentCollectionReaderWriter()));
+		readerWriterData.set(listEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.collectionReaderWriter()));
 		readerWriterData.set(booleanEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.booleanReaderWriter()));
 
 		configContainer.initialize();

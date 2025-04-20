@@ -1,6 +1,6 @@
 package de.siphalor.tweed5.data.extension.impl;
 
-import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
+import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.data.extension.api.*;
@@ -26,7 +26,7 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<Double, ConfigEntry<Double>> DOUBLE_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsDouble, TweedDataVisitor::visitDouble);
 	public static final TweedEntryReaderWriter<String, ConfigEntry<String>> STRING_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsString, TweedDataVisitor::visitString);
 
-	public static final TweedEntryReaderWriter<Collection<Object>, CoherentCollectionConfigEntry<Object, Collection<Object>>> COHERENT_COLLECTION_READER_WRITER = new CoherentCollectionReaderWriter<>();
+	public static final TweedEntryReaderWriter<Collection<Object>, CollectionConfigEntry<Object, Collection<Object>>> COLLECTION_READER_WRITER = new CollectionReaderWriter<>();
 	public static final TweedEntryReaderWriter<Object, CompoundConfigEntry<Object>> COMPOUND_READER_WRITER = new CompoundReaderWriter<>();
 
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
@@ -76,9 +76,9 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CoherentCollectionReaderWriter<T, C extends Collection<T>> implements TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T, C>> {
+	public static class CollectionReaderWriter<T, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
 		@Override
-		public C read(TweedDataReader reader, CoherentCollectionConfigEntry<T, C> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
+		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start");
 			TweedDataToken token = reader.peekToken();
 			if (token.isListEnd()) {
@@ -107,7 +107,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, C value, CoherentCollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, C value, CollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 
 			if (value.isEmpty()) {

@@ -3,11 +3,12 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CoherentCollectionWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCoherentCollectionConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.CollectionWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCollectionConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.coherentcollection.CoherentCollectionWeavingConfig;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.coherentcollection.CoherentCollectionWeavingConfigImpl;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfig;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfigImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,16 +19,16 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.function.IntFunction;
 
-public class CoherentCollectionPojoWeaver implements TweedPojoWeaver {
-	private static final CoherentCollectionWeavingConfig DEFAULT_WEAVING_CONFIG = CoherentCollectionWeavingConfigImpl.builder()
-			.coherentCollectionEntryClass(de.siphalor.tweed5.weaver.pojo.impl.entry.CoherentCollectionConfigEntryImpl.class)
+public class CollectionPojoWeaver implements TweedPojoWeaver {
+	private static final CollectionWeavingConfig DEFAULT_WEAVING_CONFIG = CollectionWeavingConfigImpl.builder()
+			.collectionEntryClass(CollectionConfigEntryImpl.class)
 			.build();
 
-	private RegisteredExtensionData<WeavingContext.ExtensionsData, CoherentCollectionWeavingConfig> weavingConfigAccess;
+	private RegisteredExtensionData<WeavingContext.ExtensionsData, CollectionWeavingConfig> weavingConfigAccess;
 
 	@Override
 	public void setup(SetupContext context) {
-		this.weavingConfigAccess = context.registerWeavingContextExtensionData(CoherentCollectionWeavingConfig.class);
+		this.weavingConfigAccess = context.registerWeavingContextExtensionData(CollectionWeavingConfig.class);
 	}
 
 	@Override
@@ -37,15 +38,15 @@ public class CoherentCollectionPojoWeaver implements TweedPojoWeaver {
 			return null;
 		}
 		try {
-			CoherentCollectionWeavingConfig weavingConfig = getOrCreateWeavingConfig(context);
+			CollectionWeavingConfig weavingConfig = getOrCreateWeavingConfig(context);
 			WeavingContext.ExtensionsData newExtensionsData = context.extensionsData().copy();
 			weavingConfigAccess.set(newExtensionsData, weavingConfig);
 
 			IntFunction<Collection<Object>> constructor = getCollectionConstructor(valueType);
 
 			//noinspection unchecked,rawtypes
-			WeavableCoherentCollectionConfigEntry configEntry = WeavableCoherentCollectionConfigEntry.instantiate(
-					(Class) weavingConfig.coherentCollectionEntryClass(),
+			WeavableCollectionConfigEntry configEntry = WeavableCollectionConfigEntry.instantiate(
+					(Class) weavingConfig.collectionEntryClass(),
 					(Class) valueType.declaredType(),
 					constructor
 			);
@@ -65,31 +66,31 @@ public class CoherentCollectionPojoWeaver implements TweedPojoWeaver {
 		}
 	}
 
-	private CoherentCollectionWeavingConfig getOrCreateWeavingConfig(WeavingContext context) {
-		CoherentCollectionWeavingConfig parent;
-		if (context.extensionsData().isPatchworkPartSet(CoherentCollectionWeavingConfig.class)) {
-			parent = (CoherentCollectionWeavingConfig) context.extensionsData();
+	private CollectionWeavingConfig getOrCreateWeavingConfig(WeavingContext context) {
+		CollectionWeavingConfig parent;
+		if (context.extensionsData().isPatchworkPartSet(CollectionWeavingConfig.class)) {
+			parent = (CollectionWeavingConfig) context.extensionsData();
 		} else {
 			parent = DEFAULT_WEAVING_CONFIG;
 		}
 
-		CoherentCollectionWeavingConfig local = createWeavingConfigFromAnnotations(context.annotations());
+		CollectionWeavingConfig local = createWeavingConfigFromAnnotations(context.annotations());
 		if (local == null) {
 			return parent;
 		}
 
-		return CoherentCollectionWeavingConfigImpl.withOverrides(parent, local);
+		return CollectionWeavingConfigImpl.withOverrides(parent, local);
 	}
 
-	private CoherentCollectionWeavingConfig createWeavingConfigFromAnnotations(@NotNull AnnotatedElement annotations) {
-		CoherentCollectionWeaving annotation = annotations.getAnnotation(CoherentCollectionWeaving.class);
+	private CollectionWeavingConfig createWeavingConfigFromAnnotations(@NotNull AnnotatedElement annotations) {
+		CollectionWeaving annotation = annotations.getAnnotation(CollectionWeaving.class);
 		if (annotation == null) {
 			return null;
 		}
 
-		CoherentCollectionWeavingConfigImpl.CoherentCollectionWeavingConfigImplBuilder builder = CoherentCollectionWeavingConfigImpl.builder();
+		CollectionWeavingConfigImpl.CollectionWeavingConfigImplBuilder builder = CollectionWeavingConfigImpl.builder();
 		if (annotation.entryClass() != null) {
-			builder.coherentCollectionEntryClass(annotation.entryClass());
+			builder.collectionEntryClass(annotation.entryClass());
 		}
 
 		return builder.build();

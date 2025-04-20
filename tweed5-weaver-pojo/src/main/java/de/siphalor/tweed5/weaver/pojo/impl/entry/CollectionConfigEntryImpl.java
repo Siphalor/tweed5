@@ -4,7 +4,7 @@ import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
-import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCoherentCollectionConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCollectionConfigEntry;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -16,11 +16,11 @@ import java.util.function.IntFunction;
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements WeavableCoherentCollectionConfigEntry<E, T> {
+public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements WeavableCollectionConfigEntry<E, T> {
 	private final IntFunction<T> constructor;
 	private ConfigEntry<E> elementEntry;
 
-	public CoherentCollectionConfigEntryImpl(@NotNull Class<T> valueClass, IntFunction<T> constructor) {
+	public CollectionConfigEntryImpl(@NotNull Class<T> valueClass, IntFunction<T> constructor) {
 		super(valueClass);
 		this.constructor = constructor;
 	}

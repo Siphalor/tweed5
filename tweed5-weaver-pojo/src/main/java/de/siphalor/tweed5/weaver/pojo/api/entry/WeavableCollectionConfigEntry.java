@@ -1,6 +1,6 @@
 package de.siphalor.tweed5.weaver.pojo.api.entry;
 
-import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
+import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
 
@@ -15,9 +15,9 @@ import java.util.function.IntFunction;
  * A constructor taking the value {@link Class}
  * and a {@link java.util.function.IntFunction} that allows to instantiate the value class with a single capacity argument.
  */
-public interface WeavableCoherentCollectionConfigEntry<E, T extends Collection<E>>
-		extends CoherentCollectionConfigEntry<E, T> {
-	static <E, T extends Collection<E>, C extends WeavableCoherentCollectionConfigEntry<E, T>> C instantiate(
+public interface WeavableCollectionConfigEntry<E, T extends Collection<E>>
+		extends CollectionConfigEntry<E, T> {
+	static <E, T extends Collection<E>, C extends WeavableCollectionConfigEntry<E, T>> C instantiate(
 			Class<C> weavableClass, Class<T> valueClass, IntFunction<T> constructor
 	) throws PojoWeavingException {
 		try {

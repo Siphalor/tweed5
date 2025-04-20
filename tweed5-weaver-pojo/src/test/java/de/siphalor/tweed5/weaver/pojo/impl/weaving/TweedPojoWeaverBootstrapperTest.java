@@ -5,7 +5,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.CoherentCollectionPojoWeaver;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.CollectionPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.CompoundPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TrivialPojoWeaver;
 import lombok.Data;
@@ -90,7 +90,7 @@ class TweedPojoWeaverBootstrapperTest {
 		boolean somethingElse;
 	}
 
-	@PojoWeaving(weavers = {CompoundPojoWeaver.class, CoherentCollectionPojoWeaver.class, TrivialPojoWeaver.class})
+	@PojoWeaving(weavers = {CompoundPojoWeaver.class, CollectionPojoWeaver.class, TrivialPojoWeaver.class})
 	@CompoundWeaving(namingFormat = "camel_case")
 	@Data
 	public static class CompoundWithList {

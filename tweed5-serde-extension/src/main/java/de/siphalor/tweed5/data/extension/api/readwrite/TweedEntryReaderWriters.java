@@ -1,6 +1,6 @@
 package de.siphalor.tweed5.data.extension.api.readwrite;
 
-import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
+import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
@@ -53,9 +53,9 @@ public class TweedEntryReaderWriters {
 		return new TweedEntryReaderWriterImpls.NullableWriter<>(delegate);
 	}
 
-	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T, C>> coherentCollectionReaderWriter() {
+	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> collectionReaderWriter() {
 		//noinspection unchecked
-		return (TweedEntryReaderWriter<C, CoherentCollectionConfigEntry<T,C>>)(TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COHERENT_COLLECTION_READER_WRITER;
+		return (TweedEntryReaderWriter<C, CollectionConfigEntry<T,C>>)(TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COLLECTION_READER_WRITER;
 	}
 
 	public static <T> TweedEntryReaderWriter<T, CompoundConfigEntry<T>> compoundReaderWriter() {

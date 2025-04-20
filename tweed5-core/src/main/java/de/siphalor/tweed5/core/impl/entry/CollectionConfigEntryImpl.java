@@ -6,11 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.function.IntFunction;
 
-public class CoherentCollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements CoherentCollectionConfigEntry<E, T> {
+public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements CollectionConfigEntry<E, T> {
 	private final IntFunction<T> collectionConstructor;
 	private ConfigEntry<E> elementEntry;
 
-	public CoherentCollectionConfigEntryImpl(Class<T> valueClass, IntFunction<T> collectionConstructor) {
+	public CollectionConfigEntryImpl(Class<T> valueClass, IntFunction<T> collectionConstructor) {
 		super(valueClass);
 		this.collectionConstructor = collectionConstructor;
 	}
