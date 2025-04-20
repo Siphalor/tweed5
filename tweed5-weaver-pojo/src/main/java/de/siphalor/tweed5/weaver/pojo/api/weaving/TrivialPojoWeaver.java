@@ -13,6 +13,8 @@ public class TrivialPojoWeaver implements TweedPojoWeaver {
 
 	@Override
 	public @Nullable <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
-		return new SimpleConfigEntryImpl<>(valueType.declaredType());
+		SimpleConfigEntryImpl<T> entry = new SimpleConfigEntryImpl<>(valueType.declaredType());
+		entry.seal(context.configContainer());
+		return entry;
 	}
 }

@@ -63,6 +63,8 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 				}
 			});
 
+			compoundEntry.seal(context.configContainer());
+
 			return compoundEntry;
 		} catch (Exception e) {
 			throw new PojoWeavingException("Exception occurred trying to weave compound for class " + valueType, e);

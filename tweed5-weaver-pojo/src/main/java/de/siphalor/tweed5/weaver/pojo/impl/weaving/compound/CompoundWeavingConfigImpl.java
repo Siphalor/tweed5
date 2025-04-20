@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 @Builder
 @Value
 public class CompoundWeavingConfigImpl implements CompoundWeavingConfig {
-	private static final CompoundWeavingConfigImpl EMPTY = CompoundWeavingConfigImpl.builder().build();
 
 	NamingFormat compoundSourceNamingFormat;
 	NamingFormat compoundTargetNamingFormat;

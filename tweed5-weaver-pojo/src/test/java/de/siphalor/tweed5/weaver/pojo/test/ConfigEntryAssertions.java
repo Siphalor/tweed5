@@ -1,9 +1,12 @@
 package de.siphalor.tweed5.weaver.pojo.test;
 
+import de.siphalor.tweed5.core.api.entry.CoherentCollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.CoherentCollectionPojoWeaver;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +33,22 @@ public class ConfigEntryAssertions {
 						compoundEntry -> assertThat(compoundEntry.valueClass())
 								.as("Value class of compound entry should match")
 								.isEqualTo(compoundClass),
+						condition::accept
+				);
+	}
+
+	public static Consumer<Object> isCollectionEntryForClass(
+			Class<?> collectionClass,
+			Consumer<CoherentCollectionConfigEntry<?, ?>> condition
+	) {
+		return object -> assertThat(object)
+				.as("Should be a collection config entry for class  " + collectionClass.getName())
+				.asInstanceOf(type(CoherentCollectionConfigEntry.class))
+				.as("Collection entry for class " + collectionClass.getSimpleName())
+				.satisfies(
+						listEntry -> assertThat(listEntry.valueClass())
+								.as("Value class of collection entry should match")
+								.isEqualTo(collectionClass),
 						condition::accept
 				);
 	}

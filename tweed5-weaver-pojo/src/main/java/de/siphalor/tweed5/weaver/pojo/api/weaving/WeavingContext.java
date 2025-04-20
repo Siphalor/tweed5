@@ -36,7 +36,7 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 		return new Builder(null, weavingFunction, configContainer, new String[]{ baseName });
 	}
 
-	public Builder subContextBuilder(String subPathName) {
+	public Builder subContextBuilder(@NotNull String subPathName) {
 		String[] newPath = Arrays.copyOf(path, path.length + 1);
 		newPath[path.length] = subPathName;
 		return new Builder(this, weavingFunction, configContainer, newPath).extensionsData(extensionsData);
