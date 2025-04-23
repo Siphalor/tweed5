@@ -2,7 +2,9 @@ plugins {
     java
     `java-library`
     `maven-publish`
+    alias(libs.plugins.lombok)
     id("de.siphalor.tweed5.local-runtime-only")
+    id("de.siphalor.tweed5.expanded-sources-jar")
 }
 
 group = rootProject.group
@@ -23,12 +25,11 @@ val testAgentClasspath = configurations.resolvable("testAgentClasspath") {
     extendsFrom(testAgent.get())
 }
 
-dependencies {
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
+lombok {
+    version = libs.versions.lombok.get()
+}
 
+dependencies {
     compileOnly(libs.autoservice.annotations)
     annotationProcessor(libs.autoservice.processor)
     testCompileOnly(libs.autoservice.annotations)

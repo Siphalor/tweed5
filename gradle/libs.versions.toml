@@ -9,6 +9,9 @@ lombok = "1.18.34"
 mockito = "5.14.2"
 slf4j = "2.0.16"
 
+[plugins]
+lombok = { id = "io.freefair.lombok", version = "8.13.1" }
+
 [libraries]
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
@@ -19,7 +22,6 @@ jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version
 junit-platform = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
 junit-core = { group = "org.junit.jupiter", name = "junit-jupiter" }
 junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
-lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-rt = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
