@@ -31,6 +31,7 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 		this.weavingConfigAccess = context.registerWeavingContextExtensionData(CollectionWeavingConfig.class);
 	}
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public @Nullable <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		List<ActualType<?>> collectionTypeParams = valueType.getTypesOfSuperArguments(Collection.class);
@@ -44,12 +45,11 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 
 			IntFunction<Collection<Object>> constructor = getCollectionConstructor(valueType);
 
-			//noinspection unchecked,rawtypes
-			WeavableCollectionConfigEntry configEntry = WeavableCollectionConfigEntry.instantiate(
-					(Class) weavingConfig.collectionEntryClass(),
-					(Class) valueType.declaredType(),
-					constructor
-			);
+			WeavableCollectionConfigEntry configEntry = WeavableCollectionConfigEntry.FACTORY
+					.construct(Objects.requireNonNull(weavingConfig.collectionEntryClass()))
+					.typedArg(valueType.declaredType())
+					.typedArg(IntFunction.class, constructor)
+					.finish();
 
 			configEntry.elementEntry(context.weaveEntry(
 					collectionTypeParams.get(0),
@@ -62,7 +62,7 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 
 			return configEntry;
 		} catch (Exception e) {
-			throw new PojoWeavingException("Exception occurred trying to weave collectoin for class " + valueType, e);
+			throw new PojoWeavingException("Exception occurred trying to weave collection for class " + valueType, e);
 		}
 	}
 

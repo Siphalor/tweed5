@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":tweed5-construct"))
     api(project(":tweed5-patchwork"))
     api(project(":tweed5-utils"))
 }

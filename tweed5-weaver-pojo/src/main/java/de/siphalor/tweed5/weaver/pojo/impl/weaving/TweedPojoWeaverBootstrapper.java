@@ -19,8 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,19 +61,19 @@ public class TweedPojoWeaverBootstrapper<T> {
 
 	private static Collection<TweedPojoWeaver> loadWeavers(Collection<Class<? extends TweedPojoWeaver>> weaverClasses) {
 		return weaverClasses.stream()
-				.map(weaverClass -> checkImplementsAndInstantiate(TweedPojoWeaver.class, weaverClass))
+				.map(weaverClass -> TweedPojoWeaver.FACTORY.construct(weaverClass).finish())
 				.collect(Collectors.toList());
 	}
 
 	private static Collection<TweedPojoWeavingPostProcessor> loadPostProcessors(Collection<Class<? extends TweedPojoWeavingPostProcessor>> postProcessorClasses) {
 		return postProcessorClasses.stream()
-				.map(postProcessorClass -> checkImplementsAndInstantiate(TweedPojoWeavingPostProcessor.class, postProcessorClass))
+				.map(postProcessorClass -> TweedPojoWeavingPostProcessor.FACTORY.construct(postProcessorClass).finish())
 				.collect(Collectors.toList());
 	}
 
 	private static ConfigContainer<?> createConfigContainer(Class<? extends ConfigContainer<?>> containerClass) {
 		try {
-			return checkImplementsAndInstantiate(ConfigContainer.class, containerClass);
+			return ConfigContainer.FACTORY.construct(containerClass).finish();
 		} catch (Exception e) {
 			throw new PojoWeavingException("Failed to instantiate config container");
 		}
@@ -141,23 +139,6 @@ public class TweedPojoWeaverBootstrapper<T> {
 			throw new PojoWeavingException("Annotation " + annotationClass.getName() + " must be defined on class " + clazz);
 		} else {
 			return annotation;
-		}
-	}
-
-	private static <T> T checkImplementsAndInstantiate(Class<T> superClass, Class<? extends T> clazz) {
-		if (!superClass.isAssignableFrom(clazz)) {
-			throw new PojoWeavingException("Class " + clazz.getName() + " must extend/implement " + superClass.getName());
-		}
-		return instantiate(clazz);
-	}
-
-	private static <T> T instantiate(Class<T> clazz) {
-		try {
-			Constructor<T> constructor = clazz.getConstructor();
-			return constructor.newInstance();
-		} catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-				 IllegalAccessException e) {
-			throw new PojoWeavingException("Failed to instantiate class " + clazz.getName(), e);
 		}
 	}
 

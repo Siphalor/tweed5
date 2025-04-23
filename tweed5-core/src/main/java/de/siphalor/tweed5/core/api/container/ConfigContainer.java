@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.core.api.container;
 
+import de.siphalor.tweed5.construct.api.TweedConstructFactory;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
@@ -16,6 +17,8 @@ import java.util.Map;
  * @see ConfigContainerSetupPhase
  */
 public interface ConfigContainer<T> {
+	@SuppressWarnings("rawtypes")
+	TweedConstructFactory<ConfigContainer> FACTORY = TweedConstructFactory.builder(ConfigContainer.class).build();
 
 	default void registerExtensions(TweedExtension... extensions) {
 		for (TweedExtension extension : extensions) {

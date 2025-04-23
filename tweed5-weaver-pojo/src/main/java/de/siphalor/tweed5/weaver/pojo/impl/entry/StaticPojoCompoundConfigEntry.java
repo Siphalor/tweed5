@@ -7,17 +7,17 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.invoke.MethodHandle;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> implements WeavableCompoundConfigEntry<T> {
-	private final MethodHandle noArgsConstructor;
+	private final Supplier<T> noArgsConstructor;
 	private final Map<String, SubEntry> subEntries = new LinkedHashMap<>();
 	private final Map<String, ConfigEntry<?>> subConfigEntries = new LinkedHashMap<>();
 
-	public StaticPojoCompoundConfigEntry(@NotNull Class<T> valueClass, @NotNull MethodHandle noArgsConstructor) {
+	public StaticPojoCompoundConfigEntry(@NotNull Class<T> valueClass, @NotNull Supplier<T> noArgsConstructor) {
 		super(valueClass);
 		this.noArgsConstructor = noArgsConstructor;
 	}
@@ -66,8 +66,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	@Override
 	public T instantiateCompoundValue() {
 		try {
-			//noinspection unchecked
-			return (T) noArgsConstructor.invoke();
+			return noArgsConstructor.get();
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to instantiate compound class", e);
 		}

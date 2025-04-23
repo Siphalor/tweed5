@@ -22,6 +22,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * A weaver that weaves classes with the {@link CompoundWeaving} annotation as compound entries.
@@ -112,10 +113,17 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			PojoClassIntrospector classIntrospector,
 			CompoundWeavingConfig weavingConfig
 	) {
-		MethodHandle valueConstructor = classIntrospector.noArgsConstructor();
-		if (valueConstructor == null) {
+		MethodHandle valueConstructorHandle = classIntrospector.noArgsConstructor();
+		if (valueConstructorHandle == null) {
 			throw new PojoWeavingException("Class " + classIntrospector.type().getName() + " must have public no args constructor");
 		}
+		Supplier<?> valueConstructor = () -> {
+			try {
+				return valueConstructorHandle.invoke();
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		};
 
 		//noinspection rawtypes
 		Class<? extends WeavableCompoundConfigEntry> annotationEntryClass = weavingConfig.compoundEntryClass();
@@ -125,11 +133,10 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 						? annotationEntryClass
 						: StaticPojoCompoundConfigEntry.class
 		);
-		return WeavableCompoundConfigEntry.instantiate(
-				weavableEntryClass,
-				(Class<C>) classIntrospector.type(),
-				valueConstructor
-		);
+		return WeavableCompoundConfigEntry.FACTORY.construct(weavableEntryClass)
+				.typedArg(classIntrospector.type())
+				.typedArg(Supplier.class, valueConstructor)
+				.finish();
 	}
 
 	private boolean shouldIncludeCompoundPropertyInWeaving(PojoClassIntrospector.Property property) {
