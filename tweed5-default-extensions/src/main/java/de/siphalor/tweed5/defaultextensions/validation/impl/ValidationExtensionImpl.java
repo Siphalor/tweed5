@@ -35,11 +35,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
 @AutoService(ValidationExtension.class)
+@NullUnmarked
 public class ValidationExtensionImpl implements ReadWriteRelatedExtension, ValidationExtension, CommentModifyingExtension {
 	private static final ValidationResult<?> PRIMITIVE_IS_NULL_RESULT = ValidationResult.withIssues(
 			null,
@@ -47,7 +49,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	);
 	private static final ConfigEntryValidator PRIMITIVE_VALIDATOR = new ConfigEntryValidator() {
 		@Override
-		public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+		public <T> ValidationResult<T> validate(@NotNull ConfigEntry<T> configEntry, @Nullable T value) {
 			if (value == null) {
 				//noinspection unchecked
 				return (ValidationResult<T>) PRIMITIVE_IS_NULL_RESULT;
@@ -56,18 +58,18 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+		public <T> String description(@NotNull ConfigEntry<T> configEntry) {
 			return "Value must not be null.";
 		}
 	};
 	private static final ConfigEntryValidator NOOP_VALIDATOR = new ConfigEntryValidator() {
 		@Override
-		public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+		public <T> ValidationResult<T> validate(@NotNull ConfigEntry<T> configEntry, @Nullable T value) {
 			return ValidationResult.ok(value);
 		}
 
 		@Override
-		public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+		public <T> String description(@NotNull ConfigEntry<T> configEntry) {
 			return "";
 		}
 	};
@@ -166,7 +168,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public <T> ValidationIssues validate(ConfigEntry<T> entry, T value) {
+	public <T> ValidationIssues validate(@NotNull ConfigEntry<T> entry, @Nullable T value) {
 		PathTracking pathTracking = new PathTracking();
 		ValidatingConfigEntryVisitor validatingVisitor = new ValidatingConfigEntryVisitor(pathTracking);
 

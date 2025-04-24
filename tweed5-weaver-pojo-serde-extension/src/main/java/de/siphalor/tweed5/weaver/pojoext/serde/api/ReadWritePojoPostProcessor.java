@@ -7,7 +7,7 @@ import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.impl.SerdePojoReaderWriterSpec;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -80,8 +80,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		}
 	}
 
-	@Nullable
-	private EntryReaderWriterDefinition createDefinitionFromEntryConfig(EntryReadWriteConfig entryConfig, WeavingContext context) {
+	private @Nullable EntryReaderWriterDefinition createDefinitionFromEntryConfig(EntryReadWriteConfig entryConfig, WeavingContext context) {
 		String readerSpecText = entryConfig.reader().isEmpty() ? entryConfig.value() : entryConfig.reader();
 		String writerSpecText = entryConfig.writer().isEmpty() ? entryConfig.value() : entryConfig.writer();
 
@@ -98,14 +97,14 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			return null;
 		}
 
-		//noinspection unchecked
-		TweedEntryReader<?, ?> reader = readerSpec == null
-				? TweedEntryReaderWriterImpls.NOOP_READER_WRITER
-				: resolveReaderWriterFromSpec((Class<TweedEntryReader<?, ?>>)(Object) TweedEntryReader.class, readerFactories, readerSpec, context);
-		//noinspection unchecked
-		TweedEntryWriter<?, ?> writer = writerSpec == null
-				? TweedEntryReaderWriterImpls.NOOP_READER_WRITER
-				: resolveReaderWriterFromSpec((Class<TweedEntryWriter<?, ?>>)(Object) TweedEntryWriter.class, writerFactories, writerSpec, context);
+		//noinspection unchecked,rawtypes
+		TweedEntryReader<?, ?> reader = Optional.ofNullable(readerSpec)
+				.map((spec) -> resolveReaderWriterFromSpec((Class<TweedEntryReader<?, ?>>)(Object) TweedEntryReader.class, readerFactories, spec, context))
+				.orElse(((TweedEntryReader) TweedEntryReaderWriterImpls.NOOP_READER_WRITER));
+		//noinspection unchecked,rawtypes
+		TweedEntryWriter<?, ?> writer = Optional.ofNullable(writerSpec)
+				.map((spec) -> resolveReaderWriterFromSpec((Class<TweedEntryWriter<?, ?>>)(Object) TweedEntryWriter.class, writerFactories, spec, context))
+				.orElse(((TweedEntryWriter) TweedEntryReaderWriterImpls.NOOP_READER_WRITER));
 
 		return new EntryReaderWriterDefinition() {
 			@Override
@@ -120,8 +119,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		};
 	}
 
-	@Nullable
-	private SerdePojoReaderWriterSpec specFromText(String specText, WeavingContext context) {
+	private @Nullable SerdePojoReaderWriterSpec specFromText(String specText, WeavingContext context) {
 		if (specText.isEmpty()) {
 			return null;
 		}
@@ -137,7 +135,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		}
 	}
 
-	private <T> T resolveReaderWriterFromSpec(
+	private <T> @Nullable T resolveReaderWriterFromSpec(
 			Class<T> baseClass,
 			Map<String, TweedReaderWriterProvider.ReaderWriterFactory<T>> factories,
 			SerdePojoReaderWriterSpec spec,
@@ -152,17 +150,18 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		TweedReaderWriterProvider.ReaderWriterFactory<T> factory = factories.get(spec.identifier());
 
 		T instance;
-		if (factory != null) {
-			instance = factory.create(arguments);
-		} else {
-			instance = loadClassIfExists(baseClass, spec.identifier(), arguments);
-		}
-
-		if (instance == null) {
+		try {
+			if (factory != null) {
+				instance = factory.create(arguments);
+			} else {
+				instance = loadClassIfExists(baseClass, spec.identifier(), arguments);
+			}
+		} catch (Exception e) {
 			log.warn(
 					"Failed to resolve reader or writer factory \"{}\" for entry {}, entry will not be included in serde",
 					spec.identifier(),
-					context.path()
+					context.path(),
+					e
 			);
 			return null;
 		}
@@ -170,7 +169,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		return instance;
 	}
 
-	private <T> T loadClassIfExists(Class<T> baseClass, String className, T[] arguments) {
+	private <T> @Nullable T loadClassIfExists(Class<T> baseClass, String className, T[] arguments) {
 		try {
 			Class<?> clazz = Class.forName(className);
 			Class<?>[] argClasses = new Class<?>[arguments.length];

@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.defaultextensions.pather.api;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -9,7 +11,7 @@ public class PathTracking implements PatherData {
 	private final Deque<String> pathParts = new ArrayDeque<>(50);
 	private final Deque<Integer> listIndexes = new ArrayDeque<>(10);
 
-	public Context currentContext() {
+	public @Nullable Context currentContext() {
 		return contextStack.peek();
 	}
 

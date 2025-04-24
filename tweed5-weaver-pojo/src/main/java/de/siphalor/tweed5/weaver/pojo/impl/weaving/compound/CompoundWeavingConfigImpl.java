@@ -4,17 +4,16 @@ import de.siphalor.tweed5.namingformat.api.NamingFormat;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 import lombok.Builder;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 @Value
 public class CompoundWeavingConfigImpl implements CompoundWeavingConfig {
 
-	NamingFormat compoundSourceNamingFormat;
-	NamingFormat compoundTargetNamingFormat;
+	@Nullable NamingFormat compoundSourceNamingFormat;
+	@Nullable NamingFormat compoundTargetNamingFormat;
 	@SuppressWarnings("rawtypes")
-	@Nullable
-	Class<? extends WeavableCompoundConfigEntry> compoundEntryClass;
+	@Nullable Class<? extends WeavableCompoundConfigEntry> compoundEntryClass;
 
 	public static CompoundWeavingConfigImpl withOverrides(CompoundWeavingConfig self, CompoundWeavingConfig overrides) {
 		return CompoundWeavingConfigImpl.builder()

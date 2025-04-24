@@ -5,7 +5,6 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,7 +16,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	private final Map<String, SubEntry> subEntries = new LinkedHashMap<>();
 	private final Map<String, ConfigEntry<?>> subConfigEntries = new LinkedHashMap<>();
 
-	public StaticPojoCompoundConfigEntry(@NotNull Class<T> valueClass, @NotNull Supplier<T> noArgsConstructor) {
+	public StaticPojoCompoundConfigEntry(Class<T> valueClass, Supplier<T> noArgsConstructor) {
 		super(valueClass);
 		this.noArgsConstructor = noArgsConstructor;
 	}
@@ -91,7 +90,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 			subEntries.forEach((key, entry) -> {
 				if (visitor.enterCompoundSubEntry(key)) {
 					try {
-						Object subValue = entry.getter().invokeExact(value);
+						Object subValue = entry.getter().invoke(value);
 						//noinspection unchecked
 						visitor.visitEntry((ConfigEntry<Object>) entry.configEntry(), subValue);
 					} catch (Throwable e) {
@@ -103,11 +102,11 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public @NotNull T deepCopy(@NotNull T value) {
+	public T deepCopy(T value) {
 		T copy = instantiateCompoundValue();
 		for (SubEntry subEntry : subEntries.values()) {
 			try {
-				Object subValue = subEntry.getter().invokeExact(value);
+				Object subValue = subEntry.getter().invoke(value);
 				subEntry.setter().invoke(copy, subValue);
 			} catch (Throwable e) {
 				throw new RuntimeException("Failed to copy value of sub entry \"" + subEntry.name() + "\"", e);

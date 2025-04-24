@@ -6,26 +6,19 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 
 @Value
 public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
-	@Nullable
-	WeavingContext parent;
+	@Nullable WeavingContext parent;
 	@Getter(AccessLevel.NONE)
-	@NotNull
 	TweedPojoWeavingFunction.NonNull weavingFunction;
-	@NotNull
 	ConfigContainer<?> configContainer;
-	@NotNull
 	String[] path;
-	@NotNull
 	ExtensionsData extensionsData;
-	@NotNull
 	AnnotatedElement annotations;
 
 	public static Builder builder(TweedPojoWeavingFunction.NonNull weavingFunction, ConfigContainer<?> configContainer) {
@@ -36,14 +29,14 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 		return new Builder(null, weavingFunction, configContainer, new String[]{ baseName });
 	}
 
-	public Builder subContextBuilder(@NotNull String subPathName) {
+	public Builder subContextBuilder(String subPathName) {
 		String[] newPath = Arrays.copyOf(path, path.length + 1);
 		newPath[path.length] = subPathName;
 		return new Builder(this, weavingFunction, configContainer, newPath).extensionsData(extensionsData);
 	}
 
 	@Override
-	public @NotNull <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+	public <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		return weavingFunction.weaveEntry(valueType, context);
 	}
 

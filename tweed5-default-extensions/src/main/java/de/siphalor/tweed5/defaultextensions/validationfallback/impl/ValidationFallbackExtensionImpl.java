@@ -11,7 +11,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackValue;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +55,7 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 		public ConfigEntryValidator process(ConfigEntryValidator inner) {
 			return new ConfigEntryValidator() {
 				@Override
-				public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+				public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
 					ValidationResult<T> result = inner.validate(configEntry, value);
 					if (!result.hasError()) {
 						return result;
@@ -90,7 +90,7 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 				}
 
 				@Override
-				public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+				public <T> String description(ConfigEntry<T> configEntry) {
 					if (!configEntry.extensionsData().isPatchworkPartSet(ValidationFallbackValue.class)) {
 						return inner.description(configEntry);
 					}

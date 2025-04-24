@@ -1,8 +1,7 @@
 package de.siphalor.tweed5.typeutils.api.type;
 
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -11,7 +10,7 @@ import java.util.*;
 public class LayeredTypeAnnotations implements AnnotatedElement {
 	private static final Annotation[] EMPTY_ANNOTATIONS = new Annotation[0];
 
-	public static LayeredTypeAnnotations of(@NotNull TypeAnnotationLayer layer, @NotNull AnnotatedElement annotatedElement) {
+	public static LayeredTypeAnnotations of(TypeAnnotationLayer layer, AnnotatedElement annotatedElement) {
 		LayeredTypeAnnotations annotations = new LayeredTypeAnnotations();
 		annotations.layers.add(new Layer(layer, annotatedElement));
 		return annotations;
@@ -19,7 +18,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 
 	private final List<Layer> layers = new ArrayList<>();
 
-	public void appendLayerFrom(@NotNull TypeAnnotationLayer layer, @NotNull AnnotatedElement annotatedElement) {
+	public void appendLayerFrom(TypeAnnotationLayer layer, AnnotatedElement annotatedElement) {
 		int i;
 		for (i = 0; i < layers.size(); i++) {
 			if (layer.compareTo(layers.get(i).layer()) > 0) {
@@ -29,7 +28,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 		layers.add(i, new Layer(layer, annotatedElement));
 	}
 
-	public void prependLayerFrom(@NotNull TypeAnnotationLayer layer, @NotNull AnnotatedElement annotatedElement) {
+	public void prependLayerFrom(TypeAnnotationLayer layer, AnnotatedElement annotatedElement) {
 		int i;
 		for (i = 0; i < layers.size(); i++) {
 			if (layer.compareTo(layers.get(i).layer()) >= 0) {
@@ -40,7 +39,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 	}
 
 	@Override
-	public <T extends Annotation> T getAnnotation(@NotNull Class<T> annotationClass) {
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
 		if (layers.isEmpty()) {
 			return null;
 		} else if (layers.size() == 1) {
@@ -62,7 +61,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 	}
 
 	@Override
-	public @NotNull Annotation @NotNull [] getAnnotations() {
+	public Annotation[] getAnnotations() {
 		if (layers.isEmpty()) {
 			return EMPTY_ANNOTATIONS;
 		} else if (layers.size() == 1) {
@@ -87,7 +86,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 	}
 
 	@Override
-	public @NotNull Annotation @NotNull [] getDeclaredAnnotations() {
+	public Annotation[] getDeclaredAnnotations() {
 		if (layers.isEmpty()) {
 			return EMPTY_ANNOTATIONS;
 		} else if (layers.size() == 1) {
@@ -111,7 +110,7 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 		return annotations.values().toArray(new Annotation[0]);
 	}
 
-	private static <T extends Annotation> @Nullable Class<? extends Annotation> getRepeatAlternativeAnnotation(@NotNull Class<T> annotationClass) {
+	private static <T extends Annotation> @Nullable Class<? extends Annotation> getRepeatAlternativeAnnotation(Class<T> annotationClass) {
 		AnnotationRepeatType annotationRepeatType = AnnotationRepeatType.getType(annotationClass);
 		Class<? extends Annotation> altAnnotationClass = null;
 		if (annotationRepeatType instanceof AnnotationRepeatType.Repeatable) {

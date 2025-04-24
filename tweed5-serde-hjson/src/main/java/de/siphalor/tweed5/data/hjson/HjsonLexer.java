@@ -3,7 +3,7 @@ package de.siphalor.tweed5.data.hjson;
 import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -58,8 +58,7 @@ public class HjsonLexer {
 		}
 	}
 
-	@Nullable
-	private HjsonLexerToken.Type getTerminalTokenType(int codePoint) {
+	private HjsonLexerToken.@Nullable Type getTerminalTokenType(int codePoint) {
 		switch (codePoint) {
 			case -1: return HjsonLexerToken.Type.EOF;
 			case '[': return HjsonLexerToken.Type.BRACKET_OPEN;
@@ -78,8 +77,7 @@ public class HjsonLexer {
 		return new HjsonLexerToken(tokenType, position, position, null);
 	}
 
-	@Nullable
-	private HjsonLexerToken tryReadQuotedString(int codePoint) throws TweedDataReadException {
+	private @Nullable HjsonLexerToken tryReadQuotedString(int codePoint) throws TweedDataReadException {
 		if (codePoint == '"') {
 			return readJsonQuotedString('"');
 		} else if (codePoint == '\'') {

@@ -5,13 +5,13 @@ import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 
 public class NonNullValidator implements ConfigEntryValidator {
 	@Override
-	public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+	public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
 		if (value == null) {
 			return ValidationResult.withIssues(null, Collections.singleton(
 					new ValidationIssue("Value must not be null", ValidationIssueLevel.ERROR)
@@ -21,7 +21,7 @@ public class NonNullValidator implements ConfigEntryValidator {
 	}
 
 	@Override
-	public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+	public <T> String description(ConfigEntry<T> configEntry) {
 		return "Must be set (not null).";
 	}
 }

@@ -1,7 +1,5 @@
 package de.siphalor.tweed5.dataapi.api;
 
-import org.jetbrains.annotations.NotNull;
-
 public interface TweedDataVisitor {
 	void visitNull();
 	void visitBoolean(boolean value);
@@ -11,7 +9,7 @@ public interface TweedDataVisitor {
 	void visitLong(long value);
 	void visitFloat(float value);
 	void visitDouble(double value);
-	void visitString(@NotNull String value);
+	void visitString(String value);
 
 	default void visitEmptyList() {
 		visitListStart();

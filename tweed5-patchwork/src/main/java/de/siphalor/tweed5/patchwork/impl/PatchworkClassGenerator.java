@@ -4,6 +4,8 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartIsNullException;
 import de.siphalor.tweed5.patchwork.impl.util.StreamUtils;
 import lombok.*;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
@@ -21,7 +23,8 @@ public class PatchworkClassGenerator {
 	 */
 	private static final int CLASS_VERSION = Opcodes.V1_8;
 	private static final String TARGET_PACKAGE = "de.siphalor.tweed5.core.generated.contextextensions";
-	private static final List<Type> DEFAULT_PATHWORK_INTERFACES = Collections.singletonList(Type.getType(Patchwork.class));
+	private static final List<Type> DEFAULT_PATHWORK_INTERFACES
+			= Collections.singletonList(Type.getType(Patchwork.class));
 
 	private static final String INNER_EQUALS_METHOD_NAME = "patchwork$innerEquals";
 
@@ -458,7 +461,13 @@ public class PatchworkClassGenerator {
 	}
 	// </editor-fold>
 
-	private GeneratorAdapter createMethod(int access, String name, String desc, String signature, String[] exceptions) {
+	private GeneratorAdapter createMethod(
+			int access,
+			String name,
+			String desc,
+			@Nullable String signature,
+			String @Nullable [] exceptions
+	) {
 		MethodVisitor methodVisitor = classWriter.visitMethod(access, name, desc, signature, exceptions);
 		return new GeneratorAdapter(methodVisitor, access, name, desc);
 	}
@@ -502,7 +511,13 @@ public class PatchworkClassGenerator {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+		public MethodVisitor visitMethod(
+				int access,
+				String name,
+				String descriptor,
+				String signature,
+				String[] exceptions
+		) {
 			GeneratorAdapter methodWriter = createMethod(Opcodes.ACC_PUBLIC, name, descriptor, signature, exceptions);
 			return new PartMethodVisitor(api, methodWriter, descriptor, extensionClass);
 		}
@@ -513,7 +528,12 @@ public class PatchworkClassGenerator {
 		private final String methodDescriptor;
 		private final PatchworkClassPart patchworkPart;
 
-		protected PartMethodVisitor(int api, GeneratorAdapter methodWriter, String methodDescriptor, PatchworkClassPart patchworkPart) {
+		protected PartMethodVisitor(
+				int api,
+				GeneratorAdapter methodWriter,
+				String methodDescriptor,
+				PatchworkClassPart patchworkPart
+		) {
 			super(api);
 			this.methodWriter = methodWriter;
 			this.patchworkPart = patchworkPart;
@@ -531,7 +551,12 @@ public class PatchworkClassGenerator {
 
 			methodWriter.visitCode();
 			methodWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			methodWriter.visitFieldInsn(Opcodes.GETFIELD, internalClassName(), patchworkPart.fieldName(), Type.getDescriptor(patchworkPart.partInterface()));
+			methodWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					internalClassName(),
+					patchworkPart.fieldName(),
+					Type.getDescriptor(patchworkPart.partInterface())
+			);
 			methodWriter.dup();
 			methodWriter.ifNull(nullLabel);
 			methodWriter.loadArgs();
@@ -563,11 +588,9 @@ public class PatchworkClassGenerator {
 
 	@Data
 	public static class Config {
-		@NonNull
-		private String classPackage;
-		@NonNull
+		@lombok.NonNull
+		private @NonNull String classPackage;
 		private String classPrefix = "";
-		@NonNull
 		private Collection<Class<?>> markerInterfaces = Collections.emptyList();
 	}
 
@@ -594,12 +617,16 @@ public class PatchworkClassGenerator {
 		transient Collection<Method> signatures;
 
 		private DuplicateMethodsException(Collection<Method> methods) {
-			super("Duplicate method signatures:\n" + methods.stream().map(DuplicateMethodsException::getMethodMessage).collect(Collectors.joining("\n")));
+			super("Duplicate method signatures:\n" + methods.stream()
+					.map(DuplicateMethodsException::getMethodMessage)
+					.collect(Collectors.joining("\n")));
 			this.signatures = methods;
 		}
 
 		private static String getMethodMessage(Method method) {
-			StringBuilder stringBuilder = new StringBuilder("\t- " + method.getDeclaringClass().getCanonicalName() + "#(");
+			StringBuilder stringBuilder = new StringBuilder("\t- "
+					+ method.getDeclaringClass().getCanonicalName()
+					+ "#(");
 			for (Class<?> parameterType : method.getParameterTypes()) {
 				stringBuilder.append(parameterType.getCanonicalName());
 				stringBuilder.append(", ");

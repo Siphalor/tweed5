@@ -35,7 +35,10 @@ dependencies {
     testCompileOnly(libs.autoservice.annotations)
     testAnnotationProcessor(libs.autoservice.processor)
 
-    implementation(libs.jetbrains.annotations)
+    compileOnly(libs.jetbrains.annotations)
+    testImplementation(libs.jetbrains.annotations)
+    compileOnly(libs.jspecify.annotations)
+    testImplementation(libs.jspecify.annotations)
 
     implementation(libs.slf4j.api)
     "localRuntimeOnly"(libs.slf4j.rt)

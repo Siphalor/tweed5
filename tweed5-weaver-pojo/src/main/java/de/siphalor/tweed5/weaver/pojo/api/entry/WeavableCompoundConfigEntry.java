@@ -5,7 +5,7 @@ import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.util.function.Supplier;
@@ -28,9 +28,9 @@ public interface WeavableCompoundConfigEntry<T> extends CompoundConfigEntry<T> {
 	@Value
 	@RequiredArgsConstructor
 	class SubEntry {
-		@NotNull String name;
-		@NotNull ConfigEntry<?> configEntry;
-		@NotNull MethodHandle getter;
-		@NotNull MethodHandle setter;
+		String name;
+		ConfigEntry<?> configEntry;
+		@Nullable MethodHandle getter;
+		@Nullable MethodHandle setter;
 	}
 }

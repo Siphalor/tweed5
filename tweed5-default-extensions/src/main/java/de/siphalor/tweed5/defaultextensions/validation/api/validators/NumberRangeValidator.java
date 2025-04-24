@@ -7,23 +7,20 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 
 @Value
 @AllArgsConstructor
-public class NumberRangeValidator<N extends Number> implements ConfigEntryValidator {
-	@NotNull
+public class NumberRangeValidator<N extends @NonNull Number> implements ConfigEntryValidator {
 	Class<N> numberClass;
-	@Nullable
-	N minimum;
-	@Nullable
-	N maximum;
+	@Nullable N minimum;
+	@Nullable N maximum;
 
 	@Override
-	public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+	public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
 		if (!(value instanceof Number)) {
 			return ValidationResult.withIssues(value, Collections.singleton(
 					new ValidationIssue("Value must be numeric", ValidationIssueLevel.ERROR)
@@ -56,7 +53,7 @@ public class NumberRangeValidator<N extends Number> implements ConfigEntryValida
 		return ValidationResult.ok(value);
 	}
 
-	private int compare(@NotNull Number a, @NotNull Number b) {
+	private int compare(Number a, Number b) {
 		if (numberClass == Byte.class) {
 			return Byte.compare(a.byteValue(), b.byteValue());
 		} else if (numberClass == Short.class) {
@@ -73,7 +70,7 @@ public class NumberRangeValidator<N extends Number> implements ConfigEntryValida
 	}
 
 	@Override
-	public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+	public <T> String description(ConfigEntry<T> configEntry) {
 		if (minimum == null) {
 			if (maximum == null) {
 				return "";

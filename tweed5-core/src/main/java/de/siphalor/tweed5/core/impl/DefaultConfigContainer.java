@@ -12,11 +12,13 @@ import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
 import de.siphalor.tweed5.utils.api.collection.InheritanceMap;
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.util.*;
 
+@NullUnmarked
 public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	@Getter
 	private ConfigContainerSetupPhase setupPhase = ConfigContainerSetupPhase.EXTENSIONS_SETUP;

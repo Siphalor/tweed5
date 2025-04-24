@@ -3,7 +3,7 @@ package de.siphalor.tweed5.data.hjson;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @ApiStatus.Internal
 @Value
@@ -12,12 +12,10 @@ public class HjsonLexerToken {
 	HjsonReadPosition begin;
 	HjsonReadPosition end;
 	@EqualsAndHashCode.Exclude
-	@Nullable
-	CharSequence content;
+	@Nullable CharSequence content;
 
 	@EqualsAndHashCode.Include
-	@Nullable
-	public String contentString() {
+	public @Nullable String contentString() {
 		return content == null ? null : content.toString();
 	}
 

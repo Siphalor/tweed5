@@ -57,13 +57,13 @@ class WeaverPojoSerdeExtensionTest {
 	public static class TestWriterProvider implements TweedReaderWriterProvider {
 		@Override
 		public void provideReaderWriters(ProviderContext context) {
-			context.registerWriterFactory("tweed5.test.dummy", delegates -> new TweedEntryWriter<Object, ConfigEntry<Object>>() {
+			context.registerWriterFactory("tweed5.test.dummy", delegates -> new TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>() {
 				@Override
 				public void write(
-						TweedDataVisitor writer,
+						@NonNull TweedDataVisitor writer,
 						Object value,
 						ConfigEntry<Object> entry,
-						TweedWriteContext context
+						@NonNull TweedWriteContext context
 				) throws TweedDataWriteException {
 					writer.visitString("my cool custom writer");
 				}

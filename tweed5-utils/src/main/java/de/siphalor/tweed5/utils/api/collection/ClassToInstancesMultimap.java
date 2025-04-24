@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.utils.api.collection;
 
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -33,7 +33,7 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public boolean contains(@NotNull Object o) {
+	public boolean contains(Object o) {
 		return delegate.getOrDefault(o.getClass(), Collections.emptyList()).contains(o);
 	}
 
@@ -42,10 +42,10 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public @NotNull Iterator<T> iterator() {
+	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			private final Iterator<Map.Entry<Class<? extends T>, Collection<T>>> classIterator = delegate.entrySet().iterator();
-			private Iterator<? extends T> listIterator;
+			private @Nullable Iterator<? extends T> listIterator;
 			private boolean keptElement;
 			private boolean keptAnyElementInList;
 
@@ -82,14 +82,12 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	@NotNull
-	public Object @NotNull [] toArray() {
+	public Object[] toArray() {
 		return delegate.values().stream().flatMap(Collection::stream).toArray();
 	}
 
 	@Override
-	@NotNull
-	public <S> S @NotNull [] toArray(@NotNull S @NotNull [] array) {
+	public <S> S[] toArray(S[] array) {
 		Class<?> clazz = array.getClass().getComponentType();
 		return delegate.values().stream()
 				.flatMap(Collection::stream)
@@ -97,12 +95,12 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public boolean add(@NotNull T value) {
+	public boolean add(T value) {
 		return delegate.computeIfAbsent(((Class<T>) value.getClass()), clazz -> collectionSupplier.get()).add(value);
 	}
 
 	@Override
-	public boolean remove(@NotNull Object value) {
+	public boolean remove(Object value) {
 		Collection<T> values = delegate.get(value.getClass());
 		if (values == null) {
 			return false;
@@ -116,19 +114,17 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 		return false;
 	}
 
-	@NotNull
 	public <U extends T> Collection<U> getAll(Class<U> clazz) {
 		return (Collection<U>) Collections.unmodifiableCollection(delegate.getOrDefault(clazz, Collections.emptyList()));
 	}
 
-	@NotNull
 	public Collection<T> removeAll(Class<? extends T> clazz) {
 		Collection<T> removed = delegate.remove(clazz);
 		return removed == null ? Collections.emptyList() : Collections.unmodifiableCollection(removed);
 	}
 
 	@Override
-	public boolean containsAll(@NotNull Collection<?> values) {
+	public boolean containsAll(Collection<?> values) {
 		for (Object value : values) {
 			if (!contains(value)) {
 				return false;
@@ -138,7 +134,7 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public boolean addAll(@NotNull Collection<? extends T> values) {
+	public boolean addAll(Collection<? extends T> values) {
 		boolean changed = false;
 		for (T value : values) {
 			changed = add(value) || changed;
@@ -147,7 +143,7 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public boolean removeAll(@NotNull Collection<?> values) {
+	public boolean removeAll(Collection<?> values) {
 		boolean changed = false;
 		for (Object value : values) {
 			changed = remove(value) || changed;
@@ -156,7 +152,7 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 	}
 
 	@Override
-	public boolean retainAll(@NotNull Collection<?> values) {
+	public boolean retainAll(Collection<?> values) {
 		Map<Class<?>, ? extends List<?>> valuesByClass = values.stream()
 				.collect(Collectors.groupingBy(Object::getClass));
 		delegate.putAll((Map<Class<? extends T>, List<T>>)(Object) valuesByClass);
@@ -178,37 +174,37 @@ public class ClassToInstancesMultimap<T> implements Collection<T> {
 		}
 
 		@Override
-		public @NotNull Iterator<T> iterator() {
+		public Iterator<T> iterator() {
 			return delegate.values().stream().flatMap(Collection::stream).iterator();
 		}
 
 		@Override
-		public boolean add(@NotNull T value) {
+		public boolean add(T value) {
 			throw createUnsupportedOperationException();
 		}
 
 		@Override
-		public boolean remove(@NotNull Object value) {
+		public boolean remove(Object value) {
 			throw createUnsupportedOperationException();
 		}
 
 		@Override
-		public @NotNull Collection<T> removeAll(Class<? extends T> clazz) {
+		public Collection<T> removeAll(Class<? extends T> clazz) {
 			throw createUnsupportedOperationException();
 		}
 
 		@Override
-		public boolean addAll(@NotNull Collection<? extends T> values) {
+		public boolean addAll(Collection<? extends T> values) {
 			throw createUnsupportedOperationException();
 		}
 
 		@Override
-		public boolean removeAll(@NotNull Collection<?> values) {
+		public boolean removeAll(Collection<?> values) {
 			throw createUnsupportedOperationException();
 		}
 
 		@Override
-		public boolean retainAll(@NotNull Collection<?> values) {
+		public boolean retainAll(Collection<?> values) {
 			throw createUnsupportedOperationException();
 		}
 

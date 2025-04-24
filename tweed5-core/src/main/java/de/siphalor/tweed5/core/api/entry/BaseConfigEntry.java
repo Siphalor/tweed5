@@ -4,13 +4,11 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 @Getter
 public abstract class BaseConfigEntry<T> implements ConfigEntry<T> {
 
-	@NotNull
 	private final Class<T> valueClass;
 	private ConfigContainer<?> container;
 	private EntryExtensionsData extensionsData;

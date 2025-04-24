@@ -4,7 +4,6 @@ import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
-import org.jetbrains.annotations.NotNull;
 
 public class SimpleConfigEntryImpl<T> extends BaseConfigEntry<T> implements SimpleConfigEntry<T> {
 	public SimpleConfigEntryImpl(Class<T> valueClass) {
@@ -22,8 +21,7 @@ public class SimpleConfigEntryImpl<T> extends BaseConfigEntry<T> implements Simp
 	}
 
 	@Override
-	@NotNull
-	public T deepCopy(@NotNull T value) {
+	public T deepCopy(T value) {
 		return value;
 	}
 }

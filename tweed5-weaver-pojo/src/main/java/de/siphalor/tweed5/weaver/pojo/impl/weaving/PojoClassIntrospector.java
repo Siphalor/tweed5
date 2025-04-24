@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -23,7 +23,7 @@ public class PojoClassIntrospector {
 	private final Class<?> clazz;
 	private final MethodHandles.Lookup lookup = MethodHandles.publicLookup();
 
-	private Map<String, Property> properties;
+	private @Nullable Map<String, Property> properties;
 
 	public static PojoClassIntrospector forClass(Class<?> clazz) {
 		if ((clazz.getModifiers() & Modifier.PUBLIC) == 0) {

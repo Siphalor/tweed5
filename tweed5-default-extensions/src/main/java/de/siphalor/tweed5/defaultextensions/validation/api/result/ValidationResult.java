@@ -3,7 +3,6 @@ package de.siphalor.tweed5.defaultextensions.validation.api.result;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +13,6 @@ import java.util.function.Function;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ValidationResult<T> {
 	private final T value;
-	@NotNull
 	private final Collection<ValidationIssue> issues;
 	private final boolean hasError;
 
@@ -22,7 +20,7 @@ public class ValidationResult<T> {
 		return new ValidationResult<>(value, Collections.emptyList(), false);
 	}
 
-	public static <T> ValidationResult<T> withIssues(T value, @NotNull Collection<ValidationIssue> issues) {
+	public static <T> ValidationResult<T> withIssues(T value, Collection<ValidationIssue> issues) {
 		return new ValidationResult<>(value, issues, issuesContainError(issues));
 	}
 

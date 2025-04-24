@@ -15,10 +15,13 @@ import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataReader;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.val;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 @AutoService(PatherExtension.class)
+@NullUnmarked
 public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
 	private static final String PATHER_ID = "pather";
 
@@ -39,7 +42,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 		entryWriterMiddleware = createEntryWriterMiddleware();
 	}
 
-	private @NotNull Middleware<TweedEntryReader<?, ?>> createEntryReaderMiddleware() {
+	private @NonNull Middleware<TweedEntryReader<?, ?>> createEntryReaderMiddleware() {
 		return new Middleware<TweedEntryReader<?, ?>>() {
 			@Override
 			public String id() {
@@ -49,7 +52,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 			@Override
 			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
 				//noinspection unchecked
-				TweedEntryReader<Object, ConfigEntry<Object>> castedInner = (TweedEntryReader<Object, ConfigEntry<Object>>) inner;
+				val castedInner = (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
 					if (context.extensionsData().isPatchworkPartSet(PathTracking.class)) {
@@ -74,7 +77,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 			@Override
 			public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
 				//noinspection unchecked
-				TweedEntryWriter<Object, ConfigEntry<Object>> castedInner = (TweedEntryWriter<Object, ConfigEntry<Object>>) inner;
+				val castedInner = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) -> {
 					if (context.extensionsData().isPatchworkPartSet(PathTracking.class)) {

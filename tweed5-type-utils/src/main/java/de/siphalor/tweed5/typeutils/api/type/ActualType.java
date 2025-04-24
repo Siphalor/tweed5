@@ -3,8 +3,7 @@ package de.siphalor.tweed5.typeutils.api.type;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -27,13 +26,11 @@ public class ActualType<T> implements AnnotatedElement {
 	 * The {@link AnnotatedType} that represents the type that is actually in use (without parameters).
 	 */
 	@Getter(AccessLevel.PROTECTED)
-	@Nullable
-	private final AnnotatedType usedType;
+	private final @Nullable AnnotatedType usedType;
 	/**
 	 * The {@link AnnotatedParameterizedType} that represents the type that is actually in use with parameters.
 	 */
-	@Nullable
-	private final AnnotatedParameterizedType usedParameterizedType;
+	private final @Nullable AnnotatedParameterizedType usedParameterizedType;
 
 	/**
 	 * A representation of the layered annotations of this type.
@@ -45,7 +42,7 @@ public class ActualType<T> implements AnnotatedElement {
 	 * Internal cache for the resolved actual type parameters.
 	 */
 	@Nullable
-	private List<@NotNull ActualType<?>> resolvedParameters;
+	private List<ActualType<?>> resolvedParameters;
 
 	/**
 	 * Creates a basic actual type from just a declared class.
@@ -64,7 +61,7 @@ public class ActualType<T> implements AnnotatedElement {
 	 *
 	 * @throws UnsupportedOperationException when the given annotated type is not yet supported by this class
 	 */
-	public static ActualType<?> ofUsedType(@NotNull AnnotatedType annotatedType) throws UnsupportedOperationException {
+	public static ActualType<?> ofUsedType(AnnotatedType annotatedType) throws UnsupportedOperationException {
 		Class<?> clazz = getDeclaredClassForUsedType(annotatedType);
 
 		LayeredTypeAnnotations layeredTypeAnnotations = new LayeredTypeAnnotations();
@@ -83,7 +80,7 @@ public class ActualType<T> implements AnnotatedElement {
 	 *
 	 * @throws UnsupportedOperationException if the given parameter is not supported yet
 	 */
-	private static @NotNull Class<?> getDeclaredClassForUsedType(@NotNull AnnotatedType annotatedType) throws UnsupportedOperationException {
+	private static Class<?> getDeclaredClassForUsedType(AnnotatedType annotatedType) throws UnsupportedOperationException {
 		if (annotatedType.getType() instanceof Class) {
 			return (Class<?>) annotatedType.getType();
 		} else if (annotatedType.getType() instanceof ParameterizedType) {
@@ -102,24 +99,24 @@ public class ActualType<T> implements AnnotatedElement {
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(@NotNull Class<A> annotationClass) {
+	public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
 		return layeredTypeAnnotations.getAnnotation(annotationClass);
 	}
 
 	@Override
-	public @NotNull Annotation @NotNull [] getAnnotations() {
+	public Annotation[] getAnnotations() {
 		return layeredTypeAnnotations.getAnnotations();
 	}
 
 	@Override
-	public @NotNull Annotation @NotNull [] getDeclaredAnnotations() {
+	public Annotation[] getDeclaredAnnotations() {
 		return layeredTypeAnnotations.getDeclaredAnnotations();
 	}
 
 	/**
 	 * Resolves the type parameters of this type as {@link ActualType}s.
 	 */
-	public @NotNull List<@NotNull ActualType<?>> parameters() {
+	public List<ActualType<?>> parameters() {
 		if (resolvedParameters != null) {
 			return resolvedParameters;
 		} else if (usedParameterizedType == null) {
@@ -145,7 +142,7 @@ public class ActualType<T> implements AnnotatedElement {
 	 * @param targetClass the class to check
 	 * @return the list of type parameters if the given class is assignable from this type or {@code null} if not
 	 */
-	public @Nullable List<ActualType<?>> getTypesOfSuperArguments(@NotNull Class<?> targetClass) {
+	public @Nullable List<ActualType<?>> getTypesOfSuperArguments(Class<?> targetClass) {
 		if (targetClass.getTypeParameters().length == 0) {
 			if (targetClass.isAssignableFrom(declaredType)) {
 				return Collections.emptyList();
@@ -170,7 +167,7 @@ public class ActualType<T> implements AnnotatedElement {
 			return currentType;
 		}
 
-		List<@NotNull ActualType<?>> currentParameters = currentType.parameters();
+		List<ActualType<?>> currentParameters = currentType.parameters();
 
 		Map<String, AnnotatedType> paramMap;
 		if (currentParameters.isEmpty()) {
@@ -178,6 +175,8 @@ public class ActualType<T> implements AnnotatedElement {
 		} else {
 			paramMap = new HashMap<>();
 			for (int i = 0; i < currentParameters.size(); i++) {
+				// used types are always known in resolved parameters
+				//noinspection DataFlowIssue
 				paramMap.put(currentClass.getTypeParameters()[i].getName(), currentParameters.get(i).usedType());
 			}
 		}
@@ -185,7 +184,7 @@ public class ActualType<T> implements AnnotatedElement {
 		if (targetClass.isInterface()) {
 			for (AnnotatedType annotatedInterface : currentClass.getAnnotatedInterfaces()) {
 				ActualType<?> interfaceType = resolveTypeWithParameters(annotatedInterface, paramMap);
-				@Nullable ActualType<?> resultType = getViewOnSuperType(targetClass, interfaceType);
+				ActualType<?> resultType = getViewOnSuperType(targetClass, interfaceType);
 				if (resultType != null) {
 					return resultType;
 				}
@@ -193,7 +192,7 @@ public class ActualType<T> implements AnnotatedElement {
 		}
 		if (currentClass != Object.class && !currentClass.isInterface()) {
 			ActualType<?> superType = resolveTypeWithParameters(currentClass.getAnnotatedSuperclass(), paramMap);
-			@Nullable ActualType<?> resultType = getViewOnSuperType(targetClass, superType);
+			ActualType<?> resultType = getViewOnSuperType(targetClass, superType);
 			if (resultType != null) {
 				return resultType;
 			}
@@ -243,10 +242,10 @@ public class ActualType<T> implements AnnotatedElement {
 			appendAnnotationsToString(sb, usedType.getAnnotations());
 		}
 		sb.append(declaredType.getName());
-		List<@NotNull ActualType<?>> parameters = parameters();
+		List<ActualType<?>> parameters = parameters();
 		if (!parameters.isEmpty()) {
 			sb.append("<");
-			for (@NotNull ActualType<?> parameter : parameters) {
+			for (ActualType<?> parameter : parameters) {
 				sb.append(parameter);
 				sb.append(", ");
 			}
@@ -256,8 +255,8 @@ public class ActualType<T> implements AnnotatedElement {
 		return sb.toString();
 	}
 
-	private void appendAnnotationsToString(@NotNull StringBuilder sb, @NotNull Annotation[] annotations) {
-		for (@NotNull Annotation annotation : annotations) {
+	private void appendAnnotationsToString(StringBuilder sb, Annotation[] annotations) {
+		for (Annotation annotation : annotations) {
 			sb.append(annotation);
 			sb.append(' ');
 		}

@@ -2,7 +2,6 @@ package de.siphalor.tweed5.defaultextensions.pather.api;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public class PathTrackingDataVisitor implements TweedDataVisitor {
@@ -58,7 +57,7 @@ public class PathTrackingDataVisitor implements TweedDataVisitor {
 	}
 
 	@Override
-	public void visitString(@NotNull String value) {
+	public void visitString(String value) {
 		delegate.visitString(value);
 		valueVisited();
 	}

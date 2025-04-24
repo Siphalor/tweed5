@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.defaultextensions.validationfallback.api;
 
+import org.jspecify.annotations.Nullable;
+
 public interface ValidationFallbackValue {
-	Object validationFallbackValue();
+	@Nullable Object validationFallbackValue();
 }

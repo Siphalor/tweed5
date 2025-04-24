@@ -8,6 +8,7 @@ import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 
@@ -55,11 +56,11 @@ public class TweedEntryReaderWriters {
 
 	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> collectionReaderWriter() {
 		//noinspection unchecked
-		return (TweedEntryReaderWriter<C, CollectionConfigEntry<T,C>>)(TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COLLECTION_READER_WRITER;
+		return (TweedEntryReaderWriter<C, @NonNull CollectionConfigEntry<T, C>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COLLECTION_READER_WRITER;
 	}
 
 	public static <T> TweedEntryReaderWriter<T, CompoundConfigEntry<T>> compoundReaderWriter() {
 		//noinspection unchecked
-		return (TweedEntryReaderWriter<T, CompoundConfigEntry<T>>)(TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COMPOUND_READER_WRITER;
+		return (TweedEntryReaderWriter<T, @NonNull CompoundConfigEntry<T>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COMPOUND_READER_WRITER;
 	}
 }

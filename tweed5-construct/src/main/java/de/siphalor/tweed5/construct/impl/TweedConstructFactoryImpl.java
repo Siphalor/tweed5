@@ -4,8 +4,7 @@ import de.siphalor.tweed5.construct.api.ConstructParameter;
 import de.siphalor.tweed5.construct.api.TweedConstruct;
 import de.siphalor.tweed5.construct.api.TweedConstructFactory;
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -37,11 +36,11 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 	}
 
 	@Override
-	public <C extends T> TweedConstructFactory.@NotNull Construct<C> construct(@NotNull Class<C> subClass) {
+	public <C extends T> TweedConstructFactory.Construct<C> construct(Class<C> subClass) {
 		return new Construct<>(getConstructTarget(subClass));
 	}
 
-	private <C extends T> @NotNull ConstructTarget<C> getConstructTarget(Class<C> type) {
+	private <C extends T> ConstructTarget<C> getConstructTarget(Class<C> type) {
 		ConstructTarget<C> cachedConstructTarget = readConstructTargetFromCache(type);
 		if (cachedConstructTarget != null) {
 			return cachedConstructTarget;
@@ -164,7 +163,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		return new ConstructTarget<>(type, argOrder, createInvokerFromCandidate(type, executable));
 	}
 
-	private <C> Function<Object[], C> createInvokerFromCandidate(Class<C> type, Executable executable) {
+	private <C> Function<@Nullable Object[], C> createInvokerFromCandidate(Class<C> type, Executable executable) {
 		MethodHandle handle;
 		try {
 			if (executable instanceof Method) {
@@ -263,7 +262,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		private final Map<String, Class<?>> namedArgs = new HashMap<>();
 
 		@Override
-		public <A> TweedConstructFactory.@NotNull FactoryBuilder<T> typedArg(@NotNull Class<A> argType) {
+		public <A> TweedConstructFactory.FactoryBuilder<T> typedArg(Class<A> argType) {
 			argType = boxClass(argType);
 			if (typedArgs.contains(argType)) {
 				throw new IllegalArgumentException("Argument for type " + argType + " has already been registered");
@@ -273,10 +272,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		}
 
 		@Override
-		public <A> TweedConstructFactory.@NotNull FactoryBuilder<T> namedArg(
-				@NotNull String name,
-				@NotNull Class<A> argType
-		) {
+		public <A> TweedConstructFactory.FactoryBuilder<T> namedArg(String name, Class<A> argType) {
 			Class<?> existingArgType = namedArgs.get(name);
 			if (existingArgType != null) {
 				throw new IllegalArgumentException(
@@ -290,7 +286,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		}
 
 		@Override
-		public @NotNull TweedConstructFactory<T> build() {
+		public TweedConstructFactory<T> build() {
 			return new TweedConstructFactoryImpl<>(
 					constructBaseClass,
 					typedArgs,
@@ -302,18 +298,18 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 	@RequiredArgsConstructor
 	private class Construct<C> implements TweedConstructFactory.Construct<C> {
 		private final ConstructTarget<C> target;
-		private final Map<Class<?>, Object> typedArgValues = new HashMap<>();
-		private final Map<String, Object> namedArgValues = new HashMap<>();
+		private final Map<Class<?>, @Nullable Object> typedArgValues = new HashMap<>();
+		private final Map<String, @Nullable Object> namedArgValues = new HashMap<>();
 
 		@Override
-		public <A> TweedConstructFactory.@NotNull Construct<C> typedArg(@NotNull A value) {
+		public <A> TweedConstructFactory.Construct<C> typedArg(A value) {
 			requireTypedArgExists(value.getClass(), value);
 			typedArgValues.put(value.getClass(), value);
 			return this;
 		}
 
 		@Override
-		public <A> TweedConstructFactory.@NotNull Construct<C> typedArg(@NotNull Class<? super A> argType, @Nullable A value) {
+		public <A> TweedConstructFactory.Construct<C> typedArg(Class<? super A> argType, @Nullable A value) {
 			argType = boxClass(argType);
 			if (value != null && !argType.isAssignableFrom(value.getClass())) {
 				throw new IllegalArgumentException(
@@ -327,7 +323,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 			return this;
 		}
 
-		private <A> void requireTypedArgExists(@NotNull Class<?> type, @Nullable A value) {
+		private <A> void requireTypedArgExists(Class<?> type, @Nullable A value) {
 			if (!typedArgs.contains(type)) {
 				throw new IllegalArgumentException(
 						"Typed argument for type " + type.getName() + " does not exist, value: " + value
@@ -336,7 +332,7 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		}
 
 		@Override
-		public <A> TweedConstructFactory.@NotNull Construct<C> namedArg(@NotNull String name, @Nullable A value) {
+		public <A> TweedConstructFactory.Construct<C> namedArg(String name, @Nullable A value) {
 			Class<?> argType = namedArgs.get(name);
 			if (argType == null) {
 				throw new IllegalArgumentException(
@@ -353,10 +349,10 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 		}
 
 		@Override
-		public @NotNull C finish() {
+		public C finish() {
 			checkAllArgsFilled();
 
-			Object[] argValues = new Object[target.argOrder.length];
+			@Nullable Object[] argValues = new Object[target.argOrder.length];
 			for (int i = 0; i < target.argOrder.length; i++) {
 				Object arg = target.argOrder[i];
 				if (arg instanceof Class<?>) {
@@ -459,6 +455,6 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 	private static class ConstructTarget<C> {
 		Class<?> type;
 		Object[] argOrder;
-		Function<Object[], C> invoker;
+		Function<@Nullable Object[], C> invoker;
 	}
 }

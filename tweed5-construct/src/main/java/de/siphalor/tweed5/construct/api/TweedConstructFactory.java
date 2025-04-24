@@ -3,8 +3,7 @@ package de.siphalor.tweed5.construct.api;
 import de.siphalor.tweed5.construct.impl.TweedConstructFactoryImpl;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A factory that allows to construct instances of subclasses of a specific type.
@@ -20,7 +19,7 @@ public interface TweedConstructFactory<T> {
 	/**
 	 * Starts building a new factory for the given base class.
 	 */
-	static <T> TweedConstructFactory.@NotNull FactoryBuilder<T> builder(Class<T> baseClass) {
+	static <T> TweedConstructFactory.FactoryBuilder<T> builder(Class<T> baseClass) {
 		return TweedConstructFactoryImpl.builder(baseClass);
 	}
 
@@ -30,7 +29,7 @@ public interface TweedConstructFactory<T> {
 	 */
 	@CheckReturnValue
 	@Contract(pure = true)
-	<C extends T> @NotNull Construct<C> construct(@NotNull Class<C> subClass);
+	<C extends T> Construct<C> construct(Class<C> subClass);
 
 	/**
 	 * Builder for the factory.
@@ -40,19 +39,19 @@ public interface TweedConstructFactory<T> {
 		 * Defines a new typed argument of the given type.
 		 */
 		@Contract(mutates = "this", value = "_ -> this")
-		<A> @NotNull FactoryBuilder<T> typedArg(@NotNull Class<A> argType);
+		<A> FactoryBuilder<T> typedArg(Class<A> argType);
 
 		/**
 		 * Defines a new named argument with the given name and value type.
 		 */
 		@Contract(mutates = "this", value = "_, _ -> this")
-		<A> @NotNull FactoryBuilder<T> namedArg(@NotNull String name, @NotNull Class<A> argType);
+		<A> FactoryBuilder<T> namedArg(String name, Class<A> argType);
 
 		/**
 		 * Builds the factory.
 		 */
 		@Contract(pure = true)
-		@NotNull TweedConstructFactory<T> build();
+		TweedConstructFactory<T> build();
 	}
 
 	/**
@@ -71,7 +70,7 @@ public interface TweedConstructFactory<T> {
 		 * @see #namedArg(String, Object)
 		 */
 		@Contract(mutates = "this", value = "_ -> this")
-		<A> @NotNull Construct<C> typedArg(@NotNull A value);
+		<A> Construct<C> typedArg(A value);
 
 		/**
 		 * Binds a value to a typed argument of the given type.
@@ -81,19 +80,19 @@ public interface TweedConstructFactory<T> {
 		 * @see #namedArg(String, Object)
 		 */
 		@Contract(mutates = "this", value = "_, _ -> this")
-		<A> @NotNull Construct<C> typedArg(@NotNull Class<? super A> argType, @Nullable A value);
+		<A> Construct<C> typedArg(Class<? super A> argType, @Nullable A value);
 
 		/**
 		 * Binds a value to a named argument.
 		 * @see #typedArg(Object)
 		 */
 		@Contract(mutates = "this", value = "_, _ -> this")
-		<A> @NotNull Construct<C> namedArg(@NotNull String name, @Nullable A value);
+		<A> Construct<C> namedArg(String name, @Nullable A value);
 
 		/**
 		 * Finishes the binding and actually constructs the class.
 		 */
 		@Contract(pure = true)
-		@NotNull C finish();
+		C finish();
 	}
 }

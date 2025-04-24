@@ -3,17 +3,18 @@ package de.siphalor.tweed5.utils.api.collection;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
 @SuppressWarnings("unchecked")
 @EqualsAndHashCode
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class ClassToInstanceMap<T> implements Iterable<T> {
+public class ClassToInstanceMap<T extends @NonNull Object> implements Iterable<T> {
 	private final Map<Class<? extends T>, T> delegate;
 
-	public static <T> ClassToInstanceMap<T> backedBy(Map<Class<? extends T>, T> delegate) {
+	public static <T extends @NonNull Object> ClassToInstanceMap<T> backedBy(Map<Class<? extends T>, T> delegate) {
 		return new ClassToInstanceMap<>(delegate);
 	}
 
@@ -41,11 +42,11 @@ public class ClassToInstanceMap<T> implements Iterable<T> {
 		return (V) delegate.get(key);
 	}
 
-	public <V extends T> V put(@NotNull V value) {
+	public <V extends T> @Nullable V put(V value) {
 		return (V) delegate.put((Class<? extends T>) value.getClass(), value);
 	}
 
-	public <V extends T> V remove(Class<V> key) {
+	public <V extends T> @Nullable V remove(Class<V> key) {
 		return (V) delegate.remove(key);
 	}
 
@@ -60,7 +61,7 @@ public class ClassToInstanceMap<T> implements Iterable<T> {
 	public Set<T> values() {
 		return new AbstractSet<T>() {
 			@Override
-			public @NotNull Iterator<T> iterator() {
+			public Iterator<T> iterator() {
 				Iterator<Map.Entry<Class<? extends T>, T>> entryIterator = delegate.entrySet().iterator();
 				return new Iterator<T>() {
 					@Override
@@ -88,7 +89,7 @@ public class ClassToInstanceMap<T> implements Iterable<T> {
 	}
 
 	@Override
-	public @NotNull Iterator<T> iterator() {
+	public Iterator<T> iterator() {
 		return values().iterator();
 	}
 }

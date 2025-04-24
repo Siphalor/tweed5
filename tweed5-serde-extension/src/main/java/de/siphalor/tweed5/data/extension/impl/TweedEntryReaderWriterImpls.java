@@ -9,6 +9,9 @@ import de.siphalor.tweed5.dataapi.api.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -32,7 +35,7 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
 
 	@RequiredArgsConstructor
-	public static class NullableReader<T, C extends ConfigEntry<T>> implements TweedEntryReader<T, C> {
+	public static class NullableReader<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryReader<T, C> {
 		private final TweedEntryReader<T, C> delegate;
 
 		@Override
@@ -46,7 +49,7 @@ public class TweedEntryReaderWriterImpls {
 	}
 
 	@RequiredArgsConstructor
-	public static class NullableWriter<T, C extends ConfigEntry<T>> implements TweedEntryWriter<T, C> {
+	public static class NullableWriter<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryWriter<T, C> {
 		private final TweedEntryWriter<T, C> delegate;
 
 		@Override
@@ -60,7 +63,7 @@ public class TweedEntryReaderWriterImpls {
 	}
 
 	@RequiredArgsConstructor
-	private static class PrimitiveReaderWriter<T> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
+	private static class PrimitiveReaderWriter<T extends @NonNull Object> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
 		private final Function<TweedDataToken, T> readerCall;
 		private final BiConsumer<TweedDataVisitor, T> writerCall;
 
@@ -70,13 +73,13 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, @Nullable T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 			writerCall.accept(writer, value);
 		}
 	}
 
-	public static class CollectionReaderWriter<T, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
+	public static class CollectionReaderWriter<T extends @NonNull Object, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
 		@Override
 		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start");
@@ -126,7 +129,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CompoundReaderWriter<T> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
+	public static class CompoundReaderWriter<T extends @NonNull Object> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
 		@Override
 		public T read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start");
@@ -143,10 +146,8 @@ public class TweedEntryReaderWriterImpls {
 					//noinspection unchecked
 					ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
 					TweedEntryReader<Object, ConfigEntry<Object>> subEntryReaderChain = ReadWriteExtensionImpl.getReaderChain(subEntry);
-					if (subEntryReaderChain != null) {
-						Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
-						entry.set(compoundValue, key, subEntryValue);
-					}
+					Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
+					entry.set(compoundValue, key, subEntryValue);
 				} else {
 					throw new TweedEntryReadException("Unexpected token " + token + ": Expected map key or map end");
 				}
@@ -155,7 +156,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, @Nullable T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value);
 
 			writer.visitMapStart();
@@ -168,19 +169,17 @@ public class TweedEntryReaderWriterImpls {
 
 				TweedEntryWriter<Object, ConfigEntry<Object>> subEntryWriterChain = ReadWriteExtensionImpl.getWriterChain(subEntry);
 
-				if (subEntryWriterChain != null) {
-					writer.visitMapEntryKey(key);
-					subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);
-				}
+				writer.visitMapEntryKey(key);
+				subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);
 			}
 
 			writer.visitMapEnd();
 		}
 	}
 
-	public static class NoopReaderWriter implements TweedEntryReaderWriter<Object, ConfigEntry<Object>> {
+	public static class NoopReaderWriter implements TweedEntryReaderWriter<@Nullable Object, ConfigEntry<Object>> {
 		@Override
-		public Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) throws TweedDataReadException {
+		public @Nullable Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) throws TweedDataReadException {
 			TweedDataToken token = reader.readToken();
 			if (!token.isListStart() && !token.isMapStart()) {
 				return null;
@@ -209,7 +208,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) throws TweedDataWriteException {
+		public void write(TweedDataVisitor writer, @Nullable Object value, ConfigEntry<Object> entry, TweedWriteContext context) throws TweedDataWriteException {
 			writer.visitNull();
 		}
 
@@ -218,7 +217,8 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	private static <T> void requireNonNullWriteValue(T value) throws TweedEntryWriteException {
+	@Contract("null -> fail")
+	private static <T> void requireNonNullWriteValue(@Nullable T value) throws TweedEntryWriteException {
 		if (value == null) {
 			throw new TweedEntryWriteException("Unable to write null value");
 		}

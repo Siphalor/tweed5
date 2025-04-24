@@ -9,8 +9,7 @@ import de.siphalor.tweed5.weaver.pojo.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfig;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfigImpl;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -33,7 +32,7 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public @Nullable <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+	public <T> @Nullable ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		List<ActualType<?>> collectionTypeParams = valueType.getTypesOfSuperArguments(Collection.class);
 		if (collectionTypeParams == null) {
 			return null;
@@ -82,7 +81,7 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 		return CollectionWeavingConfigImpl.withOverrides(parent, local);
 	}
 
-	private CollectionWeavingConfig createWeavingConfigFromAnnotations(@NotNull AnnotatedElement annotations) {
+	private @Nullable CollectionWeavingConfig createWeavingConfigFromAnnotations(AnnotatedElement annotations) {
 		CollectionWeaving annotation = annotations.getAnnotation(CollectionWeaving.class);
 		if (annotation == null) {
 			return null;

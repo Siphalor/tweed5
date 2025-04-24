@@ -3,7 +3,7 @@ package de.siphalor.tweed5.dataapi.api;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 public class TweedDataReadException extends RuntimeException {
@@ -28,8 +28,7 @@ public class TweedDataReadException extends RuntimeException {
 		private String message;
 		private Throwable cause;
 		@Setter(AccessLevel.NONE)
-		@Nullable
-		private TweedDataReaderRecoverMode recoverMode;
+		private @Nullable TweedDataReaderRecoverMode recoverMode;
 
 		public TweedDataReadException build() {
 			return new TweedDataReadException(message, cause, recoverMode);

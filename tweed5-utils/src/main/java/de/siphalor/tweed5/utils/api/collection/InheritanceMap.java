@@ -2,22 +2,24 @@ package de.siphalor.tweed5.utils.api.collection;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
 @SuppressWarnings("unchecked")
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class InheritanceMap<T> {
+public class InheritanceMap<T extends @NonNull Object> {
 	private static final InheritanceMap<Object> EMPTY = unmodifiable(new InheritanceMap<>(Object.class));
 
 	private final Class<T> baseClass;
 	private final Map<T, Collection<Class<? extends T>>> instanceToClasses;
 	private final Map<Class<? extends T>, Collection<T>> classToInstances;
 
-	public static <T> InheritanceMap<T> empty() {
+	public static <T extends @NonNull Object> InheritanceMap<T> empty() {
 		return (InheritanceMap<T>) EMPTY;
 	}
-	public static <T> InheritanceMap<T> unmodifiable(InheritanceMap<T> map) {
+	public static <T extends @NonNull Object> InheritanceMap<T> unmodifiable(InheritanceMap<T> map) {
 		return new Unmodifiable<>(map);
 	}
 
@@ -49,7 +51,7 @@ public class InheritanceMap<T> {
 		return (Collection<V>) classToInstances.getOrDefault(clazz, Collections.emptyList());
 	}
 
-	public <V extends T> V getSingleInstance(Class<V> clazz) throws NonUniqueResultException {
+	public <V extends T> @Nullable V getSingleInstance(Class<V> clazz) throws NonUniqueResultException {
 		Collection<T> instances = classToInstances.getOrDefault(clazz, Collections.emptyList());
 		if (instances.isEmpty()) {
 			return null;
@@ -87,7 +89,7 @@ public class InheritanceMap<T> {
 		}
 	}
 	
-	public <V extends T> V removeInstance(V instance) {
+	public <V extends T> @Nullable V removeInstance(V instance) {
 		if (!instanceToClasses.containsKey(instance)) {
 			return null;
 		}
@@ -153,7 +155,7 @@ public class InheritanceMap<T> {
 		}
 	}
 
-	private static class Unmodifiable<T> extends InheritanceMap<T> {
+	private static class Unmodifiable<T extends @NonNull Object> extends InheritanceMap<T> {
 		public Unmodifiable(InheritanceMap<T> delegate) {
 			super(delegate.baseClass, delegate.instanceToClasses, delegate.classToInstances);
 		}

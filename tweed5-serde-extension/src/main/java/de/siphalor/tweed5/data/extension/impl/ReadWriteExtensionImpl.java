@@ -22,6 +22,10 @@ import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
 import lombok.Setter;
 import lombok.Value;
+import lombok.val;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.util.Collection;
@@ -29,14 +33,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AutoService(ReadWriteExtension.class)
+@NullUnmarked
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 	private RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterDefinitionExtension;
 	private RegisteredExtensionData<EntryExtensionsData, ReadWriteEntryDataExtension> readWriteEntryDataExtension;
 	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>> entryReaderMiddlewareContainer;
 	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>> entryWriterMiddlewareContainer;
-	private Map<Class<?>, RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?>> readWriteContextExtensionsDataClasses;
-	private PatchworkClass<ReadWriteContextExtensionsData> readWriteContextExtensionsDataPatchwork;
+	private Map<Class<?>, RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?>>
+			readWriteContextExtensionsDataClasses;
+	private PatchworkClass<@NonNull ReadWriteContextExtensionsData> readWriteContextExtensionsDataPatchwork;
 
 	@Override
 	public String getId() {
@@ -54,11 +60,17 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 		ReadWriteExtensionSetupContext setupContext = new ReadWriteExtensionSetupContext() {
 			@Override
-			public <E> RegisteredExtensionData<ReadWriteContextExtensionsData, E> registerReadWriteContextExtensionData(Class<E> extensionDataClass) {
+			public <E> RegisteredExtensionData<ReadWriteContextExtensionsData, E> registerReadWriteContextExtensionData(
+					Class<E> extensionDataClass
+			) {
 				if (readWriteContextExtensionsDataClasses.containsKey(extensionDataClass)) {
-					throw new IllegalArgumentException("Context extension " + extensionDataClass.getName() + " is already registered");
+					throw new IllegalArgumentException("Context extension "
+							+ extensionDataClass.getName()
+							+ " is already registered");
 				}
-				RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, E> registeredExtensionData = new RegisteredExtensionDataImpl<>();
+				RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, E>
+						registeredExtensionData
+						= new RegisteredExtensionDataImpl<>();
 				readWriteContextExtensionsDataClasses.put(extensionDataClass, registeredExtensionData);
 				return registeredExtensionData;
 			}
@@ -73,11 +85,13 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 				rwExtension.setupReadWriteExtension(setupContext);
 
-				if (rwExtension.entryReaderMiddleware() != null) {
-					entryReaderMiddlewareContainer.register(rwExtension.entryReaderMiddleware());
+				val readerMiddleware = rwExtension.entryReaderMiddleware();
+				if (readerMiddleware != null) {
+					entryReaderMiddlewareContainer.register(readerMiddleware);
 				}
-				if (rwExtension.entryWriterMiddleware() != null) {
-					entryWriterMiddlewareContainer.register(rwExtension.entryWriterMiddleware());
+				val writerMiddleware = rwExtension.entryWriterMiddleware();
+				if (writerMiddleware != null) {
+					entryWriterMiddlewareContainer.register(writerMiddleware);
 				}
 			}
 		}
@@ -85,20 +99,26 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 		entryReaderMiddlewareContainer.seal();
 		entryWriterMiddlewareContainer.seal();
 
-		PatchworkClassCreator<ReadWriteContextExtensionsData> patchworkClassCreator = PatchworkClassCreator.<ReadWriteContextExtensionsData>builder()
+		val patchworkClassCreator = PatchworkClassCreator.<ReadWriteContextExtensionsData>builder()
 				.patchworkInterface(ReadWriteContextExtensionsData.class)
 				.classPackage("de.siphalor.tweed5.data.extension.generated")
 				.classPrefix("ReadWriteContextExtensionsData$")
 				.build();
 
 		try {
-			readWriteContextExtensionsDataPatchwork = patchworkClassCreator.createClass(readWriteContextExtensionsDataClasses.keySet());
+			readWriteContextExtensionsDataPatchwork =
+					patchworkClassCreator.createClass(readWriteContextExtensionsDataClasses.keySet());
 			for (PatchworkClassPart patchworkClassPart : readWriteContextExtensionsDataPatchwork.parts()) {
-				RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?> registeredExtension = readWriteContextExtensionsDataClasses.get(patchworkClassPart.partInterface());
+				RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?>
+						registeredExtension
+						= readWriteContextExtensionsDataClasses.get(patchworkClassPart.partInterface());
 				registeredExtension.setter = patchworkClassPart.fieldSetter();
 			}
 		} catch (PatchworkClassGenerator.GenerationException e) {
-			throw new IllegalStateException("Failed to generate read write context extensions' data patchwork class", e);
+			throw new IllegalStateException(
+					"Failed to generate read write context extensions' data patchwork class",
+					e
+			);
 		}
 	}
 
@@ -115,14 +135,19 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 			baseWriter = TweedEntryReaderWriterImpls.NOOP_READER_WRITER;
 		}
 
-		readWriteEntryDataExtension.set(configEntry.extensionsData(), new ReadWriteEntryDataExtensionImpl(
-				entryReaderMiddlewareContainer.process(baseReader),
-				entryWriterMiddlewareContainer.process(baseWriter)
-		));
+		readWriteEntryDataExtension.set(
+				configEntry.extensionsData(), new ReadWriteEntryDataExtensionImpl(
+						entryReaderMiddlewareContainer.process(baseReader),
+						entryWriterMiddlewareContainer.process(baseWriter)
+				)
+		);
 	}
 
 	@Override
-	public void setEntryReaderWriterDefinition(ConfigEntry<?> entry, EntryReaderWriterDefinition readerWriterDefinition) {
+	public void setEntryReaderWriterDefinition(
+			@NonNull ConfigEntry<?> entry,
+			@NonNull EntryReaderWriterDefinition readerWriterDefinition
+	) {
 		readerWriterDefinitionExtension.set(entry.extensionsData(), readerWriterDefinition);
 	}
 
@@ -136,7 +161,11 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public <T> T read(TweedDataReader reader, ConfigEntry<T> entry, ReadWriteContextExtensionsData contextExtensionsData) throws TweedEntryReadException {
+	public <T> T read(
+			@NonNull TweedDataReader reader,
+			@NonNull ConfigEntry<T> entry,
+			@NonNull ReadWriteContextExtensionsData contextExtensionsData
+	) throws TweedEntryReadException {
 		try {
 			return getReaderChain(entry).read(reader, entry, new TweedReadWriteContextImpl(contextExtensionsData));
 		} catch (TweedDataReadException e) {
@@ -145,7 +174,12 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public <T> void write(TweedDataVisitor writer, T value, ConfigEntry<T> entry, ReadWriteContextExtensionsData contextExtensionsData) throws TweedEntryWriteException {
+	public <T> void write(
+			@NonNull TweedDataVisitor writer,
+			@Nullable T value,
+			@NonNull ConfigEntry<T> entry,
+			@NonNull ReadWriteContextExtensionsData contextExtensionsData
+	) throws TweedEntryWriteException {
 		try {
 			getWriterChain(entry).write(writer, value, entry, new TweedReadWriteContextImpl(contextExtensionsData));
 		} catch (TweedDataWriteException e) {
@@ -160,7 +194,8 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Setter
-	private static class RegisteredExtensionDataImpl<U extends Patchwork<U>, E> implements RegisteredExtensionData<U, E> {
+	private static class RegisteredExtensionDataImpl<U extends Patchwork<@NonNull U>, E>
+			implements RegisteredExtensionData<U, E> {
 		private MethodHandle setter;
 
 		@Override
@@ -173,13 +208,13 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 		}
 	}
 
-	static <T> TweedEntryReader<T, ConfigEntry<T>> getReaderChain(ConfigEntry<T> elementEntry) {
+	static <T> TweedEntryReader<T, @NonNull ConfigEntry<T>> getReaderChain(ConfigEntry<T> elementEntry) {
 		//noinspection unchecked
-		return (TweedEntryReader<T, ConfigEntry<T>>) ((ReadWriteEntryDataExtension) elementEntry.extensionsData()).entryReaderChain();
+		return (TweedEntryReader<T, @NonNull ConfigEntry<T>>) ((ReadWriteEntryDataExtension) elementEntry.extensionsData()).entryReaderChain();
 	}
 
-	static <T> TweedEntryWriter<T, ConfigEntry<T>> getWriterChain(ConfigEntry<T> elementEntry) {
+	static <T> TweedEntryWriter<T, @NonNull ConfigEntry<T>> getWriterChain(ConfigEntry<T> elementEntry) {
 		//noinspection unchecked
-		return (TweedEntryWriter<T, ConfigEntry<T>>) ((ReadWriteEntryDataExtension) elementEntry.extensionsData()).entryWriterChain();
+		return (TweedEntryWriter<T, @NonNull ConfigEntry<T>>) ((ReadWriteEntryDataExtension) elementEntry.extensionsData()).entryWriterChain();
 	}
 }

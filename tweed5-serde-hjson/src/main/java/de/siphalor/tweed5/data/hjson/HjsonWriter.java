@@ -3,7 +3,6 @@ package de.siphalor.tweed5.data.hjson;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -90,7 +89,7 @@ public class HjsonWriter implements TweedDataVisitor {
 	}
 
 	@Override
-	public void visitString(@NotNull String value) {
+	public void visitString(String value) {
 		beforeValueWrite();
 		writeStringValue(getValueStringStringType(value), value);
 		afterValueWrite();

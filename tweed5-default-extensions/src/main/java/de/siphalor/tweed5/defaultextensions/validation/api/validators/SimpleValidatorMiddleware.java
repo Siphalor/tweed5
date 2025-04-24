@@ -6,7 +6,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 @AllArgsConstructor
@@ -18,12 +18,12 @@ public class SimpleValidatorMiddleware implements Middleware<ConfigEntryValidato
 	public ConfigEntryValidator process(ConfigEntryValidator inner) {
 		return new ConfigEntryValidator() {
 			@Override
-			public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+			public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
 				return inner.validate(configEntry, value).andThen(v -> validator.validate(configEntry, v));
 			}
 
 			@Override
-			public @NotNull <T> String description(ConfigEntry<T> configEntry) {
+			public <T extends @Nullable Object> String description(ConfigEntry<T> configEntry) {
 				String description = validator.description(configEntry);
 				if (description.isEmpty()) {
 					return inner.description(configEntry);

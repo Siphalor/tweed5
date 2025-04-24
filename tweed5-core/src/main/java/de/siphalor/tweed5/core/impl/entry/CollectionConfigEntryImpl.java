@@ -1,7 +1,6 @@
 package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.entry.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.function.IntFunction;
@@ -52,7 +51,7 @@ public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseC
 	}
 
 	@Override
-	public @NotNull T deepCopy(@NotNull T value) {
+	public T deepCopy(T value) {
 		T copy = collectionConstructor.apply(value.size());
 		for (E element : value) {
 			copy.add(elementEntry().deepCopy(element));

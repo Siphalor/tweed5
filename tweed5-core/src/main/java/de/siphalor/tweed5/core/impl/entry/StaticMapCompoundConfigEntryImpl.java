@@ -1,7 +1,6 @@
 package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.entry.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,7 +10,7 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 	private final IntFunction<T> mapConstructor;
 	private final Map<String, ConfigEntry<?>> compoundEntries = new LinkedHashMap<>();
 
-	public StaticMapCompoundConfigEntryImpl(@NotNull Class<T> valueClass, IntFunction<T> mapConstructor) {
+	public StaticMapCompoundConfigEntryImpl(Class<T> valueClass, IntFunction<T> mapConstructor) {
 		super(valueClass);
 		this.mapConstructor = mapConstructor;
 	}
@@ -80,7 +79,7 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 	}
 
 	@Override
-	public @NotNull T deepCopy(@NotNull T value) {
+	public T deepCopy(T value) {
 		T copy = instantiateCompoundValue();
 		value.forEach((String key, Object element) -> {
 			//noinspection unchecked

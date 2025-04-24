@@ -1,6 +1,8 @@
 package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.*;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,9 +12,9 @@ public class HjsonReader implements TweedDataReader {
 	private final Deque<Context> contexts;
 	private State state = State.BEFORE_VALUE;
 
-	private HjsonLexerToken peekedLexerToken;
+	private @Nullable HjsonLexerToken peekedLexerToken;
 
-	private TweedDataToken peekedToken;
+	private @Nullable TweedDataToken peekedToken;
 
 	public HjsonReader(HjsonLexer lexer) {
 		this.lexer = lexer;
@@ -204,6 +206,7 @@ public class HjsonReader implements TweedDataReader {
 		};
 	}
 
+	@NullUnmarked
 	private TweedDataToken createNumberToken(HjsonLexerToken lexerToken) {
 		assert lexerToken.content() != null;
 		return new TweedDataToken() {
@@ -318,7 +321,7 @@ public class HjsonReader implements TweedDataReader {
 					tryLong = 0L;
 					boolean inFraction = false;
 					do {
-						tryLong = Math.addExact(Math.multiplyExact(tryLong, 10L), (long) (codePoint - '0'));
+						tryLong = Math.addExact(Math.multiplyExact(tryLong, 10L), codePoint - '0');
 						if (inFraction) {
 							fractionDigits++;
 						}
@@ -513,7 +516,7 @@ public class HjsonReader implements TweedDataReader {
 			@Override
 			public String readAsString() throws TweedDataReadException {
 				if (lexerToken.type() == HjsonLexerToken.Type.QUOTELESS_STRING || lexerToken.type() == HjsonLexerToken.Type.MULTILINE_STRING) {
-					return lexerToken.contentString();
+					return Objects.requireNonNull(lexerToken.contentString());
 				} else if (lexerToken.type() == HjsonLexerToken.Type.JSON_STRING) {
 					return readJsonString(lexerToken.content());
 				}
@@ -623,6 +626,7 @@ public class HjsonReader implements TweedDataReader {
 	}
 
 	private Context currentContext() {
+		assert contexts.peek() != null;
 		return contexts.peek();
 	}
 

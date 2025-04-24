@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.IntFunction;
@@ -18,7 +19,7 @@ import java.util.function.IntFunction;
 @ToString(callSuper = true)
 public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements WeavableCollectionConfigEntry<E, T> {
 	private final IntFunction<T> constructor;
-	private ConfigEntry<E> elementEntry;
+	private @Nullable ConfigEntry<E> elementEntry;
 
 	public CollectionConfigEntryImpl(@NotNull Class<T> valueClass, IntFunction<T> constructor) {
 		super(valueClass);

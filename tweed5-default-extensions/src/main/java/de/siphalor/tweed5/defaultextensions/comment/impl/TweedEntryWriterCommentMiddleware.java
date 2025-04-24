@@ -6,8 +6,8 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
 	public static final TweedEntryWriterCommentMiddleware INSTANCE = new TweedEntryWriterCommentMiddleware();
@@ -20,8 +20,8 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 	@Override
 	public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
 		//noinspection unchecked
-		TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted = (TweedEntryWriter<Object, ConfigEntry<Object>>) inner;
-		return (TweedEntryWriter<Object, ConfigEntry<Object>>) (writer, value, entry, context) -> {
+		TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
+		return (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) (writer, value, entry, context) -> {
 			if (writer instanceof CompoundDataVisitor) {
 				// Comment is already written in front of the key by the CompoundDataWriter,
 				// so we don't have to write it here.
@@ -94,7 +94,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 		}
 
 		@Override
-		public void visitString(@NotNull String value) {
+		public void visitString(String value) {
 			delegate.visitString(value);
 		}
 

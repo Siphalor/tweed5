@@ -15,8 +15,7 @@ import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoClassIntrospector;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfig;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfigImpl;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedElement;
@@ -44,7 +43,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	}
 
 	@Override
-	public @Nullable <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+	public <T> @Nullable ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		if (context.annotations().getAnnotation(CompoundWeaving.class) == null) {
 			return null;
 		}
@@ -88,8 +87,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		return CompoundWeavingConfigImpl.withOverrides(parent, local);
 	}
 
-	@Nullable
-	private CompoundWeavingConfig createWeavingConfigFromAnnotations(@NotNull AnnotatedElement annotations) {
+	private @Nullable CompoundWeavingConfig createWeavingConfigFromAnnotations(AnnotatedElement annotations) {
 		CompoundWeaving annotation = annotations.getAnnotation(CompoundWeaving.class);
 		if (annotation == null) {
 			return null;
@@ -127,7 +125,6 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 		//noinspection rawtypes
 		Class<? extends WeavableCompoundConfigEntry> annotationEntryClass = weavingConfig.compoundEntryClass();
-		@NotNull
 		Class<WeavableCompoundConfigEntry<C>> weavableEntryClass = (Class<WeavableCompoundConfigEntry<C>>) (
 				annotationEntryClass != null
 						? annotationEntryClass
@@ -143,7 +140,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		return property.getter() != null && (property.setter() != null || property.isFinal());
 	}
 
-	private @NotNull WeavableCompoundConfigEntry.SubEntry weaveCompoundSubEntry(
+	private WeavableCompoundConfigEntry.SubEntry weaveCompoundSubEntry(
 			PojoClassIntrospector.Property property,
 			WeavingContext.ExtensionsData newExtensionsData,
 			WeavingContext parentContext
@@ -167,7 +164,9 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		);
 	}
 
-	private @NotNull String convertName(String name, CompoundWeavingConfig weavingConfig) {
+	private String convertName(String name, CompoundWeavingConfig weavingConfig) {
+		// Always non-null at this point, since null values were already defaulted
+		//noinspection DataFlowIssue
 		return NamingFormat.convert(
 				name,
 				weavingConfig.compoundSourceNamingFormat(),
@@ -175,7 +174,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 		);
 	}
 
-	private @NotNull NamingFormat getNamingFormatById(String id) {
+	private NamingFormat getNamingFormatById(String id) {
 		NamingFormat namingFormat = namingFormatCollector.namingFormats().get(id);
 		if (namingFormat == null) {
 			throw new PojoWeavingException(

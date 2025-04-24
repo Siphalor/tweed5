@@ -1,8 +1,7 @@
 package de.siphalor.tweed5.typeutils.impl.type;
 
 import de.siphalor.tweed5.typeutils.api.type.AnnotationRepeatType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
@@ -16,7 +15,7 @@ public class AnnotationRepeatTypeResolver {
 	private static final Map<Class<? extends Annotation>, AnnotationRepeatType> CACHE = new HashMap<>();
 	private static final ReadWriteLock CACHE_LOCK = new ReentrantReadWriteLock();
 
-	public static AnnotationRepeatType getType(@NotNull Class<? extends Annotation> annotationClass) {
+	public static AnnotationRepeatType getType(Class<? extends Annotation> annotationClass) {
 		CACHE_LOCK.readLock().lock();
 		try {
 			AnnotationRepeatType cachedValue = CACHE.get(annotationClass);
@@ -29,7 +28,7 @@ public class AnnotationRepeatTypeResolver {
 		return determineType(annotationClass);
 	}
 
-	private static AnnotationRepeatType determineType(@NotNull Class<? extends Annotation> annotationClass) {
+	private static AnnotationRepeatType determineType(Class<? extends Annotation> annotationClass) {
 		Class<? extends Annotation> container = getRepeatableContainerFromComponentAnnotation(annotationClass);
 		if (container != null) {
 			CACHE_LOCK.writeLock().lock();
@@ -64,8 +63,7 @@ public class AnnotationRepeatTypeResolver {
 		return AnnotationRepeatType.NonRepeatable.instance();
 	}
 
-	@Nullable
-	private static Class<? extends Annotation> getRepeatableContainerFromComponentAnnotation(
+	private static @Nullable Class<? extends Annotation> getRepeatableContainerFromComponentAnnotation(
 			Class<? extends Annotation> annotationClass
 	) {
 		Repeatable repeatableDeclaration = annotationClass.getAnnotation(Repeatable.class);
@@ -75,8 +73,7 @@ public class AnnotationRepeatTypeResolver {
 		return repeatableDeclaration.value();
 	}
 
-	@Nullable
-	private static Class<? extends Annotation> getRepeatableComponentFromContainerAnnotation(
+	private static @Nullable Class<? extends Annotation> getRepeatableComponentFromContainerAnnotation(
 			Class<? extends Annotation> annotationClass
 	) {
 		try {

@@ -3,7 +3,7 @@ package de.siphalor.tweed5.data.extension.api.extension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface ReadWriteRelatedExtension {
 	default void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {

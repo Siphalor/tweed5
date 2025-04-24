@@ -13,9 +13,12 @@ import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension
 import de.siphalor.tweed5.defaultextensions.comment.api.*;
 import lombok.Getter;
 import lombok.Value;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 
 @AutoService(CommentExtension.class)
+@NullUnmarked
 public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentExtension {
 	@Getter
 	private RegisteredExtensionData<EntryExtensionsData, InternalCommentEntryData> internalEntryDataExtension;
@@ -62,8 +65,7 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	}
 
 	@Override
-	@Nullable
-	public String getFullComment(ConfigEntry<?> configEntry) {
+	public @Nullable String getFullComment(@NonNull ConfigEntry<?> configEntry) {
 		String comment = ((InternalCommentEntryData) configEntry.extensionsData()).commentProducer().createComment(configEntry);
 		return comment.isEmpty() ? null : comment;
 	}
