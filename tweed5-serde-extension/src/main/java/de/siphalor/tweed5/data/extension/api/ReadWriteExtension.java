@@ -3,11 +3,14 @@ package de.siphalor.tweed5.data.extension.api;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteContextExtensionsData;
+import de.siphalor.tweed5.data.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import org.jspecify.annotations.Nullable;
 
 public interface ReadWriteExtension extends TweedExtension {
+	Class<? extends ReadWriteExtension> DEFAULT = ReadWriteExtensionImpl.class;
+
 	void setEntryReaderWriterDefinition(ConfigEntry<?> entry, EntryReaderWriterDefinition readerWriterDefinition);
 
 	ReadWriteContextExtensionsData createReadWriteContextExtensionsData();

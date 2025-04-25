@@ -13,37 +13,40 @@ import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
-import de.siphalor.tweed5.data.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.data.hjson.HjsonCommentType;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.comment.api.EntryComment;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringWriter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@NullUnmarked
 class CommentExtensionImplTest {
 
 	private DefaultConfigContainer<Map<String, Object>> configContainer;
-	private CommentExtension commentExtension;
 	private StaticMapCompoundConfigEntryImpl<Map<String, Object>> rootEntry;
 	private SimpleConfigEntryImpl<Integer> intEntry;
 	private SimpleConfigEntryImpl<String> stringEntry;
 	private SimpleConfigEntryImpl<Long> noCommentEntry;
 
-	void setupContainer(Collection<TweedExtension> extraExtensions) {
+	@SafeVarargs
+	final void setupContainer(Class<? extends TweedExtension>... extraExtensions) {
 		configContainer = new DefaultConfigContainer<>();
 
-		commentExtension = new CommentExtensionImpl();
-		configContainer.registerExtension(commentExtension);
-		extraExtensions.forEach(configContainer::registerExtension);
+		configContainer.registerExtension(CommentExtension.DEFAULT);
+		configContainer.registerExtensions(extraExtensions);
 		configContainer.finishExtensionSetup();
 
 		//noinspection unchecked
@@ -68,9 +71,10 @@ class CommentExtensionImplTest {
 
 	@Test
 	void simpleComments() {
-		setupContainer(Collections.emptyList());
+		setupContainer();
 		configContainer.initialize();
 
+		CommentExtension commentExtension = configContainer.extension(CommentExtension.class).orElseThrow();
 		assertEquals("It is an integer", commentExtension.getFullComment(intEntry));
 		assertEquals("It is a string", commentExtension.getFullComment(stringEntry));
 		assertNull(commentExtension.getFullComment(noCommentEntry));
@@ -78,9 +82,10 @@ class CommentExtensionImplTest {
 
 	@Test
 	void commentProvidingExtension() {
-		setupContainer(Collections.singletonList(new TestCommentModifyingExtension()));
+		setupContainer(TestCommentModifyingExtension.class);
 		configContainer.initialize();
 
+		CommentExtension commentExtension = configContainer.extension(CommentExtension.class).orElseThrow();
 		assertEquals("The comment is:\nIt is an integer\nEND", commentExtension.getFullComment(intEntry));
 		assertEquals("The comment is:\nIt is a string\nEND", commentExtension.getFullComment(stringEntry));
 		assertEquals("The comment is:\n\nEND", commentExtension.getFullComment(noCommentEntry));
@@ -88,8 +93,7 @@ class CommentExtensionImplTest {
 
 	@Test
 	void simpleCommentsInHjson() {
-		ReadWriteExtension readWriteExtension = new ReadWriteExtensionImpl();
-		setupContainer(Collections.singletonList(readWriteExtension));
+		setupContainer(ReadWriteExtension.DEFAULT);
 		setupReadWriteTypes();
 		configContainer.initialize();
 
@@ -98,6 +102,7 @@ class CommentExtensionImplTest {
 		value.put("string", "Hello World");
 		value.put("noComment", 567L);
 
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 		StringWriter output = new StringWriter();
 		assertDoesNotThrow(() -> readWriteExtension.write(
 				new HjsonWriter(output, new HjsonWriter.Options().multilineCommentType(HjsonCommentType.SLASHES)),
@@ -106,14 +111,23 @@ class CommentExtensionImplTest {
 				readWriteExtension.createReadWriteContextExtensionsData()
 		));
 
-		assertEquals("// This is the root value.\n// It is the topmost value in the tree.\n" +
-				"{\n\t// It is an integer\n\tint: 123\n\t// It is a string\n" +
-				"\tstring: Hello World\n\tnoComment: 567\n}\n", output.toString());
+		assertEquals(
+				"""
+				// This is the root value.
+				// It is the topmost value in the tree.
+				{
+				\t// It is an integer
+				\tint: 123
+				\t// It is a string
+				\tstring: Hello World
+				\tnoComment: 567
+				}
+				""", output.toString());
 	}
 
 	private void setupReadWriteTypes() {
 		//noinspection unchecked
-		RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterData = (RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>) configContainer.entryDataExtensions().get(EntryReaderWriterDefinition.class);
+		var readerWriterData = (RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>) configContainer.entryDataExtensions().get(EntryReaderWriterDefinition.class);
 
 		readerWriterData.set(rootEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.compoundReaderWriter()));
 		readerWriterData.set(intEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.intReaderWriter()));
@@ -126,7 +140,8 @@ class CommentExtensionImplTest {
 		String comment;
 	}
 
-	private static class TestCommentModifyingExtension implements TweedExtension, CommentModifyingExtension {
+	@NoArgsConstructor
+	public static class TestCommentModifyingExtension implements TweedExtension, CommentModifyingExtension {
 		@Override
 		public String getId() {
 			return "test-extension";

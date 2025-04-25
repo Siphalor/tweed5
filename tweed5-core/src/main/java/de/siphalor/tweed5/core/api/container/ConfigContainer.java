@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The main wrapper for a config tree.<br />
@@ -20,16 +21,14 @@ public interface ConfigContainer<T> {
 	@SuppressWarnings("rawtypes")
 	TweedConstructFactory<ConfigContainer> FACTORY = TweedConstructFactory.builder(ConfigContainer.class).build();
 
-	default void registerExtensions(TweedExtension... extensions) {
-		for (TweedExtension extension : extensions) {
-			registerExtension(extension);
+	default void registerExtensions(Class<? extends TweedExtension>... extensionClasses) {
+		for (Class<? extends TweedExtension> extensionClass : extensionClasses) {
+			registerExtension(extensionClass);
 		}
 	}
+	void registerExtension(Class<? extends TweedExtension> extensionClass);
 
-	void registerExtension(TweedExtension extension);
-
-	@Nullable
-	<E extends TweedExtension> E extension(Class<E> extensionClass);
+	<E extends TweedExtension> Optional<E> extension(Class<E> extensionClass);
 	Collection<TweedExtension> extensions();
 
 	void finishExtensionSetup();

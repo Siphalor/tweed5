@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.defaultextensions.validation.impl;
 
 import com.google.auto.service.AutoService;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
@@ -22,26 +23,24 @@ import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherData;
-import de.siphalor.tweed5.defaultextensions.pather.impl.PatherExtensionImpl;
+import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
-import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
+import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
 @AutoService(ValidationExtension.class)
-@NullUnmarked
 public class ValidationExtensionImpl implements ReadWriteRelatedExtension, ValidationExtension, CommentModifyingExtension {
 	private static final ValidationResult<?> PRIMITIVE_IS_NULL_RESULT = ValidationResult.withIssues(
 			null,
@@ -74,9 +73,19 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 	};
 
-	private RegisteredExtensionData<EntryExtensionsData, InternalValidationEntryData> validationEntryDataExtension;
-	private MiddlewareContainer<ConfigEntryValidator> entryValidatorMiddlewareContainer;
-	private RegisteredExtensionData<ReadWriteContextExtensionsData, ValidationIssues> readContextValidationIssuesExtensionData;
+	private final ConfigContainer<?> configContainer;
+	private final RegisteredExtensionData<EntryExtensionsData, InternalValidationEntryData> validationEntryDataExtension;
+	private final MiddlewareContainer<ConfigEntryValidator> entryValidatorMiddlewareContainer
+			= new DefaultMiddlewareContainer<>();
+	private @Nullable RegisteredExtensionData<ReadWriteContextExtensionsData, ValidationIssues>
+			readContextValidationIssuesExtensionData;
+
+	public ValidationExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
+		this.configContainer = configContainer;
+		this.validationEntryDataExtension = context.registerEntryExtensionData(InternalValidationEntryData.class);
+		context.registerEntryExtensionData(EntrySpecificValidation.class);
+		context.registerExtension(PatherExtension.class);
+	}
 
 	@Override
 	public String getId() {
@@ -84,16 +93,12 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public void setup(TweedExtensionSetupContext context) {
-		context.registerExtension(new PatherExtensionImpl());
-
-		validationEntryDataExtension = context.registerEntryExtensionData(InternalValidationEntryData.class);
-		context.registerEntryExtensionData(EntrySpecificValidation.class);
-
-		entryValidatorMiddlewareContainer = new DefaultMiddlewareContainer<>();
-		for (TweedExtension extension : context.configContainer().extensions()) {
+	public void extensionsFinalized() {
+		for (TweedExtension extension : configContainer.extensions()) {
 			if (extension instanceof ValidationProvidingExtension) {
-				entryValidatorMiddlewareContainer.register(((ValidationProvidingExtension) extension).validationMiddleware());
+				entryValidatorMiddlewareContainer.register(
+						((ValidationProvidingExtension) extension).validationMiddleware()
+				);
 			}
 		}
 		entryValidatorMiddlewareContainer.seal();

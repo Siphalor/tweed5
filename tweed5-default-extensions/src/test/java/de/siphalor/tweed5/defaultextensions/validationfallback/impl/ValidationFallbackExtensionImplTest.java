@@ -10,13 +10,11 @@ import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
-import de.siphalor.tweed5.data.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.data.hjson.HjsonCommentType;
 import de.siphalor.tweed5.data.hjson.HjsonLexer;
 import de.siphalor.tweed5.data.hjson.HjsonReader;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
-import de.siphalor.tweed5.defaultextensions.comment.impl.CommentExtensionImpl;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
@@ -24,10 +22,10 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validation.api.validators.SimpleValidatorMiddleware;
-import de.siphalor.tweed5.defaultextensions.validation.impl.ValidationExtensionImpl;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackValue;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,24 +42,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ValidationFallbackExtensionImplTest {
 	private DefaultConfigContainer<Integer> configContainer;
-	private CommentExtension commentExtension;
-	private ValidationExtension validationExtension;
-	private ValidationFallbackExtension validationFallbackExtension;
-	private ReadWriteExtension readWriteExtension;
 	private SimpleConfigEntryImpl<Integer> intEntry;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void setUp() {
 		configContainer = new DefaultConfigContainer<>();
-		commentExtension = new CommentExtensionImpl();
-		configContainer.registerExtension(commentExtension);
-		validationExtension = new ValidationExtensionImpl();
-		configContainer.registerExtension(validationExtension);
-		validationFallbackExtension = new ValidationFallbackExtensionImpl();
-		configContainer.registerExtension(validationFallbackExtension);
-		readWriteExtension = new ReadWriteExtensionImpl();
-		configContainer.registerExtension(readWriteExtension);
+		configContainer.registerExtension(CommentExtension.DEFAULT);
+		configContainer.registerExtension(ValidationExtension.DEFAULT);
+		configContainer.registerExtension(ValidationFallbackExtension.DEFAULT);
+		configContainer.registerExtension(ReadWriteExtension.DEFAULT);
 
 		configContainer.finishExtensionSetup();
 
@@ -73,7 +63,7 @@ class ValidationFallbackExtensionImplTest {
 		entrySpecificValidation.set(intEntry.extensionsData(), () -> Arrays.asList(
 				new SimpleValidatorMiddleware("non-null", new ConfigEntryValidator() {
 					@Override
-					public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+					public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, @Nullable T value) {
 						if (value == null) {
 							return ValidationResult.withIssues(null, Collections.singleton(
 									new ValidationIssue("Value must not be null", ValidationIssueLevel.ERROR)
@@ -89,7 +79,7 @@ class ValidationFallbackExtensionImplTest {
 				}),
 				new SimpleValidatorMiddleware("range", new ConfigEntryValidator() {
 					@Override
-					public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
+					public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, @Nullable T value) {
 						Integer intValue = (Integer) value;
 						if (intValue < 1) {
 							return ValidationResult.withIssues(value, Collections.singleton(new ValidationIssue("Must be greater or equal to 1", ValidationIssueLevel.ERROR)));
@@ -134,6 +124,7 @@ class ValidationFallbackExtensionImplTest {
 	@ParameterizedTest
 	@ValueSource(strings = {"0", "7", "123", "null"})
 	void fallbackTriggers(String input) {
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 		Integer result = assertDoesNotThrow(() -> readWriteExtension.read(
 				new HjsonReader(new HjsonLexer(new StringReader(input))),
 				intEntry,
@@ -144,6 +135,7 @@ class ValidationFallbackExtensionImplTest {
 
 	@Test
 	void description() {
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 		StringWriter stringWriter = new StringWriter();
 		assertDoesNotThrow(() -> readWriteExtension.write(
 				new HjsonWriter(stringWriter, new HjsonWriter.Options().multilineCommentType(HjsonCommentType.SLASHES)),
@@ -152,6 +144,13 @@ class ValidationFallbackExtensionImplTest {
 				readWriteExtension.createReadWriteContextExtensionsData()
 		));
 
-		assertEquals("// Must not be null.\n// Must be between 1 and 6\n// \n// Default/Fallback value: 3\n5\n", stringWriter.toString());
+		assertEquals(
+				"""
+				// Must not be null.
+				// Must be between 1 and 6
+				//\s
+				// Default/Fallback value: 3
+				5
+				""", stringWriter.toString());
 	}
 }

@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.data.extension.impl;
 
 import com.google.auto.service.AutoService;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
@@ -24,7 +25,6 @@ import lombok.Setter;
 import lombok.Value;
 import lombok.val;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
@@ -33,16 +33,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AutoService(ReadWriteExtension.class)
-@NullUnmarked
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
+	private final ConfigContainer<?> configContainer;
+	private final RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>
+			readerWriterDefinitionExtension;
+	private final RegisteredExtensionData<EntryExtensionsData, ReadWriteEntryDataExtension> readWriteEntryDataExtension;
+	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>>
+			entryReaderMiddlewareContainer
+			= new DefaultMiddlewareContainer<>();
+	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>>
+			entryWriterMiddlewareContainer
+			= new DefaultMiddlewareContainer<>();
+	private final Map<Class<?>, RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?>>
+			readWriteContextExtensionsDataClasses
+			= new HashMap<>();
+	private @Nullable PatchworkClass<@NonNull ReadWriteContextExtensionsData> readWriteContextExtensionsDataPatchwork;
 
-	private RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterDefinitionExtension;
-	private RegisteredExtensionData<EntryExtensionsData, ReadWriteEntryDataExtension> readWriteEntryDataExtension;
-	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>> entryReaderMiddlewareContainer;
-	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>> entryWriterMiddlewareContainer;
-	private Map<Class<?>, RegisteredExtensionDataImpl<ReadWriteContextExtensionsData, ?>>
-			readWriteContextExtensionsDataClasses;
-	private PatchworkClass<@NonNull ReadWriteContextExtensionsData> readWriteContextExtensionsDataPatchwork;
+	public ReadWriteExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
+		this.configContainer = configContainer;
+		this.readerWriterDefinitionExtension = context.registerEntryExtensionData(EntryReaderWriterDefinition.class);
+		this.readWriteEntryDataExtension = context.registerEntryExtensionData(ReadWriteEntryDataExtension.class);
+	}
 
 	@Override
 	public String getId() {
@@ -50,13 +61,8 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public void setup(TweedExtensionSetupContext context) {
-		readerWriterDefinitionExtension = context.registerEntryExtensionData(EntryReaderWriterDefinition.class);
-		readWriteEntryDataExtension = context.registerEntryExtensionData(ReadWriteEntryDataExtension.class);
-
-		Collection<TweedExtension> extensions = context.configContainer().extensions();
-
-		readWriteContextExtensionsDataClasses = new HashMap<>(extensions.size());
+	public void extensionsFinalized() {
+		Collection<TweedExtension> extensions = configContainer.extensions();
 
 		ReadWriteExtensionSetupContext setupContext = new ReadWriteExtensionSetupContext() {
 			@Override
@@ -154,6 +160,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	@Override
 	public ReadWriteContextExtensionsData createReadWriteContextExtensionsData() {
 		try {
+			assert readWriteContextExtensionsDataPatchwork != null;
 			return (ReadWriteContextExtensionsData) readWriteContextExtensionsDataPatchwork.constructor().invoke();
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to instantiate read write context extensions' data", e);
@@ -161,7 +168,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public <T> T read(
+	public <T extends @Nullable Object> T read(
 			@NonNull TweedDataReader reader,
 			@NonNull ConfigEntry<T> entry,
 			@NonNull ReadWriteContextExtensionsData contextExtensionsData
@@ -174,7 +181,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public <T> void write(
+	public <T extends @Nullable Object> void write(
 			@NonNull TweedDataVisitor writer,
 			@Nullable T value,
 			@NonNull ConfigEntry<T> entry,

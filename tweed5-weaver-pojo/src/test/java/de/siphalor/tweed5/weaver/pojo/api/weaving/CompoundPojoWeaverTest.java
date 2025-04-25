@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.namingformat.api.NamingFormat;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
@@ -12,6 +13,7 @@ import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfi
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.Test;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unused")
+@NullUnmarked
 class CompoundPojoWeaverTest {
 
 	@Test
@@ -39,10 +42,7 @@ class CompoundPojoWeaverTest {
 						if (entry != null) {
 							return entry;
 						} else {
-							//noinspection unchecked
-							ConfigEntry<T> configEntry = mock((Class<SimpleConfigEntry<T>>) (Class<?>) SimpleConfigEntry.class);
-							when(configEntry.valueClass()).thenReturn(valueType.declaredType());
-							return configEntry;
+							return new SimpleConfigEntryImpl<>(valueType.declaredType());
 						}
 					}
 				}, mock(ConfigContainer.class))

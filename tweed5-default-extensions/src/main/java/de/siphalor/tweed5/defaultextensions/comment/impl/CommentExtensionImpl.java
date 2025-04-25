@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.defaultextensions.comment.impl;
 
 import com.google.auto.service.AutoService;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
@@ -14,15 +15,21 @@ import de.siphalor.tweed5.defaultextensions.comment.api.*;
 import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 
 @AutoService(CommentExtension.class)
-@NullUnmarked
 public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentExtension {
+	private final ConfigContainer<?> configContainer;
 	@Getter
-	private RegisteredExtensionData<EntryExtensionsData, InternalCommentEntryData> internalEntryDataExtension;
-	private DefaultMiddlewareContainer<CommentProducer> middlewareContainer;
+	private final RegisteredExtensionData<EntryExtensionsData, InternalCommentEntryData> internalEntryDataExtension;
+	private final DefaultMiddlewareContainer<CommentProducer> middlewareContainer;
+
+	public CommentExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
+		this.configContainer = configContainer;
+		this.internalEntryDataExtension = context.registerEntryExtensionData(InternalCommentEntryData.class);
+		context.registerEntryExtensionData(EntryComment.class);
+		this.middlewareContainer = new DefaultMiddlewareContainer<>();
+	}
 
 	@Override
 	public String getId() {
@@ -30,18 +37,12 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	}
 
 	@Override
-	public void setup(TweedExtensionSetupContext context) {
-		internalEntryDataExtension = context.registerEntryExtensionData(InternalCommentEntryData.class);
-		context.registerEntryExtensionData(EntryComment.class);
-
-		middlewareContainer = new DefaultMiddlewareContainer<>();
-
-		for (TweedExtension extension : context.configContainer().extensions()) {
+	public void extensionsFinalized() {
+		for (TweedExtension extension : configContainer.extensions()) {
 			if (extension instanceof CommentModifyingExtension) {
 				middlewareContainer.register(((CommentModifyingExtension) extension).commentMiddleware());
 			}
 		}
-
 		middlewareContainer.seal();
 	}
 

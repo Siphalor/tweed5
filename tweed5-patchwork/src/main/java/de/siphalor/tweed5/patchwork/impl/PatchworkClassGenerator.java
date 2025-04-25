@@ -22,9 +22,6 @@ public class PatchworkClassGenerator {
 	 * Class version to use (Java 8)
 	 */
 	private static final int CLASS_VERSION = Opcodes.V1_8;
-	private static final String TARGET_PACKAGE = "de.siphalor.tweed5.core.generated.contextextensions";
-	private static final List<Type> DEFAULT_PATHWORK_INTERFACES
-			= Collections.singletonList(Type.getType(Patchwork.class));
 
 	private static final String INNER_EQUALS_METHOD_NAME = "patchwork$innerEquals";
 
@@ -609,6 +606,11 @@ public class PatchworkClassGenerator {
 			super("Invalid patchwork part class " + partClass.getName() + ": " + message);
 			this.partClass = partClass;
 		}
+
+		@Override
+		public String toString() {
+			return super.toString();
+		}
 	}
 
 	@Value
@@ -635,6 +637,11 @@ public class PatchworkClassGenerator {
 			stringBuilder.append(method.getReturnType().getCanonicalName());
 			stringBuilder.append("\n");
 			return stringBuilder.toString();
+		}
+
+		@Override
+		public String toString() {
+			return super.toString();
 		}
 	}
 

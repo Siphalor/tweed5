@@ -27,21 +27,19 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReadWriteExtensionImplTest {
-	private StringWriter stringWriter;
+	private final StringWriter stringWriter = new StringWriter();
+	private final ConfigContainer<Map<String, Object>> configContainer = new DefaultConfigContainer<>();
 	private StaticMapCompoundConfigEntryImpl<Map<String, Object>> rootEntry;
-	private ReadWriteExtension readWriteExtension;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void setUp() {
-		ConfigContainer<Map<String, Object>> configContainer = new DefaultConfigContainer<>();
-
-		readWriteExtension = new ReadWriteExtensionImpl();
-		configContainer.registerExtension(readWriteExtension);
+		configContainer.registerExtension(ReadWriteExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
 		rootEntry = new StaticMapCompoundConfigEntryImpl<>(((Class<Map<String, Object>>) (Class<?>) Map.class), LinkedHashMap::new);
@@ -73,6 +71,7 @@ class ReadWriteExtensionImplTest {
 		value.put("int", 123);
 		value.put("list", Arrays.asList(true, false, true));
 
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 		assertDoesNotThrow(() -> readWriteExtension.write(
 				setupWriter(writer -> new HjsonWriter(writer, new HjsonWriter.Options())),
 				value,
@@ -80,13 +79,33 @@ class ReadWriteExtensionImplTest {
 				readWriteExtension.createReadWriteContextExtensionsData()
 		));
 
-		assertEquals("{\n\tint: 123\n\tlist: [\n\t\ttrue\n\t\tfalse\n\t\ttrue\n\t]\n}\n", stringWriter.toString());
+		assertThat(stringWriter.toString()).isEqualTo("""
+				{
+				\tint: 123
+				\tlist: [
+				\t\ttrue
+				\t\tfalse
+				\t\ttrue
+				\t]
+				}
+				"""
+		);
 	}
 
 	@Test
 	void read() {
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 		Map<String, Object> result = assertDoesNotThrow(() -> readWriteExtension.read(
-				new HjsonReader(new HjsonLexer(new StringReader("{\n\tint: 123\n\tlist: [\n\t\ttrue\n\t\tfalse\n\t\ttrue\n\t]\n}\n"))),
+				new HjsonReader(new HjsonLexer(new StringReader("""
+						{
+						\tint: 123
+						\tlist: [
+						\t\ttrue
+						\t\tfalse
+						\t\ttrue
+						\t]
+						}
+						"""))),
 				rootEntry,
 				readWriteExtension.createReadWriteContextExtensionsData()
 		));
@@ -97,7 +116,6 @@ class ReadWriteExtensionImplTest {
 	}
 
 	private TweedDataVisitor setupWriter(Function<Writer, TweedDataVisitor> writerFactory) {
-		stringWriter = new StringWriter();
 		return writerFactory.apply(stringWriter);
 	}
 

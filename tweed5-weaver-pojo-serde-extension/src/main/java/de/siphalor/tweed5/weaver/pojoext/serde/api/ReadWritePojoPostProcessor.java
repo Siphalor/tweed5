@@ -68,7 +68,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			return;
 		}
 
-		ReadWriteExtension readWriteExtension = context.configContainer().extension(ReadWriteExtension.class);
+		ReadWriteExtension readWriteExtension = context.configContainer().extension(ReadWriteExtension.class).orElse(null);
 		if (readWriteExtension == null) {
 			log.error("You must not use {} without the {}", this.getClass().getSimpleName(), ReadWriteExtension.class.getSimpleName());
 			return;

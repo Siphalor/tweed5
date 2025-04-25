@@ -32,8 +32,10 @@ public class PathTracking implements PatherData {
 	}
 
 	public void popPathPart() {
-		String poppedPart = pathParts.pop();
-		pathBuilder.setLength(pathBuilder.length() - poppedPart.length() - 1);
+		if (!pathParts.isEmpty()) {
+			String poppedPart = pathParts.pop();
+			pathBuilder.setLength(pathBuilder.length() - poppedPart.length() - 1);
+		}
 	}
 
 	public void pushListContext() {

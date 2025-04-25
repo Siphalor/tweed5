@@ -3,7 +3,6 @@ package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
-import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
 import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
@@ -15,7 +14,6 @@ import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
@@ -44,19 +42,10 @@ public class TweedPojoWeaverBootstrapper<T> {
 		Collection<TweedPojoWeaver> weavers = loadWeavers(Arrays.asList(rootWeavingConfig.weavers()));
 		Collection<TweedPojoWeavingPostProcessor> postProcessors = loadPostProcessors(Arrays.asList(rootWeavingConfig.postProcessors()));
 
-		Collection<TweedExtension> extensions = loadExtensions(Arrays.asList(rootWeavingConfig.extensions()));
-		configContainer.registerExtensions(extensions.toArray(new TweedExtension[0]));
+		configContainer.registerExtensions(rootWeavingConfig.extensions());
 		configContainer.finishExtensionSetup();
 
 		return new TweedPojoWeaverBootstrapper<>(pojoClass, configContainer, weavers, postProcessors);
-	}
-
-	private static Collection<TweedExtension> loadExtensions(Collection<Class<? extends TweedExtension>> extensionClasses) {
-		try {
-			return loadSingleServices(extensionClasses);
-		} catch (Exception e) {
-			throw new PojoWeavingException("Failed to load Tweed extensions", e);
-		}
 	}
 
 	private static Collection<TweedPojoWeaver> loadWeavers(Collection<Class<? extends TweedPojoWeaver>> weaverClasses) {
@@ -76,60 +65,6 @@ public class TweedPojoWeaverBootstrapper<T> {
 			return ConfigContainer.FACTORY.construct(containerClass).finish();
 		} catch (Exception e) {
 			throw new PojoWeavingException("Failed to instantiate config container");
-		}
-	}
-
-
-	private static <S> Collection<S> loadSingleServices(Collection<Class<? extends S>> serviceClasses) {
-		Collection<S> services = new ArrayList<>(serviceClasses.size());
-		for (Class<? extends S> serviceClass : serviceClasses) {
-			try {
-				services.add(loadSingleService(serviceClass));
-			} catch (Exception e) {
-				throw new PojoWeavingException("Failed to instantiate single service " + serviceClass.getName(), e);
-			}
-		}
-		return services;
-	}
-
-	private static <S> S loadSingleService(Class<S> serviceClass) {
-		try {
-			ServiceLoader<S> loader = ServiceLoader.load(serviceClass);
-			Iterator<S> iterator = loader.iterator();
-			if (!iterator.hasNext()) {
-				throw new PojoWeavingException("Could not find any service for class " + serviceClass.getName());
-			}
-			S service = iterator.next();
-
-			if (iterator.hasNext()) {
-				throw new PojoWeavingException(
-						"Found multiple services for class " + serviceClass.getName() + ": " +
-								createInstanceDebugStringFromIterator(loader.iterator())
-				);
-			}
-
-			return service;
-		} catch (ServiceConfigurationError e) {
-			throw new PojoWeavingException("Failed to load service " + serviceClass.getName(), e);
-		}
-	}
-
-	private static String createInstanceDebugStringFromIterator(Iterator<?> iterator) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("[ ");
-		while (iterator.hasNext()) {
-			stringBuilder.append(createInstanceDebugDescriptor(iterator.next()));
-			stringBuilder.append(", ");
-		}
-		stringBuilder.append(" ]");
-		return stringBuilder.toString();
-	}
-
-	private static String createInstanceDebugDescriptor(@Nullable Object object) {
-		if (object == null) {
-			return "null";
-		} else {
-			return object.getClass().getName() + "@" + System.identityHashCode(object);
 		}
 	}
 

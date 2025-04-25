@@ -20,14 +20,13 @@ import java.util.stream.Collectors;
 
 @AutoService(ValidationFallbackExtension.class)
 public class ValidationFallbackExtensionImpl implements ValidationFallbackExtension, ValidationProvidingExtension {
-	@Override
-	public String getId() {
-		return "validation-fallback";
+	public ValidationFallbackExtensionImpl(TweedExtensionSetupContext context) {
+		context.registerEntryExtensionData(ValidationFallbackValue.class);
 	}
 
 	@Override
-	public void setup(TweedExtensionSetupContext context) {
-		context.registerEntryExtensionData(ValidationFallbackValue.class);
+	public String getId() {
+		return "validation-fallback";
 	}
 
 	@Override

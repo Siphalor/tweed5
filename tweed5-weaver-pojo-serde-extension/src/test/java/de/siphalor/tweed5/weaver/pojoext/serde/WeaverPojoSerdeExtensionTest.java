@@ -32,8 +32,7 @@ class WeaverPojoSerdeExtensionTest {
 		ConfigContainer<AnnotatedConfig> configContainer = weaverBootstrapper.weave();
 		configContainer.initialize();
 
-		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class);
-		assertThat(readWriteExtension).isNotNull();
+		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
 
 		AnnotatedConfig config = new AnnotatedConfig(123, "test", new TestClass(987));
 

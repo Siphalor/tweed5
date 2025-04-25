@@ -11,8 +11,8 @@ group = rootProject.group
 version = rootProject.version
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
-    targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+    sourceCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
+    targetCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
 }
 
 repositories {
@@ -52,6 +52,10 @@ dependencies {
     testImplementation(libs.assertj)
 }
 
+tasks.compileTestJava {
+    sourceCompatibility = libs.versions.java.test.get()
+    targetCompatibility = libs.versions.java.test.get()
+}
 
 tasks.test {
     dependsOn(testAgentClasspath)

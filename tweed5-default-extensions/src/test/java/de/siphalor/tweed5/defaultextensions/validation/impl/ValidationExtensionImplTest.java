@@ -8,7 +8,6 @@ import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.EntryComment;
-import de.siphalor.tweed5.defaultextensions.comment.impl.CommentExtensionImpl;
 import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
@@ -30,8 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ValidationExtensionImplTest {
 	private DefaultConfigContainer<Map<String, Object>> configContainer;
-	private CommentExtension commentExtension;
-	private ValidationExtension validationExtension;
 	private StaticMapCompoundConfigEntryImpl<Map<String, Object>> rootEntry;
 	private SimpleConfigEntryImpl<Byte> byteEntry;
 	private SimpleConfigEntryImpl<Integer> intEntry;
@@ -41,10 +38,8 @@ class ValidationExtensionImplTest {
 	void setUp() {
 		configContainer = new DefaultConfigContainer<>();
 
-		commentExtension = new CommentExtensionImpl();
-		configContainer.registerExtension(commentExtension);
-		validationExtension = new ValidationExtensionImpl();
-		configContainer.registerExtension(validationExtension);
+		configContainer.registerExtension(CommentExtension.DEFAULT);
+		configContainer.registerExtension(ValidationExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
 		//noinspection unchecked
@@ -90,6 +85,7 @@ class ValidationExtensionImplTest {
 		value.put("int", i);
 		value.put("double", d);
 
+		ValidationExtension validationExtension = configContainer.extension(ValidationExtension.class).orElseThrow();
 		ValidationIssues result = validationExtension.validate(rootEntry, value);
 		assertNotNull(result);
 		assertNotNull(result.issuesByPath());
@@ -103,6 +99,7 @@ class ValidationExtensionImplTest {
 		value.put("int", 124);
 		value.put("double", 0.2);
 
+		ValidationExtension validationExtension = configContainer.extension(ValidationExtension.class).orElseThrow();
 		ValidationIssues result = validationExtension.validate(rootEntry, value);
 		assertNotNull(result);
 		assertNotNull(result.issuesByPath());

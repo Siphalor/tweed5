@@ -11,10 +11,7 @@ import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupCo
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
-import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataReader;
-import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
-import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
+import de.siphalor.tweed5.defaultextensions.pather.api.*;
 import lombok.val;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullUnmarked;
@@ -25,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
 	private static final String PATHER_ID = "pather";
 
-	private RegisteredExtensionData<ReadWriteContextExtensionsData, PathTracking> rwContextPathTrackingData;
+	private RegisteredExtensionData<ReadWriteContextExtensionsData, PatherData> rwContextPathTrackingData;
 	private Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware;
 	private Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware;
 
@@ -36,7 +33,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
-		rwContextPathTrackingData = context.registerReadWriteContextExtensionData(PathTracking.class);
+		rwContextPathTrackingData = context.registerReadWriteContextExtensionData(PatherData.class);
 
 		entryReaderMiddleware = createEntryReaderMiddleware();
 		entryWriterMiddleware = createEntryWriterMiddleware();
@@ -55,7 +52,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 				val castedInner = (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-					if (context.extensionsData().isPatchworkPartSet(PathTracking.class)) {
+					if (context.extensionsData().isPatchworkPartSet(PatherData.class)) {
 						return castedInner.read(reader, entry, context);
 					}
 
@@ -80,7 +77,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 				val castedInner = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) -> {
-					if (context.extensionsData().isPatchworkPartSet(PathTracking.class)) {
+					if (context.extensionsData().isPatchworkPartSet(PatherData.class)) {
 						castedInner.write(writer, value, entry, context);
 						return;
 					}
