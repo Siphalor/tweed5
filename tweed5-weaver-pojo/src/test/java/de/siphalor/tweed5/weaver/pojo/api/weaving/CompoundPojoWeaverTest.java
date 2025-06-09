@@ -42,7 +42,7 @@ class CompoundPojoWeaverTest {
 						if (entry != null) {
 							return entry;
 						} else {
-							return new SimpleConfigEntryImpl<>(valueType.declaredType());
+							return new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType());
 						}
 					}
 				}, mock(ConfigContainer.class))

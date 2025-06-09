@@ -82,7 +82,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 		WeavingContext weavingContext = createWeavingContext();
 
 		ConfigEntry<T> rootEntry = this.weaveEntry(ActualType.ofClass(pojoClass), weavingContext);
-		configContainer.attachAndSealTree(rootEntry);
+		configContainer.attachTree(rootEntry);
 
 		return configContainer;
 	}
@@ -140,9 +140,6 @@ public class TweedPojoWeaverBootstrapper<T> {
 		for (TweedPojoWeaver weaver : weavers) {
 			ConfigEntry<U> configEntry = weaver.weaveEntry(dataClass, context);
 			if (configEntry != null) {
-				if (!configEntry.sealed()) {
-					configEntry.seal(configContainer);
-				}
 				applyPostProcessors(configEntry, context);
 				return configEntry;
 			}

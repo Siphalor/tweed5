@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.core.impl.entry;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.*;
 
 import java.util.Collection;
@@ -7,16 +8,16 @@ import java.util.function.IntFunction;
 
 public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements CollectionConfigEntry<E, T> {
 	private final IntFunction<T> collectionConstructor;
-	private ConfigEntry<E> elementEntry;
+	private final ConfigEntry<E> elementEntry;
 
-	public CollectionConfigEntryImpl(Class<T> valueClass, IntFunction<T> collectionConstructor) {
-		super(valueClass);
+	public CollectionConfigEntryImpl(
+			ConfigContainer<?> container,
+			Class<T> valueClass,
+			IntFunction<T> collectionConstructor,
+			ConfigEntry<E> elementEntry
+	) {
+		super(container, valueClass);
 		this.collectionConstructor = collectionConstructor;
-	}
-
-	public void elementEntry(ConfigEntry<E> elementEntry) {
-		requireUnsealed();
-
 		this.elementEntry = elementEntry;
 	}
 

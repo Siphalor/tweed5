@@ -4,10 +4,10 @@ import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 
 public interface ConfigEntry<T> {
-	Class<T> valueClass();
 
-	void seal(ConfigContainer<?> container);
-	boolean sealed();
+	ConfigContainer<?> container();
+
+	Class<T> valueClass();
 
 	EntryExtensionsData extensionsData();
 

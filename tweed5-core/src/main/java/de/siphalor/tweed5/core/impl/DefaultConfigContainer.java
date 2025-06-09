@@ -200,7 +200,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public <E extends TweedExtension> Optional<E> extension(Class<E> extensionClass) {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
-				ConfigContainerSetupPhase.TREE_SEALED,
+				ConfigContainerSetupPhase.TREE_ATTACHED,
 				ConfigContainerSetupPhase.READY
 		);
 		try {
@@ -214,25 +214,19 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public Collection<TweedExtension> extensions() {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
-				ConfigContainerSetupPhase.TREE_SEALED,
+				ConfigContainerSetupPhase.TREE_ATTACHED,
 				ConfigContainerSetupPhase.READY
 		);
 		return Collections.unmodifiableCollection(extensions.values());
 	}
 
 	@Override
-	public void attachAndSealTree(ConfigEntry<T> rootEntry) {
+	public void attachTree(ConfigEntry<T> rootEntry) {
 		requireSetupPhase(ConfigContainerSetupPhase.TREE_SETUP);
 
 		this.rootEntry = rootEntry;
 
-		rootEntry.visitInOrder(entry -> {
-			if (!entry.sealed()) {
-				entry.seal(DefaultConfigContainer.this);
-			}
-		});
-
-		setupPhase = ConfigContainerSetupPhase.TREE_SEALED;
+		setupPhase = ConfigContainerSetupPhase.TREE_ATTACHED;
 	}
 
 	@Override
@@ -251,7 +245,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public Map<Class<?>, ? extends RegisteredExtensionData<EntryExtensionsData, ?>> entryDataExtensions() {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
-				ConfigContainerSetupPhase.TREE_SEALED,
+				ConfigContainerSetupPhase.TREE_ATTACHED,
 				ConfigContainerSetupPhase.READY
 		);
 		return registeredEntryDataExtensions;
@@ -259,7 +253,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 
 	@Override
 	public void initialize() {
-		requireSetupPhase(ConfigContainerSetupPhase.TREE_SEALED);
+		requireSetupPhase(ConfigContainerSetupPhase.TREE_ATTACHED);
 
 		assert rootEntry != null;
 		rootEntry.visitInOrder(entry -> {
@@ -273,7 +267,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 
 	@Override
 	public ConfigEntry<T> rootEntry() {
-		requireSetupPhase(ConfigContainerSetupPhase.TREE_SEALED, ConfigContainerSetupPhase.READY);
+		requireSetupPhase(ConfigContainerSetupPhase.TREE_ATTACHED, ConfigContainerSetupPhase.READY);
 
 		assert rootEntry != null;
 		return rootEntry;

@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.impl.entry;
 
+import de.siphalor.tweed5.construct.api.ConstructParameter;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
@@ -8,22 +10,32 @@ import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> implements WeavableCompoundConfigEntry<T> {
 	private final Supplier<T> noArgsConstructor;
-	private final Map<String, SubEntry> subEntries = new LinkedHashMap<>();
-	private final Map<String, ConfigEntry<?>> subConfigEntries = new LinkedHashMap<>();
+	private final Map<String, SubEntry> subEntries;
+	private final Map<String, ConfigEntry<?>> subConfigEntries;
 
-	public StaticPojoCompoundConfigEntry(Class<T> valueClass, Supplier<T> noArgsConstructor) {
-		super(valueClass);
+	public StaticPojoCompoundConfigEntry(
+			ConfigContainer<?> configContainer,
+			Class<T> valueClass,
+			Supplier<T> noArgsConstructor,
+			@ConstructParameter(name = "subEntries") List<SubEntry> subEntries
+	) {
+		super(configContainer, valueClass);
 		this.noArgsConstructor = noArgsConstructor;
+		this.subEntries = new LinkedHashMap<>(subEntries.size(), 1);
+		this.subConfigEntries = new LinkedHashMap<>(subEntries.size(), 1);
+		for (SubEntry subEntry : subEntries) {
+			this.subEntries.put(subEntry.name(), subEntry);
+			this.subConfigEntries.put(subEntry.name(), subEntry.configEntry());
+		}
 	}
 
 	public void registerSubEntry(SubEntry subEntry) {
-		requireUnsealed();
-
 		subEntries.put(subEntry.name(), subEntry);
 		subConfigEntries.put(subEntry.name(), subEntry.configEntry());
 	}

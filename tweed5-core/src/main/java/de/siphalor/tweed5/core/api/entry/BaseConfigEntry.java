@@ -3,29 +3,16 @@ package de.siphalor.tweed5.core.api.entry;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
 public abstract class BaseConfigEntry<T> implements ConfigEntry<T> {
-
+	private final ConfigContainer<?> container;
 	private final Class<T> valueClass;
-	private ConfigContainer<?> container;
-	private EntryExtensionsData extensionsData;
-	private boolean sealed;
+	private final EntryExtensionsData extensionsData;
 
-	@Override
-	public void seal(ConfigContainer<?> container) {
-		requireUnsealed();
-
+	public BaseConfigEntry(ConfigContainer<?> container, Class<T> valueClass) {
 		this.container = container;
+		this.valueClass = valueClass;
 		this.extensionsData = container.createExtensionsData();
-		sealed = true;
-	}
-
-	protected void requireUnsealed() {
-		if (sealed) {
-			throw new IllegalStateException("Config entry is already sealed!");
-		}
 	}
 }

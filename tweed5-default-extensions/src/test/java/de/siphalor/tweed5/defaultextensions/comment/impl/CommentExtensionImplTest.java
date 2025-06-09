@@ -28,8 +28,11 @@ import org.junit.jupiter.api.Test;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
+import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 @NullUnmarked
@@ -49,17 +52,23 @@ class CommentExtensionImplTest {
 		configContainer.registerExtensions(extraExtensions);
 		configContainer.finishExtensionSetup();
 
+		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
+		stringEntry = new SimpleConfigEntryImpl<>(configContainer, String.class);
+		noCommentEntry = new SimpleConfigEntryImpl<>(configContainer, Long.class);
+
 		//noinspection unchecked
-		rootEntry = new StaticMapCompoundConfigEntryImpl<>(((Class<Map<String, Object>>)(Class<?>) Map.class), LinkedHashMap::new);
+		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
+				configContainer,
+				((Class<Map<String, Object>>)(Class<?>) Map.class),
+				LinkedHashMap::new,
+				sequencedMap(List.of(
+						entry("int", intEntry),
+						entry("string", stringEntry),
+						entry("noComment", noCommentEntry)
+				))
+		);
 
-		intEntry = new SimpleConfigEntryImpl<>(Integer.class);
-		rootEntry.addSubEntry("int", intEntry);
-		stringEntry = new SimpleConfigEntryImpl<>(String.class);
-		rootEntry.addSubEntry("string", stringEntry);
-		noCommentEntry = new SimpleConfigEntryImpl<>(Long.class);
-		rootEntry.addSubEntry("noComment", noCommentEntry);
-
-		configContainer.attachAndSealTree(rootEntry);
+		configContainer.attachTree(rootEntry);
 
 		//noinspection unchecked
 		RegisteredExtensionData<EntryExtensionsData, EntryComment> commentData = (RegisteredExtensionData<EntryExtensionsData, EntryComment>) configContainer.entryDataExtensions().get(EntryComment.class);

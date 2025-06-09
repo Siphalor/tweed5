@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.impl.entry;
 
+import de.siphalor.tweed5.construct.api.ConstructParameter;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
@@ -19,15 +21,16 @@ import java.util.function.IntFunction;
 @ToString(callSuper = true)
 public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements WeavableCollectionConfigEntry<E, T> {
 	private final IntFunction<T> constructor;
-	private @Nullable ConfigEntry<E> elementEntry;
+	private final @Nullable ConfigEntry<E> elementEntry;
 
-	public CollectionConfigEntryImpl(@NotNull Class<T> valueClass, IntFunction<T> constructor) {
-		super(valueClass);
+	public CollectionConfigEntryImpl(
+			ConfigContainer<?> configContainer,
+			Class<T> valueClass,
+			IntFunction<T> constructor,
+			@ConstructParameter(name = "elementEntry") ConfigEntry<E> elementEntry
+	) {
+		super(configContainer, valueClass);
 		this.constructor = constructor;
-	}
-
-	@Override
-	public void elementEntry(ConfigEntry<E> elementEntry) {
 		this.elementEntry = elementEntry;
 	}
 

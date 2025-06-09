@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.core.impl.entry;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.*;
 
 import java.util.LinkedHashMap;
@@ -8,16 +9,17 @@ import java.util.function.IntFunction;
 
 public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> extends BaseConfigEntry<T> implements CompoundConfigEntry<T> {
 	private final IntFunction<T> mapConstructor;
-	private final Map<String, ConfigEntry<?>> compoundEntries = new LinkedHashMap<>();
+	private final Map<String, ConfigEntry<?>> compoundEntries;
 
-	public StaticMapCompoundConfigEntryImpl(Class<T> valueClass, IntFunction<T> mapConstructor) {
-		super(valueClass);
+	public StaticMapCompoundConfigEntryImpl(
+			ConfigContainer<?> container,
+			Class<T> valueClass,
+			IntFunction<T> mapConstructor,
+			Map<String, ConfigEntry<?>> compoundEntries
+	) {
+		super(container, valueClass);
 		this.mapConstructor = mapConstructor;
-	}
-
-	public void addSubEntry(String key, ConfigEntry<?> entry) {
-		requireUnsealed();
-		compoundEntries.put(key, entry);
+		this.compoundEntries = new LinkedHashMap<>(compoundEntries);
 	}
 
 	@Override

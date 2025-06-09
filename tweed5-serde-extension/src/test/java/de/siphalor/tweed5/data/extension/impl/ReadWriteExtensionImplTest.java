@@ -8,9 +8,9 @@ import de.siphalor.tweed5.core.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.data.extension.api.EntryReaderWriterDefinition;
+import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.hjson.HjsonLexer;
@@ -27,6 +27,8 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
 
+import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,18 +44,26 @@ class ReadWriteExtensionImplTest {
 		configContainer.registerExtension(ReadWriteExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
-		rootEntry = new StaticMapCompoundConfigEntryImpl<>(((Class<Map<String, Object>>) (Class<?>) Map.class), LinkedHashMap::new);
+		SimpleConfigEntryImpl<Integer> intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
+		SimpleConfigEntryImpl<Boolean> booleanEntry = new SimpleConfigEntryImpl<>(configContainer, Boolean.class);
+		CollectionConfigEntryImpl<Boolean, List<Boolean>> listEntry = new CollectionConfigEntryImpl<>(
+				configContainer,
+				(Class<List<Boolean>>) (Class<?>) List.class,
+				ArrayList::new,
+				booleanEntry
+		);
 
-		SimpleConfigEntryImpl<Integer> intEntry = new SimpleConfigEntryImpl<>(Integer.class);
-		rootEntry.addSubEntry("int", intEntry);
+		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
+				configContainer,
+				((Class<Map<String, Object>>) (Class<?>) Map.class),
+				LinkedHashMap::new,
+				sequencedMap(List.of(
+						entry("int", intEntry),
+						entry("list", listEntry)
+				))
+		);
 
-		CollectionConfigEntryImpl<Boolean, List<Boolean>> listEntry = new CollectionConfigEntryImpl<>((Class<List<Boolean>>) (Class<?>) List.class, ArrayList::new);
-		rootEntry.addSubEntry("list", listEntry);
-
-		SimpleConfigEntryImpl<Boolean> booleanEntry = new SimpleConfigEntryImpl<>(Boolean.class);
-		listEntry.elementEntry(booleanEntry);
-
-		configContainer.attachAndSealTree(rootEntry);
+		configContainer.attachTree(rootEntry);
 
 		RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterData = (RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>) configContainer.entryDataExtensions().get(EntryReaderWriterDefinition.class);
 		readerWriterData.set(rootEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.compoundReaderWriter()));

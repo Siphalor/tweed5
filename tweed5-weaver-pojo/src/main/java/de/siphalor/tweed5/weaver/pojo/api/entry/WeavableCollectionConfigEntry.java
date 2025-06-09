@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.api.entry;
 
 import de.siphalor.tweed5.construct.api.TweedConstructFactory;
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 
@@ -17,9 +18,9 @@ public interface WeavableCollectionConfigEntry<E, T extends Collection<E>> exten
 	@SuppressWarnings("rawtypes")
 	TweedConstructFactory<WeavableCollectionConfigEntry> FACTORY =
 			TweedConstructFactory.builder(WeavableCollectionConfigEntry.class)
+					.typedArg(ConfigContainer.class)
 					.typedArg(Class.class) // value class
 					.typedArg(IntFunction.class) // value class constructor with capacity
+					.namedArg("elementEntry", ConfigEntry.class)
 					.build();
-
-	void elementEntry(ConfigEntry<E> elementEntry);
 }

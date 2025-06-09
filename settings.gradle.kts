@@ -1,5 +1,6 @@
 rootProject.name = "tweed5"
 
+include("test-utils")
 include("tweed5-construct")
 include("tweed5-core")
 include("tweed5-default-extensions")

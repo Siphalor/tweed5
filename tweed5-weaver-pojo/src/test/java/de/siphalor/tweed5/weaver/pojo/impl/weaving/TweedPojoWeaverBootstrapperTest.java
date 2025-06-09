@@ -36,8 +36,6 @@ class TweedPojoWeaverBootstrapperTest {
 						.hasSize(5)
 		));
 
-		configContainer.initialize();
-
 		assertThat(configContainer.extensions())
 				.satisfiesOnlyOnce(extension -> assertThat(extension).isInstanceOf(DummyExtension.class))
 				.hasSize(1);

@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.namingformat.api.NamingFormat;
@@ -20,8 +21,10 @@ import org.jspecify.annotations.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A weaver that weaves classes with the {@link CompoundWeaving} annotation as compound entries.
@@ -54,18 +57,12 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 			PojoClassIntrospector introspector = PojoClassIntrospector.forClass(valueType.declaredType());
 
-			WeavableCompoundConfigEntry<T> compoundEntry = instantiateCompoundEntry(introspector, weavingConfig);
+			List<WeavableCompoundConfigEntry.SubEntry> subEntries = introspector.properties().values().stream()
+					.filter(this::shouldIncludeCompoundPropertyInWeaving)
+					.map(property -> weaveCompoundSubEntry(property, newExtensionsData, context))
+					.collect(Collectors.toList());
 
-			Map<String, PojoClassIntrospector.Property> properties = introspector.properties();
-			properties.forEach((name, property) -> {
-				if (shouldIncludeCompoundPropertyInWeaving(property)) {
-					compoundEntry.registerSubEntry(weaveCompoundSubEntry(property, newExtensionsData, context));
-				}
-			});
-
-			compoundEntry.seal(context.configContainer());
-
-			return compoundEntry;
+			return instantiateCompoundEntry(introspector, weavingConfig, subEntries, context);
 		} catch (Exception e) {
 			throw new PojoWeavingException("Exception occurred trying to weave compound for class " + valueType, e);
 		}
@@ -109,7 +106,9 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	@SuppressWarnings("unchecked")
 	private <C> WeavableCompoundConfigEntry<C> instantiateCompoundEntry(
 			PojoClassIntrospector classIntrospector,
-			CompoundWeavingConfig weavingConfig
+			CompoundWeavingConfig weavingConfig,
+			List<WeavableCompoundConfigEntry.SubEntry> subEntries,
+			WeavingContext weavingContext
 	) {
 		MethodHandle valueConstructorHandle = classIntrospector.noArgsConstructor();
 		if (valueConstructorHandle == null) {
@@ -131,8 +130,10 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 						: StaticPojoCompoundConfigEntry.class
 		);
 		return WeavableCompoundConfigEntry.FACTORY.construct(weavableEntryClass)
+				.typedArg(ConfigContainer.class, weavingContext.configContainer())
 				.typedArg(classIntrospector.type())
 				.typedArg(Supplier.class, valueConstructor)
+				.namedArg("subEntries",  subEntries)
 				.finish();
 	}
 

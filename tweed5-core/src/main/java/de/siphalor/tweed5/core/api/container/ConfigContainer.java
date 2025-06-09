@@ -5,7 +5,6 @@ import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -33,7 +32,7 @@ public interface ConfigContainer<T> {
 
 	void finishExtensionSetup();
 
-	void attachAndSealTree(ConfigEntry<T> rootEntry);
+	void attachTree(ConfigEntry<T> rootEntry);
 
 	EntryExtensionsData createExtensionsData();
 

@@ -55,9 +55,8 @@ class ValidationFallbackExtensionImplTest {
 
 		configContainer.finishExtensionSetup();
 
-		intEntry = new SimpleConfigEntryImpl<>(Integer.class);
-
-		configContainer.attachAndSealTree(intEntry);
+		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
+		configContainer.attachTree(intEntry);
 
 		RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation> entrySpecificValidation = (RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation>) configContainer.entryDataExtensions().get(EntrySpecificValidation.class);
 		entrySpecificValidation.set(intEntry.extensionsData(), () -> Arrays.asList(

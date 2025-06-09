@@ -105,23 +105,23 @@ class DefaultConfigContainerTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void attachAndSealTree() {
+	void attachTree() {
 		var configContainer = new DefaultConfigContainer<Map<String, Object>>();
-		var compoundEntry = new StaticMapCompoundConfigEntryImpl<>(
-				(Class<Map<String, Object>>)(Class<?>) Map.class,
-				(capacity) -> new HashMap<>(capacity * 2, 0.5F)
-		);
-		var subEntry = new SimpleConfigEntryImpl<>(String.class);
-		compoundEntry.addSubEntry("test", subEntry);
-
+		configContainer.registerExtension(ExtensionInitTracker.class);
 		configContainer.finishExtensionSetup();
 
-		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_SETUP);
-		configContainer.attachAndSealTree(compoundEntry);
+		var subEntry = new SimpleConfigEntryImpl<>(configContainer, String.class);
+		var compoundEntry = new StaticMapCompoundConfigEntryImpl<>(
+				configContainer,
+				(Class<Map<String, Object>>)(Class<?>) Map.class,
+				(capacity) -> new HashMap<>(capacity * 2, 0.5F),
+				Map.of("test", subEntry)
+		);
 
-		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_SEALED);
-		assertThat(compoundEntry.sealed()).isTrue();
-		assertThat(subEntry.sealed()).isTrue();
+		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_SETUP);
+		configContainer.attachTree(compoundEntry);
+
+		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_ATTACHED);
 		assertThat(configContainer.rootEntry()).isSameAs(compoundEntry);
 	}
 
@@ -155,21 +155,23 @@ class DefaultConfigContainerTest {
 		assertThat(((ExtensionBData) extensionsData).test()).isEqualTo("blub");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void initialize() {
 		var configContainer = new DefaultConfigContainer<Map<String, Object>>();
-		var compoundEntry = new StaticMapCompoundConfigEntryImpl<>(
-				(Class<Map<String, Object>>)(Class<?>) Map.class,
-				(capacity) -> new HashMap<>(capacity * 2, 0.5F)
-		);
-		var subEntry = new SimpleConfigEntryImpl<>(String.class);
-		compoundEntry.addSubEntry("test", subEntry);
-
 		configContainer.registerExtension(ExtensionInitTracker.class);
 		configContainer.finishExtensionSetup();
-		configContainer.attachAndSealTree(compoundEntry);
 
-		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_SEALED);
+		var subEntry = new SimpleConfigEntryImpl<>(configContainer, String.class);
+		var compoundEntry = new StaticMapCompoundConfigEntryImpl<>(
+				configContainer,
+				(Class<Map<String, Object>>)(Class<?>) Map.class,
+				(capacity) -> new HashMap<>(capacity * 2, 0.5F),
+				Map.of("test", subEntry)
+		);
+		configContainer.attachTree(compoundEntry);
+
+		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_ATTACHED);
 		configContainer.initialize();
 		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.READY);
 

@@ -12,8 +12,6 @@ public class TrivialPojoWeaver implements TweedPojoWeaver {
 
 	@Override
 	public <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
-		SimpleConfigEntryImpl<T> entry = new SimpleConfigEntryImpl<>(valueType.declaredType());
-		entry.seal(context.configContainer());
-		return entry;
+		return new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType());
 	}
 }

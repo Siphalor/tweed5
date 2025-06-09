@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
@@ -44,22 +45,21 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 
 			IntFunction<Collection<Object>> constructor = getCollectionConstructor(valueType);
 
-			WeavableCollectionConfigEntry configEntry = WeavableCollectionConfigEntry.FACTORY
-					.construct(Objects.requireNonNull(weavingConfig.collectionEntryClass()))
-					.typedArg(valueType.declaredType())
-					.typedArg(IntFunction.class, constructor)
-					.finish();
-
-			configEntry.elementEntry(context.weaveEntry(
+			ConfigEntry<?> elementEntry = context.weaveEntry(
 					collectionTypeParams.get(0),
 					context.subContextBuilder("element")
 							.annotations(collectionTypeParams.get(0))
 							.extensionsData(newExtensionsData)
 							.build()
-			));
-			configEntry.seal(context.configContainer());
+			);
 
-			return configEntry;
+			return WeavableCollectionConfigEntry.FACTORY
+					.construct(Objects.requireNonNull(weavingConfig.collectionEntryClass()))
+					.typedArg(ConfigContainer.class, context.configContainer())
+					.typedArg(valueType.declaredType())
+					.typedArg(IntFunction.class, constructor)
+					.namedArg("elementEntry", elementEntry)
+					.finish();
 		} catch (Exception e) {
 			throw new PojoWeavingException("Exception occurred trying to weave collection for class " + valueType, e);
 		}

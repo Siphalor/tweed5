@@ -20,11 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
+import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
+import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidationExtensionImplTest {
@@ -42,17 +41,24 @@ class ValidationExtensionImplTest {
 		configContainer.registerExtension(ValidationExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
+		byteEntry = new SimpleConfigEntryImpl<>(configContainer, Byte.class);
+		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
+		doubleEntry = new SimpleConfigEntryImpl<>(configContainer, Double.class);
+
 		//noinspection unchecked
-		rootEntry = new StaticMapCompoundConfigEntryImpl<>(((Class<Map<String, Object>>) (Class<?>) Map.class), LinkedHashMap::new);
+		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
+				configContainer,
+				((Class<Map<String, Object>>) (Class<?>) Map.class),
+				LinkedHashMap::new,
+				sequencedMap(List.of(
+						entry("byte", byteEntry),
+						entry("int", intEntry),
+						entry("double", doubleEntry)
+				))
+		);
 
-		byteEntry = new SimpleConfigEntryImpl<>(Byte.class);
-		rootEntry.addSubEntry("byte", byteEntry);
-		intEntry = new SimpleConfigEntryImpl<>(Integer.class);
-		rootEntry.addSubEntry("int", intEntry);
-		doubleEntry = new SimpleConfigEntryImpl<>(Double.class);
-		rootEntry.addSubEntry("double", doubleEntry);
 
-		configContainer.attachAndSealTree(rootEntry);
+		configContainer.attachTree(rootEntry);
 
 		//noinspection unchecked
 		RegisteredExtensionData<EntryExtensionsData, EntryComment> commentData = (RegisteredExtensionData<EntryExtensionsData, EntryComment>) configContainer.entryDataExtensions().get(EntryComment.class);
