@@ -173,7 +173,7 @@ class DefaultConfigContainerTest {
 
 		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.TREE_ATTACHED);
 		configContainer.initialize();
-		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.READY);
+		assertThat(configContainer.setupPhase()).isEqualTo(ConfigContainerSetupPhase.INITIALIZED);
 
 		var initTracker = configContainer.extension(ExtensionInitTracker.class).orElseThrow();
 		assertThat(initTracker.initializedEntries()).containsExactlyInAnyOrder(compoundEntry, subEntry);

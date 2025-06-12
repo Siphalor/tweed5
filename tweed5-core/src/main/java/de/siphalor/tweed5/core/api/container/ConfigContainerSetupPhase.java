@@ -4,5 +4,5 @@ public enum ConfigContainerSetupPhase {
 	EXTENSIONS_SETUP,
 	TREE_SETUP,
 	TREE_ATTACHED,
-	READY,
+	INITIALIZED,
 }

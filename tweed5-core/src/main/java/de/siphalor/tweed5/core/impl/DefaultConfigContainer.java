@@ -201,7 +201,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
 				ConfigContainerSetupPhase.TREE_ATTACHED,
-				ConfigContainerSetupPhase.READY
+				ConfigContainerSetupPhase.INITIALIZED
 		);
 		try {
 			return Optional.ofNullable(extensions.getSingleInstance(extensionClass));
@@ -215,7 +215,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
 				ConfigContainerSetupPhase.TREE_ATTACHED,
-				ConfigContainerSetupPhase.READY
+				ConfigContainerSetupPhase.INITIALIZED
 		);
 		return Collections.unmodifiableCollection(extensions.values());
 	}
@@ -246,7 +246,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 		requireSetupPhase(
 				ConfigContainerSetupPhase.TREE_SETUP,
 				ConfigContainerSetupPhase.TREE_ATTACHED,
-				ConfigContainerSetupPhase.READY
+				ConfigContainerSetupPhase.INITIALIZED
 		);
 		return registeredEntryDataExtensions;
 	}
@@ -262,12 +262,12 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 			}
 		});
 
-		setupPhase = ConfigContainerSetupPhase.READY;
+		setupPhase = ConfigContainerSetupPhase.INITIALIZED;
 	}
 
 	@Override
 	public ConfigEntry<T> rootEntry() {
-		requireSetupPhase(ConfigContainerSetupPhase.TREE_ATTACHED, ConfigContainerSetupPhase.READY);
+		requireSetupPhase(ConfigContainerSetupPhase.TREE_ATTACHED, ConfigContainerSetupPhase.INITIALIZED);
 
 		assert rootEntry != null;
 		return rootEntry;

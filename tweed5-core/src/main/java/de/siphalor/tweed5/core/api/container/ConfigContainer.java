@@ -20,6 +20,8 @@ public interface ConfigContainer<T> {
 	@SuppressWarnings("rawtypes")
 	TweedConstructFactory<ConfigContainer> FACTORY = TweedConstructFactory.builder(ConfigContainer.class).build();
 
+	ConfigContainerSetupPhase setupPhase();
+
 	default void registerExtensions(Class<? extends TweedExtension>... extensionClasses) {
 		for (Class<? extends TweedExtension> extensionClass : extensionClasses) {
 			registerExtension(extensionClass);
