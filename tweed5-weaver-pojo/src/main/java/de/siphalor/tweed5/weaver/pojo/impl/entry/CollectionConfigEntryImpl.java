@@ -62,7 +62,7 @@ public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseC
 	}
 
 	@Override
-	public @NotNull T deepCopy(@NotNull T value) {
+	public @NotNull T deepCopy(T value) {
 		T copy = instantiateCollection(value.size());
 		for (E element : value) {
 			copy.add(elementEntry.deepCopy(element));

@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -63,7 +62,7 @@ public class TweedEntryReaderWriterImpls {
 	}
 
 	@RequiredArgsConstructor
-	private static class PrimitiveReaderWriter<T extends @NonNull Object> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
+	private static class PrimitiveReaderWriter<T extends @Nullable Object> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
 		private final Function<TweedDataToken, T> readerCall;
 		private final BiConsumer<TweedDataVisitor, T> writerCall;
 
@@ -79,7 +78,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CollectionReaderWriter<T extends @NonNull Object, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
+	public static class CollectionReaderWriter<T extends @Nullable Object, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
 		@Override
 		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start");
@@ -89,9 +88,9 @@ public class TweedEntryReaderWriterImpls {
 			}
 
 			ConfigEntry<T> elementEntry = entry.elementEntry();
-			TweedEntryReader<T, ConfigEntry<T>> elementReader = ReadWriteExtensionImpl.getReaderChain(elementEntry);
+			TweedEntryReader<T, ConfigEntry<T>> elementReader = context.readWriteExtension().getReaderChain(elementEntry);
 
-			List<T> list = new ArrayList<>(20);
+			List<@Nullable T> list = new ArrayList<>(20);
 			while (true) {
 				token = reader.peekToken();
 				if (token.isListEnd()) {
@@ -119,7 +118,7 @@ public class TweedEntryReaderWriterImpls {
 			}
 
 			ConfigEntry<T> elementEntry = entry.elementEntry();
-			TweedEntryWriter<T, ConfigEntry<T>> elementWriter = ReadWriteExtensionImpl.getWriterChain(elementEntry);
+			TweedEntryWriter<T, ConfigEntry<T>> elementWriter = context.readWriteExtension().getWriterChain(elementEntry);
 
 			writer.visitListStart();
 			for (T element : value) {
@@ -129,7 +128,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CompoundReaderWriter<T extends @NonNull Object> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
+	public static class CompoundReaderWriter<T> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
 		@Override
 		public T read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
 			assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start");
@@ -145,7 +144,7 @@ public class TweedEntryReaderWriterImpls {
 
 					//noinspection unchecked
 					ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
-					TweedEntryReader<Object, ConfigEntry<Object>> subEntryReaderChain = ReadWriteExtensionImpl.getReaderChain(subEntry);
+					TweedEntryReader<Object, ConfigEntry<Object>> subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
 					Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
 					entry.set(compoundValue, key, subEntryValue);
 				} else {
@@ -167,7 +166,7 @@ public class TweedEntryReaderWriterImpls {
 				String key = e.getKey();
 				ConfigEntry<Object> subEntry = e.getValue();
 
-				TweedEntryWriter<Object, ConfigEntry<Object>> subEntryWriterChain = ReadWriteExtensionImpl.getWriterChain(subEntry);
+				TweedEntryWriter<Object, ConfigEntry<Object>> subEntryWriterChain = context.readWriteExtension().getWriterChain(subEntry);
 
 				writer.visitMapEntryKey(key);
 				subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);

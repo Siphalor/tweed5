@@ -2,22 +2,21 @@ package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
-import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandle;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +30,8 @@ public class TweedPojoWeaverBootstrapper<T> {
 	private final ConfigContainer<T> configContainer;
 	private final Collection<TweedPojoWeaver> weavers;
 	private final Collection<TweedPojoWeavingPostProcessor> postProcessors;
-	private PatchworkClass<WeavingContext.ExtensionsData> contextExtensionsDataClass;
+	@Nullable
+	private PatchworkFactory contextExtensionsPatchworkFactory;
 
 	public static <T> TweedPojoWeaverBootstrapper<T> create(Class<T> pojoClass) {
 		PojoWeaving rootWeavingConfig = expectAnnotation(pojoClass, PojoWeaving.class);
@@ -88,44 +88,21 @@ public class TweedPojoWeaverBootstrapper<T> {
 	}
 
 	private void setupWeavers() {
-		Map<Class<?>, RegisteredExtensionDataImpl<?>> registeredExtensions = new HashMap<>();
+		PatchworkFactory.Builder contextExtensionsPatchworkFactoryBuilder = PatchworkFactory.builder();
 
-		TweedPojoWeaver.SetupContext setupContext = new TweedPojoWeaver.SetupContext() {
-			@Override
-			public <E> RegisteredExtensionData<WeavingContext.ExtensionsData, E> registerWeavingContextExtensionData(
-					Class<E> dataClass
-			) {
-				RegisteredExtensionDataImpl<E> registeredExtension = new RegisteredExtensionDataImpl<>();
-				registeredExtensions.put(dataClass, registeredExtension);
-				return registeredExtension;
-			}
-		};
+		TweedPojoWeaver.SetupContext setupContext = contextExtensionsPatchworkFactoryBuilder::registerPart;
 
 		for (TweedPojoWeaver weaver : weavers) {
 			weaver.setup(setupContext);
 		}
 
-		PatchworkClassCreator<WeavingContext.ExtensionsData> weavingContextCreator = PatchworkClassCreator.<WeavingContext.ExtensionsData>builder()
-				.classPackage(this.getClass().getPackage().getName() + ".generated")
-				.classPrefix("WeavingContext$")
-				.patchworkInterface(WeavingContext.ExtensionsData.class)
-				.build();
-
-		try {
-			this.contextExtensionsDataClass = weavingContextCreator.createClass(registeredExtensions.keySet());
-
-			for (PatchworkClassPart part : this.contextExtensionsDataClass.parts()) {
-				RegisteredExtensionDataImpl<?> registeredExtension = registeredExtensions.get(part.partInterface());
-				registeredExtension.setter(part.fieldSetter());
-			}
-		} catch (PatchworkClassGenerator.GenerationException e) {
-			throw new PojoWeavingException("Failed to create weaving context extensions data");
-		}
+		contextExtensionsPatchworkFactory = contextExtensionsPatchworkFactoryBuilder.build();
 	}
 
 	private WeavingContext createWeavingContext() {
 		try {
-			WeavingContext.ExtensionsData extensionsData = (WeavingContext.ExtensionsData) contextExtensionsDataClass.constructor().invoke();
+			assert contextExtensionsPatchworkFactory != null;
+			Patchwork extensionsData = contextExtensionsPatchworkFactory.create();
 
 			return WeavingContext.builder(this::weaveEntry, configContainer)
 					.extensionsData(extensionsData)
@@ -154,20 +131,6 @@ public class TweedPojoWeaverBootstrapper<T> {
 				postProcessor.apply(configEntry, context);
 			} catch (Exception e) {
 				log.error("Failed to apply Tweed POJO weaver post processor", e);
-			}
-		}
-	}
-
-	@Setter
-	private static class RegisteredExtensionDataImpl<E> implements RegisteredExtensionData<WeavingContext.ExtensionsData, E> {
-		private MethodHandle setter;
-
-		@Override
-		public void set(WeavingContext.ExtensionsData patchwork, E extension) {
-			try {
-				setter.invokeWithArguments(patchwork, extension);
-			} catch (Throwable e) {
-				throw new IllegalStateException(e);
 			}
 		}
 	}

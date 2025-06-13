@@ -3,6 +3,7 @@ package de.siphalor.tweed5.defaultextensions.validation.api.result;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,16 +12,16 @@ import java.util.function.Function;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class ValidationResult<T> {
+public class ValidationResult<T extends @Nullable Object> {
 	private final T value;
 	private final Collection<ValidationIssue> issues;
 	private final boolean hasError;
 
-	public static <T> ValidationResult<T> ok(T value) {
+	public static <T extends @Nullable Object> ValidationResult<T> ok(T value) {
 		return new ValidationResult<>(value, Collections.emptyList(), false);
 	}
 
-	public static <T> ValidationResult<T> withIssues(T value, Collection<ValidationIssue> issues) {
+	public static <T extends @Nullable Object> ValidationResult<T> withIssues(T value, Collection<ValidationIssue> issues) {
 		return new ValidationResult<>(value, issues, issuesContainError(issues));
 	}
 

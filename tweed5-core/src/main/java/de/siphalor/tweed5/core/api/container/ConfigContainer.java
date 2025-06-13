@@ -1,13 +1,12 @@
 package de.siphalor.tweed5.core.api.container;
 
 import de.siphalor.tweed5.construct.api.TweedConstructFactory;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -16,7 +15,7 @@ import java.util.Optional;
  * @param <T> The class that the config tree represents
  * @see ConfigContainerSetupPhase
  */
-public interface ConfigContainer<T> {
+public interface ConfigContainer<T extends @Nullable Object> {
 	@SuppressWarnings("rawtypes")
 	TweedConstructFactory<ConfigContainer> FACTORY = TweedConstructFactory.builder(ConfigContainer.class).build();
 
@@ -36,10 +35,9 @@ public interface ConfigContainer<T> {
 
 	void attachTree(ConfigEntry<T> rootEntry);
 
-	EntryExtensionsData createExtensionsData();
+	Patchwork createExtensionsData();
 
 	void initialize();
 
 	ConfigEntry<T> rootEntry();
-	Map<Class<?>, ? extends RegisteredExtensionData<EntryExtensionsData, ?>> entryDataExtensions();
 }

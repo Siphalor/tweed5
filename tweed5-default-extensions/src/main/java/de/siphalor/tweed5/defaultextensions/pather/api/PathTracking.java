@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class PathTracking implements PatherData {
+public class PathTracking {
 	private final StringBuilder pathBuilder = new StringBuilder(256);
 	private final Deque<Context> contextStack = new ArrayDeque<>(50);
 	private final Deque<String> pathParts = new ArrayDeque<>(50);
@@ -52,8 +52,7 @@ public class PathTracking implements PatherData {
 		return index;
 	}
 
-	@Override
-	public String valuePath() {
+	public String currentPath() {
 		return pathBuilder.toString();
 	}
 

@@ -2,32 +2,32 @@ package de.siphalor.tweed5.defaultextensions.comment.impl;
 
 import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
+import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.defaultextensions.comment.api.*;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Value;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 @AutoService(CommentExtension.class)
 public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentExtension {
 	private final ConfigContainer<?> configContainer;
 	@Getter
-	private final RegisteredExtensionData<EntryExtensionsData, InternalCommentEntryData> internalEntryDataExtension;
+	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
 	private final DefaultMiddlewareContainer<CommentProducer> middlewareContainer;
 
 	public CommentExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
 		this.configContainer = configContainer;
-		this.internalEntryDataExtension = context.registerEntryExtensionData(InternalCommentEntryData.class);
-		context.registerEntryExtensionData(EntryComment.class);
+		this.customEntryDataAccess = context.registerEntryExtensionData(CustomEntryData.class);
 		this.middlewareContainer = new DefaultMiddlewareContainer<>();
 	}
 
@@ -48,31 +48,49 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 
 	@Override
 	public @Nullable Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware() {
-		return TweedEntryWriterCommentMiddleware.INSTANCE;
+		return new TweedEntryWriterCommentMiddleware(this);
+	}
+
+	@Override
+	public void setBaseComment(ConfigEntry<?> configEntry, String baseComment) {
+		if (configEntry.container() != configContainer) {
+			throw new IllegalArgumentException("config entry doesn't belong to config container of this extension");
+		} else if (configContainer.setupPhase().compareTo(ConfigContainerSetupPhase.INITIALIZED) >= 0) {
+			throw new IllegalStateException("config container must not be initialized");
+		}
+
+		getOrCreateCustomEntryData(configEntry).baseComment(baseComment);
 	}
 
 	@Override
 	public void initEntry(ConfigEntry<?> configEntry) {
-		EntryExtensionsData entryExtensionsData = configEntry.extensionsData();
-		String baseComment;
-		if (entryExtensionsData.isPatchworkPartSet(EntryComment.class)) {
-			baseComment = ((EntryComment) entryExtensionsData).comment();
-		} else {
-			baseComment = "";
-		}
+		CustomEntryData entryData = getOrCreateCustomEntryData(configEntry);
+		entryData.commentProducer(middlewareContainer.process(entry -> entryData.baseComment()));
+	}
 
-		CommentProducer middleware = middlewareContainer.process(entry -> baseComment);
-		internalEntryDataExtension.set(entryExtensionsData, new InternalCommentEntryDataImpl(middleware));
+	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {
+		CustomEntryData customEntryData = entry.extensionsData().get(customEntryDataAccess);
+		if (customEntryData == null) {
+			customEntryData = new CustomEntryData();
+			entry.extensionsData().set(customEntryDataAccess,  customEntryData);
+		}
+		return customEntryData;
 	}
 
 	@Override
-	public @Nullable String getFullComment(@NonNull ConfigEntry<?> configEntry) {
-		String comment = ((InternalCommentEntryData) configEntry.extensionsData()).commentProducer().createComment(configEntry);
+	public @Nullable String getFullComment(ConfigEntry<?> configEntry) {
+		CustomEntryData customEntryData = configEntry.extensionsData().get(customEntryDataAccess);
+		if (customEntryData == null) {
+			return null;
+		}
+		String comment = customEntryData.commentProducer().createComment(configEntry);
 		return comment.isEmpty() ? null : comment;
 	}
 
-	@Value
-	private static class InternalCommentEntryDataImpl implements InternalCommentEntryData {
-		CommentProducer commentProducer;
+
+	@Data
+	private static class CustomEntryData {
+		private String baseComment = "";
+		private CommentProducer commentProducer;
 	}
 }

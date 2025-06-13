@@ -1,37 +1,39 @@
 package de.siphalor.tweed5.defaultextensions.validation.impl;
 
+import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
-import de.siphalor.tweed5.defaultextensions.comment.api.EntryComment;
-import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.validators.NumberRangeValidator;
-import de.siphalor.tweed5.defaultextensions.validation.api.validators.SimpleValidatorMiddleware;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
+import static de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension.baseComment;
+import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
 import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidationExtensionImplTest {
 	private DefaultConfigContainer<Map<String, Object>> configContainer;
-	private StaticMapCompoundConfigEntryImpl<Map<String, Object>> rootEntry;
-	private SimpleConfigEntryImpl<Byte> byteEntry;
-	private SimpleConfigEntryImpl<Integer> intEntry;
-	private SimpleConfigEntryImpl<Double> doubleEntry;
+	private CompoundConfigEntry<Map<String, Object>> rootEntry;
+	private SimpleConfigEntry<Byte> byteEntry;
+	private SimpleConfigEntry<Integer> intEntry;
+	private SimpleConfigEntry<Double> doubleEntry;
 
 	@BeforeEach
 	void setUp() {
@@ -41,9 +43,13 @@ class ValidationExtensionImplTest {
 		configContainer.registerExtension(ValidationExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
-		byteEntry = new SimpleConfigEntryImpl<>(configContainer, Byte.class);
-		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
-		doubleEntry = new SimpleConfigEntryImpl<>(configContainer, Double.class);
+		byteEntry = new SimpleConfigEntryImpl<>(configContainer, Byte.class)
+				.apply(validators(new NumberRangeValidator<>(Byte.class, (byte) 10, (byte) 100)));
+		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
+				.apply(validators(new NumberRangeValidator<>(Integer.class, null, 123)))
+				.apply(baseComment("This is the main comment!"));
+		doubleEntry = new SimpleConfigEntryImpl<>(configContainer, Double.class)
+				.apply(validators(new NumberRangeValidator<>(Double.class, 0.5, null)));
 
 		//noinspection unchecked
 		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
@@ -59,25 +65,6 @@ class ValidationExtensionImplTest {
 
 
 		configContainer.attachTree(rootEntry);
-
-		//noinspection unchecked
-		RegisteredExtensionData<EntryExtensionsData, EntryComment> commentData = (RegisteredExtensionData<EntryExtensionsData, EntryComment>) configContainer.entryDataExtensions().get(EntryComment.class);
-		commentData.set(intEntry.extensionsData(), () -> "This is the main comment!");
-		//noinspection unchecked
-		RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation> entrySpecificValidation = (RegisteredExtensionData<EntryExtensionsData, EntrySpecificValidation>) configContainer.entryDataExtensions().get(EntrySpecificValidation.class);
-		entrySpecificValidation.set(
-				byteEntry.extensionsData(),
-				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Byte.class, (byte) 10, (byte) 100)))
-		);
-		entrySpecificValidation.set(
-				intEntry.extensionsData(),
-				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Integer.class, null, 123)))
-		);
-		entrySpecificValidation.set(
-				doubleEntry.extensionsData(),
-				() -> Collections.singleton(new SimpleValidatorMiddleware("range", new NumberRangeValidator<>(Double.class, 0.5, null)))
-		);
-
 		configContainer.initialize();
 	}
 

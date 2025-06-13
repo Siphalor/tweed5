@@ -2,24 +2,18 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
-import de.siphalor.tweed5.namingformat.api.NamingFormat;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
+import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfig;
-import lombok.AllArgsConstructor;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.Test;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isSimpleEntryForClass;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unused")
 @NullUnmarked
@@ -27,13 +21,12 @@ class CompoundPojoWeaverTest {
 
 	@Test
 	void weave() {
+		PatchworkFactory.Builder weavingContextExtensionDataFactoryBuilder = PatchworkFactory.builder();
+
 		CompoundPojoWeaver compoundWeaver = new CompoundPojoWeaver();
-		compoundWeaver.setup(new TweedPojoWeaver.SetupContext() {
-			@Override
-			public <E> RegisteredExtensionData<WeavingContext.ExtensionsData, E> registerWeavingContextExtensionData(Class<E> dataClass) {
-				return (patchwork, extension) -> ((ExtensionsDataMock) patchwork).weavingConfig = (CompoundWeavingConfig) extension;
-			}
-		});
+		compoundWeaver.setup(weavingContextExtensionDataFactoryBuilder::registerPart);
+
+		PatchworkFactory weavingContextExtensionDataFactory = weavingContextExtensionDataFactoryBuilder.build();
 
 		WeavingContext weavingContext = WeavingContext.builder(new TweedPojoWeavingFunction.NonNull() {
 					@Override
@@ -46,7 +39,7 @@ class CompoundPojoWeaverTest {
 						}
 					}
 				}, mock(ConfigContainer.class))
-				.extensionsData(new ExtensionsDataMock(null))
+				.extensionsData(weavingContextExtensionDataFactory.create())
 				.annotations(Compound.class)
 				.build();
 
@@ -85,40 +78,5 @@ class CompoundPojoWeaverTest {
 
 	public static class InnerValue {
 		public Integer value;
-	}
-
-	@AllArgsConstructor
-	private static class ExtensionsDataMock implements WeavingContext.ExtensionsData, CompoundWeavingConfig {
-		private CompoundWeavingConfig weavingConfig;
-
-		@Override
-		public boolean isPatchworkPartDefined(Class<?> patchworkInterface) {
-			return patchworkInterface == CompoundWeavingConfig.class;
-		}
-
-		@Override
-		public boolean isPatchworkPartSet(Class<?> patchworkInterface) {
-			return weavingConfig != null;
-		}
-
-		@Override
-		public WeavingContext.ExtensionsData copy() {
-			return new ExtensionsDataMock(weavingConfig);
-		}
-
-		@Override
-		public NamingFormat compoundSourceNamingFormat() {
-			return weavingConfig.compoundSourceNamingFormat();
-		}
-
-		@Override
-		public NamingFormat compoundTargetNamingFormat() {
-			return weavingConfig.compoundTargetNamingFormat();
-		}
-
-		@Override
-		public @Nullable Class<? extends WeavableCompoundConfigEntry> compoundEntryClass() {
-			return weavingConfig.compoundEntryClass();
-		}
 	}
 }

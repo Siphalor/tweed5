@@ -1,7 +1,8 @@
 package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
 import de.siphalor.tweed5.construct.api.TweedConstructFactory;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import org.jetbrains.annotations.ApiStatus;
 
 public interface TweedPojoWeaver extends TweedPojoWeavingFunction {
@@ -11,6 +12,6 @@ public interface TweedPojoWeaver extends TweedPojoWeavingFunction {
 	void setup(SetupContext context);
 
 	interface SetupContext {
-		<E> RegisteredExtensionData<WeavingContext.ExtensionsData, E> registerWeavingContextExtensionData(Class<E> dataClass);
+		<E> PatchworkPartAccess<E> registerWeavingContextExtensionData(Class<E> dataClass);
 	}
 }

@@ -7,6 +7,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -97,7 +98,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
+	public void visitInOrder(ConfigEntryValueVisitor visitor, @Nullable T value) {
 		if (visitor.enterCompoundEntry(this, value)) {
 			subEntries.forEach((key, entry) -> {
 				if (visitor.enterCompoundSubEntry(key)) {

@@ -1,6 +1,8 @@
 package de.siphalor.tweed5.core.api.extension;
 
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
+
 public interface TweedExtensionSetupContext {
-	<E> RegisteredExtensionData<EntryExtensionsData, E> registerEntryExtensionData(Class<E> dataClass);
+	<E> PatchworkPartAccess<E> registerEntryExtensionData(Class<E> dataClass);
 	void registerExtension(Class<? extends TweedExtension> extensionClass);
 }

@@ -74,49 +74,32 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			return;
 		}
 
-		EntryReaderWriterDefinition definition = createDefinitionFromEntryConfig(entryConfig, context);
-		if (definition != null) {
-			readWriteExtension.setEntryReaderWriterDefinition(configEntry, definition);
-		}
+		//noinspection rawtypes,unchecked
+		readWriteExtension.setEntryReaderWriter(
+				(ConfigEntry) configEntry,
+				(TweedEntryReader) resolveReader(entryConfig, context),
+				(TweedEntryWriter) resolveWriter(entryConfig, context)
+		);
 	}
 
-	private @Nullable EntryReaderWriterDefinition createDefinitionFromEntryConfig(EntryReadWriteConfig entryConfig, WeavingContext context) {
-		String readerSpecText = entryConfig.reader().isEmpty() ? entryConfig.value() : entryConfig.reader();
-		String writerSpecText = entryConfig.writer().isEmpty() ? entryConfig.value() : entryConfig.writer();
-
-		SerdePojoReaderWriterSpec readerSpec;
-		SerdePojoReaderWriterSpec writerSpec;
-		if (readerSpecText.equals(writerSpecText)) {
-			readerSpec = writerSpec = specFromText(readerSpecText, context);
-		} else {
-			readerSpec = specFromText(readerSpecText, context);
-			writerSpec = specFromText(writerSpecText, context);
-		}
-
-		if (readerSpec == null && writerSpec == null) {
-			return null;
-		}
+	private TweedEntryReader<?, ?> resolveReader(EntryReadWriteConfig entryConfig, WeavingContext context) {
+		String specText = entryConfig.reader().isEmpty() ? entryConfig.value() : entryConfig.reader();
+		SerdePojoReaderWriterSpec spec = specFromText(specText, context);
 
 		//noinspection unchecked,rawtypes
-		TweedEntryReader<?, ?> reader = Optional.ofNullable(readerSpec)
-				.map((spec) -> resolveReaderWriterFromSpec((Class<TweedEntryReader<?, ?>>)(Object) TweedEntryReader.class, readerFactories, spec, context))
+		return Optional.ofNullable(spec)
+				.map(s -> resolveReaderWriterFromSpec((Class<TweedEntryReader<?, ?>>)(Object) TweedEntryReader.class, readerFactories, s, context))
 				.orElse(((TweedEntryReader) TweedEntryReaderWriterImpls.NOOP_READER_WRITER));
+	}
+
+	private TweedEntryWriter<?, ?> resolveWriter(EntryReadWriteConfig entryConfig, WeavingContext context) {
+		String specText = entryConfig.writer().isEmpty() ? entryConfig.value() : entryConfig.writer();
+		SerdePojoReaderWriterSpec spec = specFromText(specText, context);
+
 		//noinspection unchecked,rawtypes
-		TweedEntryWriter<?, ?> writer = Optional.ofNullable(writerSpec)
-				.map((spec) -> resolveReaderWriterFromSpec((Class<TweedEntryWriter<?, ?>>)(Object) TweedEntryWriter.class, writerFactories, spec, context))
+		return Optional.ofNullable(spec)
+				.map(s -> resolveReaderWriterFromSpec((Class<TweedEntryWriter<?, ?>>)(Object) TweedEntryWriter.class, writerFactories, s, context))
 				.orElse(((TweedEntryWriter) TweedEntryReaderWriterImpls.NOOP_READER_WRITER));
-
-		return new EntryReaderWriterDefinition() {
-			@Override
-			public TweedEntryReader<?, ?> reader() {
-				return reader;
-			}
-
-			@Override
-			public TweedEntryWriter<?, ?> writer() {
-				return writer;
-			}
-		};
 	}
 
 	private @Nullable SerdePojoReaderWriterSpec specFromText(String specText, WeavingContext context) {

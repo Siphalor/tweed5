@@ -10,7 +10,8 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
-import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackValue;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
+import lombok.Data;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,8 +21,11 @@ import java.util.stream.Collectors;
 
 @AutoService(ValidationFallbackExtension.class)
 public class ValidationFallbackExtensionImpl implements ValidationFallbackExtension, ValidationProvidingExtension {
+
+	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
+
 	public ValidationFallbackExtensionImpl(TweedExtensionSetupContext context) {
-		context.registerEntryExtensionData(ValidationFallbackValue.class);
+		customEntryDataAccess = context.registerEntryExtensionData(CustomEntryData.class);
 	}
 
 	@Override
@@ -30,11 +34,30 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 	}
 
 	@Override
+	public <T> void setFallbackValue(ConfigEntry<T> entry, T value) {
+		getOrCreateCustomEntryData(entry).fallbackValue(value);
+	}
+
+	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {
+		CustomEntryData customEntryData = entry.extensionsData().get(customEntryDataAccess);
+		if (customEntryData == null) {
+			customEntryData = new CustomEntryData();
+			entry.extensionsData().set(customEntryDataAccess, customEntryData);
+		}
+		return customEntryData;
+	}
+
+	@Override
 	public Middleware<ConfigEntryValidator> validationMiddleware() {
 		return new ValidationFallbackMiddleware();
 	}
 
-	private static class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator> {
+	@Data
+	private static class CustomEntryData {
+		@Nullable Object fallbackValue;
+	}
+
+	private class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator> {
 		@Override
 		public String id() {
 			return "validation-fallback";
@@ -59,13 +82,14 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 					if (!result.hasError()) {
 						return result;
 					}
-					if (!configEntry.extensionsData().isPatchworkPartSet(ValidationFallbackValue.class)) {
+					CustomEntryData entryData = configEntry.extensionsData().get(customEntryDataAccess);
+					if (entryData == null) {
 						return result;
 					}
 
-					Object fallbackValue = ((ValidationFallbackValue) configEntry.extensionsData()).validationFallbackValue();
+					Object fallbackValue = entryData.fallbackValue();
 					if (fallbackValue != null) {
-						if (fallbackValue.getClass() == configEntry.valueClass()) {
+						if (configEntry.valueClass().isInstance(fallbackValue)) {
 							//noinspection unchecked
 							fallbackValue = configEntry.deepCopy((T) fallbackValue);
 						} else {
@@ -90,12 +114,11 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 
 				@Override
 				public <T> String description(ConfigEntry<T> configEntry) {
-					if (!configEntry.extensionsData().isPatchworkPartSet(ValidationFallbackValue.class)) {
+					CustomEntryData entryData = configEntry.extensionsData().get(customEntryDataAccess);
+					if (entryData == null) {
 						return inner.description(configEntry);
 					}
-					return inner.description(configEntry) +
-							"\n\nDefault/Fallback value: " +
-							((ValidationFallbackValue) configEntry.extensionsData()).validationFallbackValue();
+					return inner.description(configEntry) + "\n\nDefault/Fallback value: " + entryData.fallbackValue();
 				}
 			};
 		}

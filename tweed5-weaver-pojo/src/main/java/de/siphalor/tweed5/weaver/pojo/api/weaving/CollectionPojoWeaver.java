@@ -2,7 +2,8 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CollectionWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCollectionConfigEntry;
@@ -24,24 +25,27 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 			.collectionEntryClass(CollectionConfigEntryImpl.class)
 			.build();
 
-	private RegisteredExtensionData<WeavingContext.ExtensionsData, CollectionWeavingConfig> weavingConfigAccess;
+	@Nullable
+	private PatchworkPartAccess<CollectionWeavingConfig> weavingConfigAccess;
 
 	@Override
 	public void setup(SetupContext context) {
 		this.weavingConfigAccess = context.registerWeavingContextExtensionData(CollectionWeavingConfig.class);
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({"unchecked"})
 	@Override
 	public <T> @Nullable ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+		assert weavingConfigAccess != null;
+
 		List<ActualType<?>> collectionTypeParams = valueType.getTypesOfSuperArguments(Collection.class);
 		if (collectionTypeParams == null) {
 			return null;
 		}
 		try {
 			CollectionWeavingConfig weavingConfig = getOrCreateWeavingConfig(context);
-			WeavingContext.ExtensionsData newExtensionsData = context.extensionsData().copy();
-			weavingConfigAccess.set(newExtensionsData, weavingConfig);
+			Patchwork newExtensionsData = context.extensionsData().copy();
+			newExtensionsData.set(weavingConfigAccess, weavingConfig);
 
 			IntFunction<Collection<Object>> constructor = getCollectionConstructor(valueType);
 
@@ -66,10 +70,10 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 	}
 
 	private CollectionWeavingConfig getOrCreateWeavingConfig(WeavingContext context) {
-		CollectionWeavingConfig parent;
-		if (context.extensionsData().isPatchworkPartSet(CollectionWeavingConfig.class)) {
-			parent = (CollectionWeavingConfig) context.extensionsData();
-		} else {
+		assert weavingConfigAccess != null;
+
+		CollectionWeavingConfig parent = context.extensionsData().get(weavingConfigAccess);
+		if (parent == null) {
 			parent = DEFAULT_WEAVING_CONFIG;
 		}
 

@@ -3,6 +3,7 @@ package de.siphalor.tweed5.defaultextensions.pather.api;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
 @RequiredArgsConstructor
 public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisitor {
@@ -10,7 +11,7 @@ public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisi
 	private final PathTracking pathTracking;
 
 	@Override
-	public <T> void visitEntry(ConfigEntry<T> entry, T value) {
+	public <T extends @Nullable Object> void visitEntry(ConfigEntry<T> entry, T value) {
 		delegate.visitEntry(entry, value);
 		entryVisited();
 	}

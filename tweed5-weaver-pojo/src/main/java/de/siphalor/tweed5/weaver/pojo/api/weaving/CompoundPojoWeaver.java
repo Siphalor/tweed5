@@ -2,10 +2,11 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.namingformat.api.NamingFormat;
 import de.siphalor.tweed5.namingformat.api.NamingFormatCollector;
 import de.siphalor.tweed5.namingformat.api.NamingFormats;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
@@ -22,7 +23,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,8 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			.build();
 
 	private final NamingFormatCollector namingFormatCollector = new NamingFormatCollector();
-	private RegisteredExtensionData<WeavingContext.ExtensionsData, CompoundWeavingConfig> weavingConfigAccess;
+	@Nullable
+	private PatchworkPartAccess<CompoundWeavingConfig> weavingConfigAccess;
 
 	public void setup(SetupContext context) {
 		namingFormatCollector.setupFormats();
@@ -47,13 +48,15 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 	@Override
 	public <T> @Nullable ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
+		assert weavingConfigAccess != null;
+
 		if (context.annotations().getAnnotation(CompoundWeaving.class) == null) {
 			return null;
 		}
 		try {
 			CompoundWeavingConfig weavingConfig = getOrCreateWeavingConfig(context);
-			WeavingContext.ExtensionsData newExtensionsData = context.extensionsData().copy();
-			weavingConfigAccess.set(newExtensionsData, weavingConfig);
+			Patchwork newExtensionsData = context.extensionsData().copy();
+			newExtensionsData.set(weavingConfigAccess, weavingConfig);
 
 			PojoClassIntrospector introspector = PojoClassIntrospector.forClass(valueType.declaredType());
 
@@ -69,10 +72,10 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	}
 
 	private CompoundWeavingConfig getOrCreateWeavingConfig(WeavingContext context) {
-		CompoundWeavingConfig parent;
-		if (context.extensionsData().isPatchworkPartSet(CompoundWeavingConfig.class)) {
-			parent = (CompoundWeavingConfig) context.extensionsData();
-		} else {
+		assert weavingConfigAccess != null;
+
+		CompoundWeavingConfig parent = context.extensionsData().get(weavingConfigAccess);
+		if (parent == null) {
 			parent = DEFAULT_WEAVING_CONFIG;
 		}
 
@@ -143,10 +146,14 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 
 	private WeavableCompoundConfigEntry.SubEntry weaveCompoundSubEntry(
 			PojoClassIntrospector.Property property,
-			WeavingContext.ExtensionsData newExtensionsData,
+			Patchwork newExtensionsData,
 			WeavingContext parentContext
 	) {
-		String name = convertName(property.field().getName(), (CompoundWeavingConfig) newExtensionsData);
+		assert weavingConfigAccess != null;
+		CompoundWeavingConfig weavingConfig = newExtensionsData.get(weavingConfigAccess);
+		assert weavingConfig != null;
+
+		String name = convertName(property.field().getName(), weavingConfig);
 		WeavingContext subContext = createSubContextForProperty(property, name, newExtensionsData, parentContext);
 
 		ConfigEntry<?> subEntry;
@@ -189,7 +196,7 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	private WeavingContext createSubContextForProperty(
 			PojoClassIntrospector.Property property,
 			String name,
-			WeavingContext.ExtensionsData newExtensionsData,
+			Patchwork newExtensionsData,
 			WeavingContext parentContext
 	) {
 		return parentContext.subContextBuilder(name)

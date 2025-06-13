@@ -18,7 +18,7 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 	TweedPojoWeavingFunction.NonNull weavingFunction;
 	ConfigContainer<?> configContainer;
 	String[] path;
-	ExtensionsData extensionsData;
+	Patchwork extensionsData;
 	AnnotatedElement annotations;
 
 	public static Builder builder(TweedPojoWeavingFunction.NonNull weavingFunction, ConfigContainer<?> configContainer) {
@@ -40,8 +40,6 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 		return weavingFunction.weaveEntry(valueType, context);
 	}
 
-	public interface ExtensionsData extends Patchwork<ExtensionsData> {}
-
 	@Accessors(fluent = true, chain = true)
 	@Setter
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,7 +49,7 @@ public class WeavingContext implements TweedPojoWeavingFunction.NonNull {
 		private final TweedPojoWeavingFunction.NonNull weavingFunction;
 		private final ConfigContainer<?> configContainer;
 		private final String[] path;
-		private ExtensionsData extensionsData;
+		private Patchwork extensionsData;
 		private AnnotatedElement annotations;
 
 		public WeavingContext build() {

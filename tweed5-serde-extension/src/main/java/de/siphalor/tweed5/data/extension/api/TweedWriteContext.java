@@ -1,7 +1,8 @@
 package de.siphalor.tweed5.data.extension.api;
 
-import de.siphalor.tweed5.data.extension.api.extension.ReadWriteContextExtensionsData;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
 
 public interface TweedWriteContext {
-	ReadWriteContextExtensionsData extensionsData();
+	ReadWriteExtension readWriteExtension();
+	Patchwork extensionsData();
 }

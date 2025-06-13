@@ -5,12 +5,14 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+@RequiredArgsConstructor
 class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
-	public static final TweedEntryWriterCommentMiddleware INSTANCE = new TweedEntryWriterCommentMiddleware();
+	private final CommentExtension commentExtension;
 
 	@Override
 	public String id() {
@@ -49,7 +51,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 	}
 
 	@RequiredArgsConstructor
-	private static class CompoundDataVisitor implements TweedDataVisitor {
+	private class CompoundDataVisitor implements TweedDataVisitor {
 		private final TweedDataVisitor delegate;
 		private final CompoundConfigEntry<?> compoundConfigEntry;
 
@@ -134,11 +136,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 		}
 	}
 
-	private static @Nullable String getEntryComment(ConfigEntry<?> entry) {
-		if (!entry.extensionsData().isPatchworkPartSet(InternalCommentEntryData.class)) {
-			return null;
-		}
-		String comment = ((InternalCommentEntryData) entry.extensionsData()).commentProducer().createComment(entry).trim();
-		return comment.isEmpty() ? null : comment;
+	private @Nullable String getEntryComment(ConfigEntry<?> entry) {
+		return commentExtension.getFullComment(entry);
 	}
 }

@@ -2,8 +2,6 @@ package de.siphalor.tweed5.core.impl;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
@@ -131,28 +129,7 @@ class DefaultConfigContainerTest {
 		configContainer.registerExtension(ExtensionB.class);
 		configContainer.finishExtensionSetup();
 		var extensionData = configContainer.createExtensionsData();
-		assertThat(extensionData).isNotNull()
-				.satisfies(
-						data -> assertThat(data.isPatchworkPartDefined(ExtensionBData.class)).isTrue(),
-						data -> assertThat(data.isPatchworkPartDefined(String.class)).isFalse()
-				);
-	}
-
-	@Test
-	void entryDataExtensions() {
-		var configContainer = new DefaultConfigContainer<>();
-		configContainer.registerExtension(ExtensionB.class);
-		configContainer.finishExtensionSetup();
-
-		assertThat(configContainer.entryDataExtensions()).containsOnlyKeys(ExtensionBData.class);
-		//noinspection unchecked
-		var registeredExtension = (RegisteredExtensionData<EntryExtensionsData, ExtensionBData>)
-				configContainer.entryDataExtensions().get(ExtensionBData.class);
-
-		var extensionsData = configContainer.createExtensionsData();
-		registeredExtension.set(extensionsData, new ExtensionBDataImpl("blub"));
-
-		assertThat(((ExtensionBData) extensionsData).test()).isEqualTo("blub");
+		assertThat(extensionData).isNotNull();
 	}
 
 	@SuppressWarnings("unchecked")

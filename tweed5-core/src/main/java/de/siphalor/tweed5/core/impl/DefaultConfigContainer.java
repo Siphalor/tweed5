@@ -3,21 +3,15 @@ package de.siphalor.tweed5.core.impl;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
-import de.siphalor.tweed5.patchwork.api.PatchworkClassCreator;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClass;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClassGenerator;
-import de.siphalor.tweed5.patchwork.impl.PatchworkClassPart;
+import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.utils.api.collection.InheritanceMap;
 import lombok.Getter;
-import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -28,9 +22,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	private final Set<Class<? extends TweedExtension>> requestedExtensions = new HashSet<>();
 	private final InheritanceMap<TweedExtension> extensions = new InheritanceMap<>(TweedExtension.class);
 	private @Nullable ConfigEntry<T> rootEntry;
-	private @Nullable PatchworkClass<EntryExtensionsData> entryExtensionsDataPatchworkClass;
-	private final Map<Class<?>, RegisteredExtensionDataImpl<EntryExtensionsData, ?>> registeredEntryDataExtensions
-			= new HashMap<>();
+	private @Nullable PatchworkFactory entryExtensionsDataPatchworkFactory;
 
 	@Override
 	public void registerExtension(Class<? extends TweedExtension> extensionClass) {
@@ -42,15 +34,12 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public void finishExtensionSetup() {
 		requireSetupPhase(ConfigContainerSetupPhase.EXTENSIONS_SETUP);
 
+		PatchworkFactory.Builder entryExtensionDataPatchworkFactoryBuilder = PatchworkFactory.builder();
+
 		TweedExtensionSetupContext extensionSetupContext = new TweedExtensionSetupContext() {
 			@Override
-			public <E> RegisteredExtensionData<EntryExtensionsData, E> registerEntryExtensionData(Class<E> dataClass) {
-				if (registeredEntryDataExtensions.containsKey(dataClass)) {
-					throw new IllegalArgumentException("Extension " + dataClass.getName() + " is already registered");
-				}
-				RegisteredExtensionDataImpl<EntryExtensionsData, E> registered = new RegisteredExtensionDataImpl<>();
-				registeredEntryDataExtensions.put(dataClass, registered);
-				return registered;
+			public <E> PatchworkPartAccess<E> registerEntryExtensionData(Class<E> dataClass) {
+				return entryExtensionDataPatchworkFactoryBuilder.registerPart(dataClass);
 			}
 
 			@Override
@@ -81,20 +70,7 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 			}
 		}
 
-		PatchworkClassCreator<EntryExtensionsData> entryExtensionsDataGenerator = PatchworkClassCreator.<EntryExtensionsData>builder()
-				.patchworkInterface(EntryExtensionsData.class)
-				.classPackage("de.siphalor.tweed5.core.generated.entryextensiondata")
-				.classPrefix("EntryExtensionsData$")
-				.build();
-		try {
-			entryExtensionsDataPatchworkClass = entryExtensionsDataGenerator.createClass(registeredEntryDataExtensions.keySet());
-			for (PatchworkClassPart part : entryExtensionsDataPatchworkClass.parts()) {
-				RegisteredExtensionDataImpl<EntryExtensionsData, ?> registeredExtension = registeredEntryDataExtensions.get(part.partInterface());
-				registeredExtension.setter(part.fieldSetter());
-			}
-		} catch (PatchworkClassGenerator.GenerationException e) {
-			throw new IllegalStateException("Failed to create patchwork class for entry extensions' data", e);
-		}
+		entryExtensionsDataPatchworkFactory = entryExtensionDataPatchworkFactoryBuilder.build();
 
 		setupPhase = ConfigContainerSetupPhase.TREE_SETUP;
 
@@ -230,25 +206,11 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	}
 
 	@Override
-	public EntryExtensionsData createExtensionsData() {
+	public Patchwork createExtensionsData() {
 		requireSetupPhase(ConfigContainerSetupPhase.TREE_SETUP);
 
-		try {
-			assert entryExtensionsDataPatchworkClass != null;
-			return (EntryExtensionsData) entryExtensionsDataPatchworkClass.constructor().invoke();
-		} catch (Throwable e) {
-			throw new IllegalStateException("Failed to construct patchwork class for entry extensions' data", e);
-		}
-	}
-
-	@Override
-	public Map<Class<?>, ? extends RegisteredExtensionData<EntryExtensionsData, ?>> entryDataExtensions() {
-		requireSetupPhase(
-				ConfigContainerSetupPhase.TREE_SETUP,
-				ConfigContainerSetupPhase.TREE_ATTACHED,
-				ConfigContainerSetupPhase.INITIALIZED
-		);
-		return registeredEntryDataExtensions;
+		assert entryExtensionsDataPatchworkFactory != null;
+		return entryExtensionsDataPatchworkFactory.create();
 	}
 
 	@Override
@@ -293,20 +255,6 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 							+ ", but is in "
 							+ setupPhase
 			);
-		}
-	}
-
-	@Setter
-	private static class RegisteredExtensionDataImpl<U extends Patchwork<U>, E> implements RegisteredExtensionData<U, E> {
-		private MethodHandle setter;
-
-		@Override
-		public void set(U patchwork, E extension) {
-			try {
-				setter.invokeWithArguments(patchwork, extension);
-			} catch (Throwable e) {
-				throw new IllegalStateException(e);
-			}
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.data.extension.api.extension;
 
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 
 public interface ReadWriteExtensionSetupContext {
-	<E> RegisteredExtensionData<ReadWriteContextExtensionsData, E> registerReadWriteContextExtensionData(Class<E> extensionDataClass);
+	<E> PatchworkPartAccess<E> registerReadWriteContextExtensionData(Class<E> extensionDataClass);
 }

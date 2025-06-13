@@ -2,29 +2,33 @@ package de.siphalor.tweed5.defaultextensions.pather.impl;
 
 import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.data.extension.api.*;
-import de.siphalor.tweed5.data.extension.api.extension.ReadWriteContextExtensionsData;
+import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.data.extension.api.TweedReadContext;
+import de.siphalor.tweed5.data.extension.api.TweedWriteContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import de.siphalor.tweed5.defaultextensions.pather.api.*;
+import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
+import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataReader;
+import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
+import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.val;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 
 @AutoService(PatherExtension.class)
-@NullUnmarked
 public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
 	private static final String PATHER_ID = "pather";
 
-	private RegisteredExtensionData<ReadWriteContextExtensionsData, PatherData> rwContextPathTrackingData;
-	private Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware;
-	private Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware;
+	private final Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware = createEntryReaderMiddleware();
+	private final Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware = createEntryWriterMiddleware();
+
+	private @Nullable PatchworkPartAccess<PathTracking> rwContextPathTrackingAccess;
 
 	@Override
 	public String getId() {
@@ -33,13 +37,32 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
-		rwContextPathTrackingData = context.registerReadWriteContextExtensionData(PatherData.class);
-
-		entryReaderMiddleware = createEntryReaderMiddleware();
-		entryWriterMiddleware = createEntryWriterMiddleware();
+		rwContextPathTrackingAccess = context.registerReadWriteContextExtensionData(PathTracking.class);
 	}
 
-	private @NonNull Middleware<TweedEntryReader<?, ?>> createEntryReaderMiddleware() {
+	@Override
+	public String getPath(TweedReadContext context) {
+		assert rwContextPathTrackingAccess != null;
+
+		PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+		if (pathTracking == null) {
+			throw new IllegalStateException("Path tracking is not active!");
+		}
+		return pathTracking.currentPath();
+	}
+
+	@Override
+	public String getPath(TweedWriteContext context) {
+		assert rwContextPathTrackingAccess != null;
+
+		PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+		if (pathTracking == null) {
+			throw new IllegalStateException("Path tracking is not active!");
+		}
+		return pathTracking.currentPath();
+	}
+
+	private Middleware<TweedEntryReader<?, ?>> createEntryReaderMiddleware() {
 		return new Middleware<TweedEntryReader<?, ?>>() {
 			@Override
 			public String id() {
@@ -48,16 +71,19 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 			@Override
 			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+				assert rwContextPathTrackingAccess != null;
+
 				//noinspection unchecked
 				val castedInner = (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-					if (context.extensionsData().isPatchworkPartSet(PatherData.class)) {
+					PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+					if (pathTracking != null) {
 						return castedInner.read(reader, entry, context);
 					}
 
-					PathTracking pathTracking = new PathTracking();
-					rwContextPathTrackingData.set(context.extensionsData(), pathTracking);
+					pathTracking = new PathTracking();
+					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
 					return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
 				};
 			}
@@ -73,17 +99,20 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 			@Override
 			public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
+				assert rwContextPathTrackingAccess != null;
+
 				//noinspection unchecked
 				val castedInner = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 
 				return (TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) -> {
-					if (context.extensionsData().isPatchworkPartSet(PatherData.class)) {
+					PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+					if (pathTracking != null) {
 						castedInner.write(writer, value, entry, context);
 						return;
 					}
 
-					PathTracking pathTracking = new PathTracking();
-					rwContextPathTrackingData.set(context.extensionsData(), pathTracking);
+					pathTracking = new PathTracking();
+					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
 					castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
 				};
 			}

@@ -4,8 +4,6 @@ import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
@@ -14,7 +12,6 @@ import de.siphalor.tweed5.core.api.middleware.MiddlewareContainer;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReadException;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedReadContext;
-import de.siphalor.tweed5.data.extension.api.extension.ReadWriteContextExtensionsData;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
@@ -22,20 +19,16 @@ import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtensio
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
-import de.siphalor.tweed5.defaultextensions.pather.api.PatherData;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
-import de.siphalor.tweed5.defaultextensions.validation.api.EntrySpecificValidation;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.jetbrains.annotations.NotNull;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
+import lombok.*;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -48,7 +41,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	);
 	private static final ConfigEntryValidator PRIMITIVE_VALIDATOR = new ConfigEntryValidator() {
 		@Override
-		public <T> ValidationResult<T> validate(@NotNull ConfigEntry<T> configEntry, @Nullable T value) {
+		public <T> ValidationResult<T> validate(ConfigEntry<T> configEntry, @Nullable T value) {
 			if (value == null) {
 				//noinspection unchecked
 				return (ValidationResult<T>) PRIMITIVE_IS_NULL_RESULT;
@@ -57,33 +50,32 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public <T> String description(@NotNull ConfigEntry<T> configEntry) {
+		public <T> String description(ConfigEntry<T> configEntry) {
 			return "Value must not be null.";
 		}
 	};
 	private static final ConfigEntryValidator NOOP_VALIDATOR = new ConfigEntryValidator() {
 		@Override
-		public <T> ValidationResult<T> validate(@NotNull ConfigEntry<T> configEntry, @Nullable T value) {
+		public <T> ValidationResult<@Nullable T> validate(ConfigEntry<T> configEntry, @Nullable T value) {
 			return ValidationResult.ok(value);
 		}
 
 		@Override
-		public <T> String description(@NotNull ConfigEntry<T> configEntry) {
+		public <T> String description(ConfigEntry<T> configEntry) {
 			return "";
 		}
 	};
 
 	private final ConfigContainer<?> configContainer;
-	private final RegisteredExtensionData<EntryExtensionsData, InternalValidationEntryData> validationEntryDataExtension;
+	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
 	private final MiddlewareContainer<ConfigEntryValidator> entryValidatorMiddlewareContainer
 			= new DefaultMiddlewareContainer<>();
-	private @Nullable RegisteredExtensionData<ReadWriteContextExtensionsData, ValidationIssues>
-			readContextValidationIssuesExtensionData;
+	private @Nullable PatchworkPartAccess<ValidationIssues> readContextValidationIssuesAccess;
+	private @Nullable PatherExtension patherExtension;
 
 	public ValidationExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
 		this.configContainer = configContainer;
-		this.validationEntryDataExtension = context.registerEntryExtensionData(InternalValidationEntryData.class);
-		context.registerEntryExtensionData(EntrySpecificValidation.class);
+		this.customEntryDataAccess = context.registerEntryExtensionData(CustomEntryData.class);
 		context.registerExtension(PatherExtension.class);
 	}
 
@@ -102,6 +94,9 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			}
 		}
 		entryValidatorMiddlewareContainer.seal();
+
+		patherExtension = configContainer.extension(PatherExtension.class)
+				.orElseThrow(() -> new IllegalStateException("Missing requested PatherExtension"));
 	}
 
 	@Override
@@ -116,16 +111,21 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			public CommentProducer process(CommentProducer inner) {
 				return entry -> {
 					String baseComment = inner.createComment(entry);
-					if (entry.extensionsData().isPatchworkPartSet(InternalValidationEntryData.class)) {
-						String validationDescription = ((InternalValidationEntryData) entry.extensionsData())
-								.completeEntryValidator()
-								.description(entry)
-								.trim();
-						if (!validationDescription.isEmpty()) {
-							baseComment += "\n\n" + validationDescription;
-						}
+					CustomEntryData entryData = entry.extensionsData().get(customEntryDataAccess);
+					if (entryData == null || entryData.completeValidator() == null) {
+						return baseComment;
 					}
-					return baseComment;
+					String validationDescription = entryData.completeValidator()
+							.description(entry)
+							.trim();
+					if (validationDescription.isEmpty()) {
+						return baseComment;
+					}
+					if (baseComment.isEmpty()) {
+						return validationDescription;
+					} else {
+						return "\n\n" + validationDescription;
+					}
 				};
 			}
 		};
@@ -133,7 +133,13 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
-		readContextValidationIssuesExtensionData = context.registerReadWriteContextExtensionData(ValidationIssues.class);
+		readContextValidationIssuesAccess = context.registerReadWriteContextExtensionData(ValidationIssues.class);
+	}
+
+	@Override
+	public <T> void addValidatorMiddleware(ConfigEntry<T> entry, Middleware<ConfigEntryValidator> validator) {
+		CustomEntryData entryData = getOrCreateCustomEntryData(entry);
+		entryData.addValidator(validator);
 	}
 
 	@Override
@@ -145,26 +151,26 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			baseValidator = NOOP_VALIDATOR;
 		}
 
-		ConfigEntryValidator entryValidator;
-		Collection<Middleware<ConfigEntryValidator>> entrySpecificValidators = getEntrySpecificValidators(configEntry);
-		if (entrySpecificValidators.isEmpty()) {
-			entryValidator = entryValidatorMiddlewareContainer.process(baseValidator);
+		CustomEntryData entryData = getOrCreateCustomEntryData(configEntry);
+
+		if (entryData.validators().isEmpty()) {
+			entryData.completeValidator(entryValidatorMiddlewareContainer.process(baseValidator));
 		} else {
 			DefaultMiddlewareContainer<ConfigEntryValidator> entrySpecificValidatorContainer = new DefaultMiddlewareContainer<>();
 			entrySpecificValidatorContainer.registerAll(entryValidatorMiddlewareContainer.middlewares());
-			entrySpecificValidatorContainer.registerAll(entrySpecificValidators);
+			entrySpecificValidatorContainer.registerAll(entryData.validators());
 			entrySpecificValidatorContainer.seal();
-			entryValidator = entrySpecificValidatorContainer.process(baseValidator);
+			entryData.completeValidator(entrySpecificValidatorContainer.process(baseValidator));
 		}
-
-		validationEntryDataExtension.set(configEntry.extensionsData(), new InternalValidationEntryDataImpl(entryValidator));
 	}
 
-	private Collection<Middleware<ConfigEntryValidator>> getEntrySpecificValidators(ConfigEntry<?> configEntry) {
-		if (!configEntry.extensionsData().isPatchworkPartSet(EntrySpecificValidation.class)) {
-			return Collections.emptyList();
+	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {
+		CustomEntryData entryData = entry.extensionsData().get(customEntryDataAccess);
+		if (entryData == null) {
+			entryData = new CustomEntryData();
+			entry.extensionsData().set(customEntryDataAccess, entryData);
 		}
-		return ((EntrySpecificValidation) configEntry.extensionsData()).validators();
+		return entryData;
 	}
 
 	@Override
@@ -173,7 +179,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public <T> ValidationIssues validate(@NotNull ConfigEntry<T> entry, @Nullable T value) {
+	public <T> ValidationIssues validate(ConfigEntry<T> entry, @Nullable T value) {
 		PathTracking pathTracking = new PathTracking();
 		ValidatingConfigEntryVisitor validatingVisitor = new ValidatingConfigEntryVisitor(pathTracking);
 
@@ -182,9 +188,22 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		return validatingVisitor.validationIssues();
 	}
 
-	@Value
-	private static class InternalValidationEntryDataImpl implements InternalValidationEntryData {
-		ConfigEntryValidator completeEntryValidator;
+	@Data
+	private static class CustomEntryData {
+		@Setter(AccessLevel.NONE)
+		private @Nullable List<Middleware<ConfigEntryValidator>> validators;
+		private @Nullable ConfigEntryValidator completeValidator;
+
+		public List<Middleware<ConfigEntryValidator>> validators() {
+			return validators == null ? Collections.emptyList() : validators;
+		}
+
+		public void addValidator(Middleware<ConfigEntryValidator> validator) {
+			if (validators == null) {
+				validators = new ArrayList<>();
+			}
+			validators.add(validator);
+		}
 	}
 
 	private class EntryValidationReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
@@ -200,23 +219,29 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 		@Override
 		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+			assert readContextValidationIssuesAccess != null && patherExtension != null;
+
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> castedInner = (TweedEntryReader<Object, ConfigEntry<Object>>) inner;
 			return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-				ValidationIssues validationIssues;
-				if (!context.extensionsData().isPatchworkPartSet(ValidationIssues.class)) {
+				ValidationIssues validationIssues = context.extensionsData().get(readContextValidationIssuesAccess);
+				if (validationIssues == null) {
 					validationIssues = new ValidationIssuesImpl();
-					readContextValidationIssuesExtensionData.set(context.extensionsData(), validationIssues);
 				} else {
 					validationIssues = (ValidationIssues) context.extensionsData();
 				}
 
 				Object value = castedInner.read(reader, entry, context);
 
-				ValidationResult<Object> validationResult = ((InternalValidationEntryData) entry.extensionsData()).completeEntryValidator().validate(entry, value);
+				ConfigEntryValidator entryValidator = entry.extensionsData()
+						.get(customEntryDataAccess)
+						.completeValidator();
+				assert entryValidator != null;
 
-				if (!validationResult.issues().isEmpty() && context.extensionsData().isPatchworkPartSet(PatherData.class)) {
-					String path = ((PatherData) context.extensionsData()).valuePath();
+				ValidationResult<Object> validationResult = entryValidator.validate(entry, value);
+
+				if (!validationResult.issues().isEmpty()) {
+					String path = patherExtension.getPath(context);
 					validationIssues.issuesByPath().put(path, new ValidationIssues.EntryIssues(
 							entry,
 							validationResult.issues()
@@ -234,15 +259,19 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	@Getter
 	@RequiredArgsConstructor
-	private static class ValidatingConfigEntryVisitor implements ConfigEntryValueVisitor {
+	private class ValidatingConfigEntryVisitor implements ConfigEntryValueVisitor {
 		private final PathTracking pathTracking;
 		private final ValidationIssues validationIssues = new ValidationIssuesImpl();
 
 		@Override
 		public <T> void visitEntry(ConfigEntry<T> entry, T value) {
-			ValidationResult<T> result = ((InternalValidationEntryData) entry.extensionsData()).completeEntryValidator().validate(entry, value);
+			CustomEntryData entryData = entry.extensionsData().get(customEntryDataAccess);
+			assert entryData != null;
+			ConfigEntryValidator entryValidator = entryData.completeValidator();
+			assert entryValidator != null;
+			ValidationResult<T> result = entryValidator.validate(entry, value);
 			if (!result.issues().isEmpty()) {
-				validationIssues.issuesByPath().put(pathTracking.valuePath(), new ValidationIssues.EntryIssues(entry, result.issues()));
+				validationIssues.issuesByPath().put(pathTracking.currentPath(), new ValidationIssues.EntryIssues(entry, result.issues()));
 			}
 		}
 

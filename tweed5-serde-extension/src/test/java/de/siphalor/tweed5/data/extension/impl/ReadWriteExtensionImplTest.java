@@ -1,23 +1,18 @@
 package de.siphalor.tweed5.data.extension.impl;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.core.api.extension.EntryExtensionsData;
-import de.siphalor.tweed5.core.api.extension.RegisteredExtensionData;
+import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
+import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
-import de.siphalor.tweed5.data.extension.api.EntryReaderWriterDefinition;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
-import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.hjson.HjsonLexer;
 import de.siphalor.tweed5.data.hjson.HjsonReader;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +22,8 @@ import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
 
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.entryReaderWriter;
+import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
 import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ReadWriteExtensionImplTest {
 	private final StringWriter stringWriter = new StringWriter();
 	private final ConfigContainer<Map<String, Object>> configContainer = new DefaultConfigContainer<>();
-	private StaticMapCompoundConfigEntryImpl<Map<String, Object>> rootEntry;
+	private CompoundConfigEntry<Map<String, Object>> rootEntry;
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
@@ -44,14 +41,16 @@ class ReadWriteExtensionImplTest {
 		configContainer.registerExtension(ReadWriteExtension.DEFAULT);
 		configContainer.finishExtensionSetup();
 
-		SimpleConfigEntryImpl<Integer> intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class);
-		SimpleConfigEntryImpl<Boolean> booleanEntry = new SimpleConfigEntryImpl<>(configContainer, Boolean.class);
-		CollectionConfigEntryImpl<Boolean, List<Boolean>> listEntry = new CollectionConfigEntryImpl<>(
+		SimpleConfigEntry<Integer> intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
+				.apply(entryReaderWriter(intReaderWriter()));
+
+		CollectionConfigEntry<Boolean, List<Boolean>> listEntry = new CollectionConfigEntryImpl<>(
 				configContainer,
 				(Class<List<Boolean>>) (Class<?>) List.class,
 				ArrayList::new,
-				booleanEntry
-		);
+				new SimpleConfigEntryImpl<>(configContainer, Boolean.class)
+						.apply(entryReaderWriter(booleanReaderWriter()))
+		).apply(entryReaderWriter(collectionReaderWriter()));
 
 		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
 				configContainer,
@@ -61,16 +60,9 @@ class ReadWriteExtensionImplTest {
 						entry("int", intEntry),
 						entry("list", listEntry)
 				))
-		);
+		).apply(entryReaderWriter(compoundReaderWriter()));
 
 		configContainer.attachTree(rootEntry);
-
-		RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition> readerWriterData = (RegisteredExtensionData<EntryExtensionsData, EntryReaderWriterDefinition>) configContainer.entryDataExtensions().get(EntryReaderWriterDefinition.class);
-		readerWriterData.set(rootEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.compoundReaderWriter()));
-		readerWriterData.set(intEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.intReaderWriter()));
-		readerWriterData.set(listEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.collectionReaderWriter()));
-		readerWriterData.set(booleanEntry.extensionsData(), new TrivialEntryReaderWriterDefinition(TweedEntryReaderWriters.booleanReaderWriter()));
-
 		configContainer.initialize();
 	}
 
@@ -127,20 +119,5 @@ class ReadWriteExtensionImplTest {
 
 	private TweedDataVisitor setupWriter(Function<Writer, TweedDataVisitor> writerFactory) {
 		return writerFactory.apply(stringWriter);
-	}
-
-	@RequiredArgsConstructor
-	private static class TrivialEntryReaderWriterDefinition implements EntryReaderWriterDefinition {
-		private final TweedEntryReaderWriter<?, ?> readerWriter;
-
-		@Override
-		public TweedEntryReader<?, ?> reader() {
-			return readerWriter;
-		}
-
-		@Override
-		public TweedEntryWriter<?, ?> writer() {
-			return readerWriter;
-		}
 	}
 }
