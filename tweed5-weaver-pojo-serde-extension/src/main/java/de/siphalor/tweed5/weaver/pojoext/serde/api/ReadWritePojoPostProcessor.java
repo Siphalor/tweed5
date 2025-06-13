@@ -1,12 +1,15 @@
 package de.siphalor.tweed5.weaver.pojoext.serde.api;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.data.extension.api.*;
+import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.impl.SerdePojoReaderWriterSpec;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
@@ -14,7 +17,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-@Slf4j
+@CommonsLog
 public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor {
 	private final Map<String, TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryReader<?, ?>>> readerFactories = new HashMap<>();
 	private final Map<String, TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryWriter<?, ?>>> writerFactories = new HashMap<>();
@@ -33,11 +36,10 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 						String id,
 						TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryReader<?, ?>> readerFactory
 				) {
-					if (readerFactories.putIfAbsent(id, readerFactory) != null) {
+					if (readerFactories.putIfAbsent(id, readerFactory) != null && log.isWarnEnabled()) {
 						log.warn(
-								"Found duplicate Tweed entry reader id \"{}\" in provider class {}",
-								id,
-								readerWriterProvider.getClass().getName()
+								"Found duplicate Tweed entry reader id \"" + id + "\" in provider class "
+										+ readerWriterProvider.getClass().getName()
 						);
 					}
 				}
@@ -47,11 +49,10 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 						String id,
 						TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryWriter<?, ?>> writerFactory
 				) {
-					if (writerFactories.putIfAbsent(id, writerFactory) != null) {
+					if (writerFactories.putIfAbsent(id, writerFactory) != null && log.isWarnEnabled()) {
 						log.warn(
-								"Found duplicate Tweed entry writer id \"{}\" in provider class {}",
-								id,
-								readerWriterProvider.getClass().getName()
+								"Found duplicate Tweed entry writer id \"" + id + "\" in provider class {}"
+										+ readerWriterProvider.getClass().getName()
 						);
 					}
 				}
@@ -69,8 +70,8 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		}
 
 		ReadWriteExtension readWriteExtension = context.configContainer().extension(ReadWriteExtension.class).orElse(null);
-		if (readWriteExtension == null) {
-			log.error("You must not use {} without the {}", this.getClass().getSimpleName(), ReadWriteExtension.class.getSimpleName());
+		if (readWriteExtension == null && log.isErrorEnabled()) {
+			log.error("You must not use " + getClass().getName() + " without the " + ReadWriteExtension.class.getName());
 			return;
 		}
 
@@ -110,9 +111,9 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			return SerdePojoReaderWriterSpec.parse(specText);
 		} catch (SerdePojoReaderWriterSpec.ParseException e) {
 			log.warn(
-					"Failed to parse definition for reader or writer on entry {}, entry will not be included in serde",
-					context.path(),
-					e
+					"Failed to parse definition for reader or writer on entry "
+							+ Arrays.toString(context.path())
+							+ ", entry will not be included in serde", e
 			);
 			return null;
 		}
@@ -141,9 +142,8 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 			}
 		} catch (Exception e) {
 			log.warn(
-					"Failed to resolve reader or writer factory \"{}\" for entry {}, entry will not be included in serde",
-					spec.identifier(),
-					context.path(),
+					"Failed to resolve reader or writer factory \"" + spec.identifier() + "\" for entry "
+							+ Arrays.toString(context.path()) + ", entry will not be included in serde",
 					e
 			);
 			return null;
@@ -165,7 +165,7 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 		} catch (ClassNotFoundException e) {
 			return null;
 		} catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-			log.warn("Failed to instantiate class {}", className, e);
+			log.warn("Failed to instantiate class " + className, e);
 			return null;
 		}
 	}

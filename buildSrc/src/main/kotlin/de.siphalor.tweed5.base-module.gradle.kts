@@ -40,7 +40,7 @@ dependencies {
     compileOnly(libs.jspecify.annotations)
     testImplementation(libs.jspecify.annotations)
 
-    implementation(libs.slf4j.api)
+    implementation(libs.acl)
     "localRuntimeOnly"(libs.slf4j.rt)
     testRuntimeOnly(libs.slf4j.rt)
 

@@ -11,7 +11,7 @@ import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * A class that sets up and handles all the bits and bobs for weaving a {@link ConfigContainer} out of a POJO.
  * The POJO must be annotated with {@link PojoWeaving}.
  */
-@Slf4j
+@CommonsLog
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class TweedPojoWeaverBootstrapper<T> {
 	private final Class<T> pojoClass;
