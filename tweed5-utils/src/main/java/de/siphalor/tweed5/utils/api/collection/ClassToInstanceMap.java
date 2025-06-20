@@ -43,7 +43,11 @@ public class ClassToInstanceMap<T extends @NonNull Object> implements Iterable<T
 	}
 
 	public <V extends T> @Nullable V put(V value) {
-		return (V) delegate.put((Class<? extends T>) value.getClass(), value);
+		return put((Class<V>) value.getClass(), value);
+	}
+
+	public <V extends T, U extends V> @Nullable V put(Class<V> key, U value) {
+		return (V) delegate.put(key, value);
 	}
 
 	public <V extends T> @Nullable V remove(Class<V> key) {

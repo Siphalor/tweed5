@@ -1,5 +1,9 @@
-package de.siphalor.tweed5.typeutils.api.type;
+package de.siphalor.tweed5.typeutils.api.annotations;
 
+import de.siphalor.tweed5.typeutils.test.TestAnnotation;
+import de.siphalor.tweed5.typeutils.test.TestAnnotations;
+import de.siphalor.tweed5.typeutils.api.type.TypeAnnotationLayer;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +18,7 @@ class LayeredTypeAnnotationsTest {
 		annotations.appendLayerFrom(TypeAnnotationLayer.TYPE_USE, A.class);
 		annotations.appendLayerFrom(TypeAnnotationLayer.TYPE_USE, B.class);
 
-		assertThat(annotations.getAnnotation(TestAnnotation.class))
+		Assertions.assertThat(annotations.getAnnotation(TestAnnotation.class))
 				.isNotNull()
 				.extracting(TestAnnotation::value)
 				.isEqualTo("a");
@@ -71,6 +75,10 @@ class LayeredTypeAnnotationsTest {
 				.extracting(TestAnnotation::value)
 				.isEqualTo("b");
 		assertThat(annotations.getAnnotation(TestAnnotations.class)).isNull();
+		assertThat(annotations.getAnnotationsByType(TestAnnotation.class))
+				.singleElement()
+				.extracting(TestAnnotation::value)
+				.isEqualTo("b");
 	}
 
 	@Test
@@ -88,6 +96,7 @@ class LayeredTypeAnnotationsTest {
 						a -> assertThat(a.value()).isEqualTo("r1"),
 						a -> assertThat(a.value()).isEqualTo("r2")
 				);
+		assertThat(annotations.getAnnotationsByType(TestAnnotation.class)).hasSize(2);
 	}
 
 	@Test
@@ -100,6 +109,10 @@ class LayeredTypeAnnotationsTest {
 				.asInstanceOf(type(TestAnnotation.class))
 				.extracting(TestAnnotation::value)
 				.isEqualTo("b");
+		assertThat(annotations.getAnnotationsByType(TestAnnotation.class))
+				.singleElement()
+				.extracting(TestAnnotation::value)
+				.isEqualTo("b");;
 	}
 
 	@Test
@@ -116,6 +129,7 @@ class LayeredTypeAnnotationsTest {
 						a -> assertThat(a.value()).isEqualTo("r1"),
 						a -> assertThat(a.value()).isEqualTo("r2")
 				);
+		assertThat(annotations.getAnnotationsByType(TestAnnotation.class)).hasSize(2);
 	}
 
 	@TestAnnotation("r1")

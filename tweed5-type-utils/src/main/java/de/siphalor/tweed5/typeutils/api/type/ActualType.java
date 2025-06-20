@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.typeutils.api.type;
 
+import de.siphalor.tweed5.typeutils.api.annotations.LayeredTypeAnnotations;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

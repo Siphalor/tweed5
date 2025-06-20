@@ -1,7 +1,7 @@
-package de.siphalor.tweed5.typeutils.api.type;
+package de.siphalor.tweed5.typeutils.api.annotations;
 
+import de.siphalor.tweed5.typeutils.api.type.TypeAnnotationLayer;
 import lombok.Value;
-import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -46,7 +46,8 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 			return layers.get(0).annotatedElement.getAnnotation(annotationClass);
 		}
 
-		Class<? extends Annotation> altAnnotationClass = getRepeatAlternativeAnnotation(annotationClass);
+		Class<? extends Annotation> altAnnotationClass = AnnotationRepeatType.getType(annotationClass)
+				.alternativeAnnotationClass();
 
 		for (Layer layer : layers) {
 			T annotation = layer.annotatedElement.getAnnotation(annotationClass);
@@ -75,7 +76,8 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 				if (annotations.containsKey(layerAnnotationClass)) {
 					continue;
 				}
-				Class<? extends Annotation> layerAltClass = getRepeatAlternativeAnnotation(layerAnnotationClass);
+				Class<? extends Annotation> layerAltClass = AnnotationRepeatType.getType(layerAnnotationClass)
+						.alternativeAnnotationClass();
 				if (annotations.containsKey(layerAltClass)) {
 					continue;
 				}
@@ -100,7 +102,8 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 				if (annotations.containsKey(layerAnnotationClass)) {
 					continue;
 				}
-				Class<? extends Annotation> layerAltClass = getRepeatAlternativeAnnotation(layerAnnotationClass);
+				Class<? extends Annotation> layerAltClass = AnnotationRepeatType.getType(layerAnnotationClass)
+						.alternativeAnnotationClass();
 				if (annotations.containsKey(layerAltClass)) {
 					continue;
 				}
@@ -108,17 +111,6 @@ public class LayeredTypeAnnotations implements AnnotatedElement {
 			}
 		}
 		return annotations.values().toArray(new Annotation[0]);
-	}
-
-	private static <T extends Annotation> @Nullable Class<? extends Annotation> getRepeatAlternativeAnnotation(Class<T> annotationClass) {
-		AnnotationRepeatType annotationRepeatType = AnnotationRepeatType.getType(annotationClass);
-		Class<? extends Annotation> altAnnotationClass = null;
-		if (annotationRepeatType instanceof AnnotationRepeatType.Repeatable) {
-			altAnnotationClass = ((AnnotationRepeatType.Repeatable) annotationRepeatType).containerAnnotation();
-		} else if (annotationRepeatType instanceof AnnotationRepeatType.RepeatableContainer) {
-			altAnnotationClass = ((AnnotationRepeatType.RepeatableContainer) annotationRepeatType).componentAnnotation();
-		}
-		return altAnnotationClass;
 	}
 
 	@Value

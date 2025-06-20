@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.typeutils.test;
 
-import de.siphalor.tweed5.typeutils.api.type.TestAnnotation;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 /**
- * Various test to demonstrate the workings of Java's reflection type system
+ * Various test to demonstrate the workings of Java's reflection annotations system
  */
 public class JavaReflectionTests {
 	@SneakyThrows
@@ -31,7 +30,7 @@ public class JavaReflectionTests {
 		assertThat(intsField.getAnnotatedType())
 				.asInstanceOf(type(AnnotatedParameterizedType.class))
 				.satisfies(
-						type -> Assertions.assertThat(type.getAnnotation(TestAnnotation.class)).isNotNull(),
+						type -> assertThat(type.getAnnotation(TestAnnotation.class)).isNotNull(),
 						type -> assertThat(type.getAnnotatedActualTypeArguments())
 								.singleElement()
 								.isInstanceOf(AnnotatedParameterizedType.class)

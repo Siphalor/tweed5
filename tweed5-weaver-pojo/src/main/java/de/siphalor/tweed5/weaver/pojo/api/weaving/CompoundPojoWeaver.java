@@ -10,7 +10,7 @@ import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
-import de.siphalor.tweed5.typeutils.api.type.LayeredTypeAnnotations;
+import de.siphalor.tweed5.typeutils.api.annotations.LayeredTypeAnnotations;
 import de.siphalor.tweed5.typeutils.api.type.TypeAnnotationLayer;
 import de.siphalor.tweed5.weaver.pojo.impl.entry.StaticPojoCompoundConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoClassIntrospector;

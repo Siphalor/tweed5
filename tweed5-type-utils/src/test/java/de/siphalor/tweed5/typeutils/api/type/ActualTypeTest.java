@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.typeutils.api.type;
 
+import de.siphalor.tweed5.typeutils.test.TestAnnotation;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

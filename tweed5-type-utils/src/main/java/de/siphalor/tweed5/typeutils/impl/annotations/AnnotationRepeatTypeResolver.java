@@ -1,6 +1,6 @@
-package de.siphalor.tweed5.typeutils.impl.type;
+package de.siphalor.tweed5.typeutils.impl.annotations;
 
-import de.siphalor.tweed5.typeutils.api.type.AnnotationRepeatType;
+import de.siphalor.tweed5.typeutils.api.annotations.AnnotationRepeatType;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -33,9 +33,9 @@ public class AnnotationRepeatTypeResolver {
 		if (container != null) {
 			CACHE_LOCK.writeLock().lock();
 			try {
-				AnnotationRepeatType type = new AnnotationRepeatType.Repeatable(container);
+				AnnotationRepeatType type = new AnnotationRepeatType.Repeatable(annotationClass, container);
 				CACHE.put(annotationClass, type);
-				CACHE.put(container, new AnnotationRepeatType.RepeatableContainer(annotationClass));
+				CACHE.put(container, new AnnotationRepeatType.RepeatableContainer(container, annotationClass));
 				return type;
 			} finally {
 				CACHE_LOCK.writeLock().unlock();
@@ -45,22 +45,24 @@ public class AnnotationRepeatTypeResolver {
 		if (component != null) {
 			CACHE_LOCK.writeLock().lock();
 			try {
-				AnnotationRepeatType type = new AnnotationRepeatType.RepeatableContainer(component);
+				AnnotationRepeatType type = new AnnotationRepeatType.RepeatableContainer(annotationClass, component);
 				CACHE.put(annotationClass, type);
-				CACHE.put(component, new AnnotationRepeatType.Repeatable(component));
+				CACHE.put(component, new AnnotationRepeatType.Repeatable(component, annotationClass));
 				return type;
 			} finally {
 				CACHE_LOCK.writeLock().unlock();
 			}
 		}
 
+		AnnotationRepeatType.NonRepeatable type = new AnnotationRepeatType.NonRepeatable(annotationClass);
+
 		CACHE_LOCK.writeLock().lock();
 		try {
-			CACHE.put(annotationClass, AnnotationRepeatType.NonRepeatable.instance());
+			CACHE.put(annotationClass, type);
 		} finally {
 			CACHE_LOCK.writeLock().unlock();
 		}
-		return AnnotationRepeatType.NonRepeatable.instance();
+		return type;
 	}
 
 	private static @Nullable Class<? extends Annotation> getRepeatableContainerFromComponentAnnotation(
