@@ -19,10 +19,28 @@ class AnnotationInheritanceAwareAnnotatedElementTest {
 	}
 
 	@Test
+	void getAnnotationsByTypeAForTarget1() {
+		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
+		assertThat(element.getAnnotationsByType(A.class))
+				.singleElement()
+				.extracting(A::value)
+				.isEqualTo(1);
+	}
+
+	@Test
 	void getAnnotationBForTarget1() {
 		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
 		assertThat(element.getAnnotation(B.class))
 				.isNotNull()
+				.extracting(B::value)
+				.isEqualTo(2);
+	}
+
+	@Test
+	void getAnnotationsByTypeBForTarget1() {
+		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
+		assertThat(element.getAnnotationsByType(B.class))
+				.singleElement()
 				.extracting(B::value)
 				.isEqualTo(2);
 	}
@@ -37,9 +55,30 @@ class AnnotationInheritanceAwareAnnotatedElementTest {
 	}
 
 	@Test
+	void getAnnotationsByTypeCForTarget1() {
+		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
+		assertThat(element.getAnnotationsByType(C.class))
+				.singleElement()
+				.extracting(C::value)
+				.isEqualTo(10);
+	}
+
+	@Test
 	void getAnnotationRForTarget1() {
 		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
 		assertThat(element.getAnnotation(R.class)).isNull();
+	}
+
+	@Test
+	void getAnnotationsByTypeRForTarget1() {
+		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
+		assertThat(element.getAnnotationsByType(R.class))
+				.satisfiesExactly(
+						r -> assertThat(r.value()).isEqualTo(4),
+						r -> assertThat(r.value()).isEqualTo(2),
+						r -> assertThat(r.value()).isEqualTo(3),
+						r -> assertThat(r.value()).isEqualTo(10)
+				);
 	}
 
 	@Test
@@ -48,6 +87,21 @@ class AnnotationInheritanceAwareAnnotatedElementTest {
 		Rs rs = element.getAnnotation(Rs.class);
 		assertThat(rs)
 				.isNotNull()
+				.extracting(Rs::value)
+				.asInstanceOf(array(R[].class))
+				.satisfiesExactly(
+						r -> assertThat(r.value()).isEqualTo(4),
+						r -> assertThat(r.value()).isEqualTo(2),
+						r -> assertThat(r.value()).isEqualTo(3),
+						r -> assertThat(r.value()).isEqualTo(10)
+				);
+	}
+
+	@Test
+	void getAnnotationsByTypeRsForTarget1() {
+		var element = new AnnotationInheritanceAwareAnnotatedElement(Target1.class);
+		assertThat(element.getAnnotationsByType(Rs.class))
+				.singleElement()
 				.extracting(Rs::value)
 				.asInstanceOf(array(R[].class))
 				.satisfiesExactly(

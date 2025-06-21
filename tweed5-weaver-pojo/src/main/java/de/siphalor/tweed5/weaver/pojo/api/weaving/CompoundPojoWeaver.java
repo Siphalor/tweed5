@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * A weaver that weaves classes with the {@link CompoundWeaving} annotation as compound entries.
  */
-public class CompoundPojoWeaver implements TweedPojoWeaver {
+public class CompoundPojoWeaver implements TweedPojoWeavingExtension {
 	private static final CompoundWeavingConfig DEFAULT_WEAVING_CONFIG = CompoundWeavingConfigImpl.builder()
 			.compoundSourceNamingFormat(NamingFormats.camelCase())
 			.compoundTargetNamingFormat(NamingFormats.camelCase())
@@ -147,21 +147,28 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 	private WeavableCompoundConfigEntry.SubEntry weaveCompoundSubEntry(
 			PojoClassIntrospector.Property property,
 			Patchwork newExtensionsData,
-			WeavingContext parentContext
+			WeavingContext context
 	) {
 		assert weavingConfigAccess != null;
 		CompoundWeavingConfig weavingConfig = newExtensionsData.get(weavingConfigAccess);
 		assert weavingConfig != null;
 
 		String name = convertName(property.field().getName(), weavingConfig);
-		WeavingContext subContext = createSubContextForProperty(property, name, newExtensionsData, parentContext);
 
 		ConfigEntry<?> subEntry;
 		if (property.isFinal()) {
 			// TODO
 			throw new UnsupportedOperationException("Final config entries are not supported in weaving yet.");
 		} else {
-			subEntry = subContext.weaveEntry(ActualType.ofUsedType(property.field().getAnnotatedType()), subContext);
+			subEntry = context.weaveEntry(
+					ActualType.ofUsedType(property.field().getAnnotatedType()),
+					newExtensionsData,
+					ProtoWeavingContext.subContextFor(
+							context,
+							property.field().getName(),
+							collectAnnotationsForField(property.field())
+					)
+			);
 		}
 
 		return new StaticPojoCompoundConfigEntry.SubEntry(
@@ -191,18 +198,6 @@ public class CompoundPojoWeaver implements TweedPojoWeaver {
 			);
 		}
 		return namingFormat;
-	}
-
-	private WeavingContext createSubContextForProperty(
-			PojoClassIntrospector.Property property,
-			String name,
-			Patchwork newExtensionsData,
-			WeavingContext parentContext
-	) {
-		return parentContext.subContextBuilder(name)
-				.annotations(collectAnnotationsForField(property.field()))
-				.extensionsData(newExtensionsData)
-				.build();
 	}
 
 	private AnnotatedElement collectAnnotationsForField(Field field) {

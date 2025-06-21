@@ -38,7 +38,7 @@ public class ClassToInstanceMap<T extends @NonNull Object> implements Iterable<T
 		return delegate.containsValue(value);
 	}
 
-	public <V extends T> V get(Class<V> key) {
+	public <V extends T> @Nullable V get(Class<V> key) {
 		return (V) delegate.get(key);
 	}
 

@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.patchwork.api;
 
-import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
@@ -10,7 +9,6 @@ public interface Patchwork {
 	@Contract(mutates = "this")
 	<T extends @Nullable Object> void set(PatchworkPartAccess<T> access, T value) throws InvalidPatchworkAccessException;
 
-	@CheckReturnValue
 	@Contract(pure = true)
 	Patchwork copy();
 }

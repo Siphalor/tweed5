@@ -1,4 +1,4 @@
-package de.siphalor.tweed5.weaver.pojoext.serde;
+package de.siphalor.tweed5.weaver.pojoext.serde.api;
 
 import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
@@ -10,11 +10,12 @@ import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
-import de.siphalor.tweed5.weaver.pojoext.serde.api.EntryReadWriteConfig;
-import de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoPostProcessor;
 import lombok.*;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
@@ -22,12 +23,13 @@ import java.io.StringWriter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class WeaverPojoSerdeExtensionTest {
+class ReadWritePojoWeavingProcessorTest {
 
 	@Test
 	@SneakyThrows
 	void testAnnotated() {
-		TweedPojoWeaverBootstrapper<AnnotatedConfig> weaverBootstrapper = TweedPojoWeaverBootstrapper.create(AnnotatedConfig.class);
+		TweedPojoWeaverBootstrapper<AnnotatedConfig> weaverBootstrapper = TweedPojoWeaverBootstrapper.create(
+				AnnotatedConfig.class);
 
 		ConfigContainer<AnnotatedConfig> configContainer = weaverBootstrapper.weave();
 		configContainer.initialize();
@@ -38,12 +40,27 @@ class WeaverPojoSerdeExtensionTest {
 
 		StringWriter stringWriter = new StringWriter();
 		HjsonWriter hjsonWriter = new HjsonWriter(stringWriter, new HjsonWriter.Options());
-		readWriteExtension.write(hjsonWriter, config, configContainer.rootEntry(), readWriteExtension.createReadWriteContextExtensionsData());
+		readWriteExtension.write(
+				hjsonWriter,
+				config,
+				configContainer.rootEntry(),
+				readWriteExtension.createReadWriteContextExtensionsData()
+		);
 
-		assertThat(stringWriter).hasToString("{\n\tanInt: 123\n\ttext: test\n\ttest: my cool custom writer\n}\n");
+		assertThat(stringWriter).hasToString("""
+				{
+				\tanInt: 123
+				\ttext: test
+				\ttest: my cool custom writer
+				}
+				""");
 
-		HjsonReader reader = new HjsonReader(new HjsonLexer(new StringReader(
-				"{\n\tanInt: 987\n\ttext: abdef\n\ttest: { inner: 29 }\n}"
+		HjsonReader reader = new HjsonReader(new HjsonLexer(new StringReader("""
+						{
+						\tanInt: 987
+						\ttext: abdef
+						\ttest: { inner: 29 }
+						}"""
 		)));
 		assertThat(readWriteExtension.read(
 				reader,
@@ -59,10 +76,10 @@ class WeaverPojoSerdeExtensionTest {
 			context.registerWriterFactory("tweed5.test.dummy", delegates -> new TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>() {
 				@Override
 				public void write(
-						@NonNull TweedDataVisitor writer,
-						Object value,
+						TweedDataVisitor writer,
+						@Nullable Object value,
 						ConfigEntry<Object> entry,
-						@NonNull TweedWriteContext context
+						TweedWriteContext context
 				) throws TweedDataWriteException {
 					writer.visitString("my cool custom writer");
 				}
@@ -70,9 +87,12 @@ class WeaverPojoSerdeExtensionTest {
 		}
 	}
 
-	@PojoWeaving(extensions = ReadWriteExtension.class, postProcessors = ReadWritePojoPostProcessor.class)
+	@PojoWeaving(extensions = ReadWriteExtension.class)
+	@DefaultWeavingExtensions
+	@PojoWeavingExtension(de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoWeavingProcessor.class)
 	@CompoundWeaving
 	@EntryReadWriteConfig("tweed5.compound")
+	// lombok
 	@AllArgsConstructor
 	@NoArgsConstructor
 	@EqualsAndHashCode

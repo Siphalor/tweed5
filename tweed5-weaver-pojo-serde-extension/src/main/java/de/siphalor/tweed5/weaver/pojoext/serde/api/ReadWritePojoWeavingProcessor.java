@@ -1,13 +1,15 @@
 package de.siphalor.tweed5.weaver.pojoext.serde.api;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
+import de.siphalor.tweed5.typeutils.api.type.ActualType;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.impl.SerdePojoReaderWriterSpec;
 import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.Nullable;
@@ -18,11 +20,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @CommonsLog
-public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor {
+public class ReadWritePojoWeavingProcessor implements TweedPojoWeavingExtension {
 	private final Map<String, TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryReader<?, ?>>> readerFactories = new HashMap<>();
 	private final Map<String, TweedReaderWriterProvider.ReaderWriterFactory<TweedEntryWriter<?, ?>>> writerFactories = new HashMap<>();
+	private final ReadWriteExtension readWriteExtension;
 
-	public ReadWritePojoPostProcessor() {
+	public ReadWritePojoWeavingProcessor(ConfigContainer<?> configContainer) {
+		this.readWriteExtension = configContainer.extension(ReadWriteExtension.class)
+				.orElseThrow(() -> new IllegalStateException(
+						"You must register a " + ReadWriteExtension.class.getSimpleName()
+								+ " to use the " + getClass().getSimpleName()
+				));
+	}
+
+	@Override
+	public void setup(SetupContext context) {
 		loadProviders();
 	}
 
@@ -63,15 +75,9 @@ public class ReadWritePojoPostProcessor implements TweedPojoWeavingPostProcessor
 	}
 
 	@Override
-	public void apply(ConfigEntry<?> configEntry, WeavingContext context) {
+	public <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {
 		EntryReadWriteConfig entryConfig = context.annotations().getAnnotation(EntryReadWriteConfig.class);
 		if (entryConfig == null) {
-			return;
-		}
-
-		ReadWriteExtension readWriteExtension = context.configContainer().extension(ReadWriteExtension.class).orElse(null);
-		if (readWriteExtension == null && log.isErrorEnabled()) {
-			log.error("You must not use " + getClass().getName() + " without the " + ReadWriteExtension.class.getName());
 			return;
 		}
 

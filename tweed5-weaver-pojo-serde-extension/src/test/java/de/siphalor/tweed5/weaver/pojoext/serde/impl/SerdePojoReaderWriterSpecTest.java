@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.weaver.pojoext.serde.impl;
 
 import lombok.SneakyThrows;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -52,7 +53,7 @@ class SerdePojoReaderWriterSpecTest {
 			"abc..def;5;.",
 	})
 	@SneakyThrows
-	void parseError(String input, int index, String codePoint) {
+	void parseError(String input, int index, @Nullable String codePoint) {
 		assertThatThrownBy(() -> SerdePojoReaderWriterSpec.parse(input))
 				.asInstanceOf(type(SerdePojoReaderWriterSpec.ParseException.class))
 				.isInstanceOf(SerdePojoReaderWriterSpec.ParseException.class)

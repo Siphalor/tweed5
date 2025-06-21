@@ -20,7 +20,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.function.IntFunction;
 
-public class CollectionPojoWeaver implements TweedPojoWeaver {
+public class CollectionPojoWeaver implements TweedPojoWeavingExtension {
 	private static final CollectionWeavingConfig DEFAULT_WEAVING_CONFIG = CollectionWeavingConfigImpl.builder()
 			.collectionEntryClass(CollectionConfigEntryImpl.class)
 			.build();
@@ -51,10 +51,8 @@ public class CollectionPojoWeaver implements TweedPojoWeaver {
 
 			ConfigEntry<?> elementEntry = context.weaveEntry(
 					collectionTypeParams.get(0),
-					context.subContextBuilder("element")
-							.annotations(collectionTypeParams.get(0))
-							.extensionsData(newExtensionsData)
-							.build()
+					newExtensionsData,
+					ProtoWeavingContext.subContextFor(context, "element", collectionTypeParams.get(0))
 			);
 
 			return WeavableCollectionConfigEntry.FACTORY

@@ -3,12 +3,14 @@ package de.siphalor.tweed5.weaver.pojo.api.weaving;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullUnmarked;
 import org.junit.jupiter.api.Test;
+
+import java.util.Objects;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isSimpleEntryForClass;
@@ -28,19 +30,31 @@ class CompoundPojoWeaverTest {
 
 		PatchworkFactory weavingContextExtensionDataFactory = weavingContextExtensionDataFactoryBuilder.build();
 
-		WeavingContext weavingContext = WeavingContext.builder(new TweedPojoWeavingFunction.NonNull() {
+		WeavingContext weavingContext = WeavingContext.builder()
+				.weavingFunction(new WeavingContext.WeavingFn() {
 					@Override
-					public @NotNull <T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
-						ConfigEntry<T> entry = compoundWeaver.weaveEntry(valueType, context);
-						if (entry != null) {
-							return entry;
-						} else {
-							return new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType());
-						}
+					public <T> ConfigEntry<T> weaveEntry(
+							ActualType<T> valueType,
+							Patchwork extensionsData,
+							ProtoWeavingContext protoContext
+					) {
+						WeavingContext context = WeavingContext.builder()
+								.configContainer(protoContext.configContainer())
+								.annotations(valueType)
+								.extensionsData(extensionsData.copy())
+								.path(protoContext.path())
+								.weavingFunction(protoContext.parent()::weaveEntry)
+								.build();
+						return Objects.requireNonNullElseGet(
+								compoundWeaver.weaveEntry(valueType, context),
+								() -> new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType())
+						);
 					}
-				}, mock(ConfigContainer.class))
+				})
 				.extensionsData(weavingContextExtensionDataFactory.create())
 				.annotations(Compound.class)
+				.path(new String[0])
+				.configContainer(mock(ConfigContainer.class))
 				.build();
 
 		ConfigEntry<Compound> resultEntry = compoundWeaver.weaveEntry(ActualType.ofClass(Compound.class), weavingContext);

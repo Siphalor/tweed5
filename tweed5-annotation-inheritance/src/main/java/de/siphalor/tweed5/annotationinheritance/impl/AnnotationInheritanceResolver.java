@@ -27,7 +27,7 @@ public class AnnotationInheritanceResolver {
 	public ClassToInstanceMap<Annotation> resolve() {
 		resolve(main, Collections.emptySet());
 
-		ClassToInstanceMap<Annotation> resolvedAnnotations = new ClassToInstanceMap<>();
+		ClassToInstanceMap<Annotation> resolvedAnnotations = ClassToInstanceMap.backedBy(new LinkedHashMap<>());
 
 		List<Aggregator> aggregatorList = new ArrayList<>(aggregators.values());
 		for (int i = aggregatorList.size() - 1; i >= 0; i--) {

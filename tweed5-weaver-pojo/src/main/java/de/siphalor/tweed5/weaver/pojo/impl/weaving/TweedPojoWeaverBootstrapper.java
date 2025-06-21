@@ -1,20 +1,23 @@
 package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 
+import de.siphalor.tweed5.annotationinheritance.api.AnnotationInheritanceAwareAnnotatedElement;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeaver;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.ProtoWeavingContext;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.postprocess.TweedPojoWeavingPostProcessor;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -27,36 +30,43 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class TweedPojoWeaverBootstrapper<T> {
 	private final Class<T> pojoClass;
+	private final AnnotatedElement pojoAnnotations;
 	private final ConfigContainer<T> configContainer;
-	private final Collection<TweedPojoWeaver> weavers;
-	private final Collection<TweedPojoWeavingPostProcessor> postProcessors;
+	private final Collection<TweedPojoWeavingExtension> weavingExtensions;
 	@Nullable
-	private PatchworkFactory contextExtensionsPatchworkFactory;
+	private PatchworkFactory weavingExtensionsPatchworkFactory;
 
 	public static <T> TweedPojoWeaverBootstrapper<T> create(Class<T> pojoClass) {
-		PojoWeaving rootWeavingConfig = expectAnnotation(pojoClass, PojoWeaving.class);
+		AnnotatedElement pojoAnnotations = new AnnotationInheritanceAwareAnnotatedElement(pojoClass);
+		PojoWeaving rootWeavingConfig = expectAnnotation(pojoAnnotations, PojoWeaving.class);
+		PojoWeavingExtension[] extensionAnnotations = pojoAnnotations.getAnnotationsByType(PojoWeavingExtension.class);
 
 		//noinspection unchecked
-		ConfigContainer<T> configContainer = (ConfigContainer<T>) createConfigContainer((Class<? extends ConfigContainer<?>>) rootWeavingConfig.container());
-
-		Collection<TweedPojoWeaver> weavers = loadWeavers(Arrays.asList(rootWeavingConfig.weavers()));
-		Collection<TweedPojoWeavingPostProcessor> postProcessors = loadPostProcessors(Arrays.asList(rootWeavingConfig.postProcessors()));
+		ConfigContainer<T>
+				configContainer
+				= (ConfigContainer<T>) createConfigContainer((Class<? extends ConfigContainer<?>>) rootWeavingConfig.container());
 
 		configContainer.registerExtensions(rootWeavingConfig.extensions());
 		configContainer.finishExtensionSetup();
 
-		return new TweedPojoWeaverBootstrapper<>(pojoClass, configContainer, weavers, postProcessors);
+		Collection<TweedPojoWeavingExtension> extensions = loadWeavingExtensions(
+				Arrays.stream(extensionAnnotations).map(PojoWeavingExtension::value).collect(Collectors.toList()),
+				configContainer
+		);
+
+		return new TweedPojoWeaverBootstrapper<>(pojoClass, pojoAnnotations, configContainer, extensions);
 	}
 
-	private static Collection<TweedPojoWeaver> loadWeavers(Collection<Class<? extends TweedPojoWeaver>> weaverClasses) {
+	private static Collection<TweedPojoWeavingExtension> loadWeavingExtensions(
+			Collection<Class<? extends TweedPojoWeavingExtension>> weaverClasses,
+			ConfigContainer<?> configContainer
+	) {
 		return weaverClasses.stream()
-				.map(weaverClass -> TweedPojoWeaver.FACTORY.construct(weaverClass).finish())
-				.collect(Collectors.toList());
-	}
-
-	private static Collection<TweedPojoWeavingPostProcessor> loadPostProcessors(Collection<Class<? extends TweedPojoWeavingPostProcessor>> postProcessorClasses) {
-		return postProcessorClasses.stream()
-				.map(postProcessorClass -> TweedPojoWeavingPostProcessor.FACTORY.construct(postProcessorClass).finish())
+				.map(weaverClass ->
+						TweedPojoWeavingExtension.FACTORY.construct(weaverClass)
+								.typedArg(ConfigContainer.class, configContainer)
+								.finish()
+				)
 				.collect(Collectors.toList());
 	}
 
@@ -68,69 +78,107 @@ public class TweedPojoWeaverBootstrapper<T> {
 		}
 	}
 
-	private static <A extends Annotation> A expectAnnotation(Class<?> clazz, Class<A> annotationClass) {
-		A annotation = clazz.getAnnotation(annotationClass);
+	private static <A extends Annotation> A expectAnnotation(AnnotatedElement element, Class<A> annotationClass) {
+		A annotation = element.getAnnotation(annotationClass);
 		if (annotation == null) {
-			throw new PojoWeavingException("Annotation " + annotationClass.getName() + " must be defined on class " + clazz);
+			throw new PojoWeavingException("Annotation "
+					+ annotationClass.getName()
+					+ " must be defined on class "
+					+ element);
 		} else {
 			return annotation;
 		}
 	}
 
 	public ConfigContainer<T> weave() {
-		setupWeavers();
-		WeavingContext weavingContext = createWeavingContext();
+		setupWeavingExtensions();
 
-		ConfigEntry<T> rootEntry = this.weaveEntry(ActualType.ofClass(pojoClass), weavingContext);
+		assert weavingExtensionsPatchworkFactory != null;
+
+		ConfigEntry<T> rootEntry = this.weaveEntry(
+				ActualType.ofClass(pojoClass),
+				weavingExtensionsPatchworkFactory.create(),
+				ProtoWeavingContext.create(configContainer, pojoAnnotations)
+		);
+
 		configContainer.attachTree(rootEntry);
 
 		return configContainer;
 	}
 
-	private void setupWeavers() {
-		PatchworkFactory.Builder contextExtensionsPatchworkFactoryBuilder = PatchworkFactory.builder();
+	private void setupWeavingExtensions() {
+		PatchworkFactory.Builder weavingExtensionsPatchworkFactoryBuilder = PatchworkFactory.builder();
 
-		TweedPojoWeaver.SetupContext setupContext = contextExtensionsPatchworkFactoryBuilder::registerPart;
+		TweedPojoWeavingExtension.SetupContext setupContext = weavingExtensionsPatchworkFactoryBuilder::registerPart;
 
-		for (TweedPojoWeaver weaver : weavers) {
+		for (TweedPojoWeavingExtension weaver : weavingExtensions) {
 			weaver.setup(setupContext);
 		}
 
-		contextExtensionsPatchworkFactory = contextExtensionsPatchworkFactoryBuilder.build();
+		weavingExtensionsPatchworkFactory = weavingExtensionsPatchworkFactoryBuilder.build();
 	}
 
-	private WeavingContext createWeavingContext() {
-		try {
-			assert contextExtensionsPatchworkFactory != null;
-			Patchwork extensionsData = contextExtensionsPatchworkFactory.create();
+	private <U> ConfigEntry<U> weaveEntry(
+			ActualType<U> dataClass,
+			Patchwork extensionsData,
+			ProtoWeavingContext protoContext
+	) {
+		extensionsData = extensionsData.copy();
 
-			return WeavingContext.builder(this::weaveEntry, configContainer)
-					.extensionsData(extensionsData)
-					.annotations(pojoClass)
-					.build();
-		} catch (Throwable e) {
-			throw new PojoWeavingException("Failed to create weaving context's extension data");
-		}
-	}
+		runBeforeWeaveHooks(dataClass, extensionsData, protoContext);
 
-	private <U> ConfigEntry<U> weaveEntry(ActualType<U> dataClass, WeavingContext context) {
-		for (TweedPojoWeaver weaver : weavers) {
-			ConfigEntry<U> configEntry = weaver.weaveEntry(dataClass, context);
-			if (configEntry != null) {
-				applyPostProcessors(configEntry, context);
-				return configEntry;
+		WeavingContext context = WeavingContext.builder()
+				.parent(protoContext.parent())
+				.weavingFunction(this::weaveEntry)
+				.configContainer(configContainer)
+				.path(protoContext.path())
+				.extensionsData(extensionsData)
+				.annotations(new AnnotationInheritanceAwareAnnotatedElement(protoContext.annotations()))
+				.build();
+
+		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
+			try {
+				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(dataClass, context);
+				if (configEntry != null) {
+					runAfterWeaveHooks(dataClass, configEntry, context);
+					return configEntry;
+				}
+			} catch (Exception e) {
+				log.error("Failed to run Tweed POJO weaver (" + weavingExtension.getClass().getName() + ")", e);
 			}
 		}
 
 		throw new PojoWeavingException("Failed to weave " + dataClass + ": No matching weavers found");
 	}
 
-	private void applyPostProcessors(ConfigEntry<?> configEntry, WeavingContext context) {
-		for (TweedPojoWeavingPostProcessor postProcessor : postProcessors) {
+	private <U> void runBeforeWeaveHooks(
+			ActualType<U> dataClass,
+			Patchwork extensionsData,
+			ProtoWeavingContext protoContext
+	) {
+		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
 			try {
-				postProcessor.apply(configEntry, context);
+				weavingExtension.beforeWeaveEntry(dataClass, extensionsData, protoContext);
 			} catch (Exception e) {
-				log.error("Failed to apply Tweed POJO weaver post processor", e);
+				log.error(
+						"Failed to apply Tweed POJO weaver before weave hook ("
+								+ weavingExtension.getClass().getName() + ")",
+						e
+				);
+			}
+		}
+	}
+
+	private <U> void runAfterWeaveHooks(ActualType<U> dataClass, ConfigEntry<U> configEntry, WeavingContext context) {
+		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
+			try {
+				weavingExtension.afterWeaveEntry(dataClass, configEntry, context);
+			} catch (Exception e) {
+				log.error(
+						"Failed to apply Tweed POJO weaver after weave hook ("
+								+ weavingExtension.getClass().getName() + ")",
+						e
+				);
 			}
 		}
 	}

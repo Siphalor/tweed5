@@ -4,10 +4,10 @@ import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.CollectionPojoWeaver;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.CompoundPojoWeaver;
-import de.siphalor.tweed5.weaver.pojo.api.weaving.TrivialPojoWeaver;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +65,7 @@ class TweedPojoWeaverBootstrapperTest {
 	}
 
 	@PojoWeaving(extensions = {DummyExtension.class})
+	@DefaultWeavingExtensions
 	@CompoundWeaving(namingFormat = "camel_case")
 	@Data
 	public static class MainCompound {
@@ -88,7 +89,9 @@ class TweedPojoWeaverBootstrapperTest {
 		boolean somethingElse;
 	}
 
-	@PojoWeaving(weavers = {CompoundPojoWeaver.class, CollectionPojoWeaver.class, TrivialPojoWeaver.class})
+	@PojoWeaving
+	@PojoWeavingExtension(CollectionPojoWeaver.class)
+	@DefaultWeavingExtensions
 	@CompoundWeaving(namingFormat = "camel_case")
 	@Data
 	public static class CompoundWithList {
