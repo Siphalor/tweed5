@@ -126,10 +126,11 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 			ConfigEntry<T> entry,
 			Patchwork contextExtensionsData
 	) throws TweedEntryReadException {
+		TweedReadContext context = new TweedReadWriteContextImpl(this, contextExtensionsData);
 		try {
-			return getReaderChain(entry).read(reader, entry, new TweedReadWriteContextImpl(this, contextExtensionsData));
+			return getReaderChain(entry).read(reader, entry, context);
 		} catch (TweedDataReadException e) {
-			throw new TweedEntryReadException("Failed to read entry", e);
+			throw new TweedEntryReadException("Failed to read entry", e, context);
 		}
 	}
 
@@ -140,10 +141,11 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 			ConfigEntry<T> entry,
 			Patchwork contextExtensionsData
 	) throws TweedEntryWriteException {
+		TweedWriteContext context = new TweedReadWriteContextImpl(this, contextExtensionsData);
 		try {
-			getWriterChain(entry).write(writer, value, entry, new TweedReadWriteContextImpl(this, contextExtensionsData));
+			getWriterChain(entry).write(writer, value, entry, context);
 		} catch (TweedDataWriteException e) {
-			throw new TweedEntryWriteException("Failed to write entry", e);
+			throw new TweedEntryWriteException("Failed to write entry", e, context);
 		}
 	}
 

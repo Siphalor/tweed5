@@ -249,7 +249,10 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 				}
 
 				if (validationResult.hasError()) {
-					throw new TweedEntryReadException("Failed to validate entry: " + validationResult.issues());
+					throw new TweedEntryReadException(
+							"Failed to validate entry: " + validationResult.issues(),
+							context
+					);
 				}
 
 				return validationResult.value();

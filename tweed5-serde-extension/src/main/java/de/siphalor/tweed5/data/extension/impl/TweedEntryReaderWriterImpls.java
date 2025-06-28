@@ -38,7 +38,7 @@ public class TweedEntryReaderWriterImpls {
 		private final TweedEntryReader<T, C> delegate;
 
 		@Override
-		public T read(TweedDataReader reader, C entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
+		public T read(TweedDataReader reader, C entry, TweedReadContext context) throws TweedEntryReadException {
 			if (reader.peekToken().isNull()) {
 				reader.readToken();
 				return null;
@@ -67,21 +67,22 @@ public class TweedEntryReaderWriterImpls {
 		private final BiConsumer<TweedDataVisitor, T> writerCall;
 
 		@Override
-		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) throws TweedDataReadException {
+		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) {
 			return readerCall.apply(reader.readToken());
 		}
 
 		@Override
 		public void write(TweedDataVisitor writer, @Nullable T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
-			requireNonNullWriteValue(value);
+			requireNonNullWriteValue(value, context);
 			writerCall.accept(writer, value);
 		}
 	}
 
 	public static class CollectionReaderWriter<T extends @Nullable Object, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
 		@Override
-		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
-			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start");
+		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws
+				TweedEntryReadException {
+			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start", context);
 			TweedDataToken token = reader.peekToken();
 			if (token.isListEnd()) {
 				return entry.instantiateCollection(0);
@@ -99,7 +100,10 @@ public class TweedEntryReaderWriterImpls {
 				} else if (token.isListValue()) {
 					list.add(elementReader.read(reader, elementEntry, context));
 				} else {
-					throw new TweedEntryReadException("Unexpected token " + token + ": expected next list value or list end");
+					throw new TweedEntryReadException(
+							"Unexpected token " + token + ": expected next list value or list end",
+							context
+					);
 				}
 			}
 
@@ -110,7 +114,7 @@ public class TweedEntryReaderWriterImpls {
 
 		@Override
 		public void write(TweedDataVisitor writer, C value, CollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
-			requireNonNullWriteValue(value);
+			requireNonNullWriteValue(value, context);
 
 			if (value.isEmpty()) {
 				writer.visitEmptyList();
@@ -130,8 +134,9 @@ public class TweedEntryReaderWriterImpls {
 
 	public static class CompoundReaderWriter<T> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
 		@Override
-		public T read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) throws TweedEntryReadException, TweedDataReadException {
-			assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start");
+		public T read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) throws
+				TweedEntryReadException {
+			assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start", context);
 
 			Map<String, ConfigEntry<?>> compoundEntries = entry.subEntries();
 			T compoundValue = entry.instantiateCompoundValue();
@@ -148,7 +153,10 @@ public class TweedEntryReaderWriterImpls {
 					Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
 					entry.set(compoundValue, key, subEntryValue);
 				} else {
-					throw new TweedEntryReadException("Unexpected token " + token + ": Expected map key or map end");
+					throw new TweedEntryReadException(
+							"Unexpected token " + token + ": Expected map key or map end",
+							context
+					);
 				}
 			}
 			return compoundValue;
@@ -156,7 +164,7 @@ public class TweedEntryReaderWriterImpls {
 
 		@Override
 		public void write(TweedDataVisitor writer, @Nullable T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
-			requireNonNullWriteValue(value);
+			requireNonNullWriteValue(value, context);
 
 			writer.visitMapStart();
 
@@ -178,7 +186,7 @@ public class TweedEntryReaderWriterImpls {
 
 	public static class NoopReaderWriter implements TweedEntryReaderWriter<@Nullable Object, ConfigEntry<Object>> {
 		@Override
-		public @Nullable Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) throws TweedDataReadException {
+		public @Nullable Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) {
 			TweedDataToken token = reader.readToken();
 			if (!token.isListStart() && !token.isMapStart()) {
 				return null;
@@ -216,16 +224,24 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	@Contract("null -> fail")
-	private static <T> void requireNonNullWriteValue(@Nullable T value) throws TweedEntryWriteException {
+	@Contract("null, _ -> fail")
+	private static <T> void requireNonNullWriteValue(
+			@Nullable T value,
+			TweedWriteContext context
+	) throws TweedEntryWriteException {
 		if (value == null) {
-			throw new TweedEntryWriteException("Unable to write null value");
+			throw new TweedEntryWriteException("Unable to write null value", context);
 		}
 	}
 
-	private static void assertIsToken(TweedDataToken token, Predicate<TweedDataToken> isToken, String description) throws TweedEntryReadException {
+	private static void assertIsToken(
+			TweedDataToken token,
+			Predicate<TweedDataToken> isToken,
+			String description,
+			TweedReadContext context
+	) throws TweedEntryReadException {
 		if (!isToken.test(token)) {
-			throw new TweedEntryReadException("Unexpected token " + token + ": " + description);
+			throw new TweedEntryReadException("Unexpected token " + token + ": " + description, context);
 		}
 	}
 }

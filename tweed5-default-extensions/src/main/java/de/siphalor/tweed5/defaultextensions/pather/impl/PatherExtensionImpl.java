@@ -4,10 +4,7 @@ import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.TweedReadContext;
-import de.siphalor.tweed5.data.extension.api.TweedWriteContext;
+import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
@@ -18,6 +15,7 @@ import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.val;
+import lombok.var;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -84,7 +82,21 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 					pathTracking = new PathTracking();
 					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
-					return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
+					try {
+						return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
+					} catch (TweedEntryReadException e) {
+						var exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
+						if (exceptionPathTracking != null) {
+							throw new TweedEntryReadException(
+									"Exception while reading entry at "
+											+ String.join("/", exceptionPathTracking.currentPath())
+											+ ": " + e.getMessage(),
+									e
+							);
+						} else {
+							throw e;
+						}
+					}
 				};
 			}
 		};
@@ -113,7 +125,21 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 
 					pathTracking = new PathTracking();
 					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
-					castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
+					try {
+						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
+					} catch (TweedEntryWriteException e) {
+						var exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
+						if (exceptionPathTracking != null) {
+							throw new TweedEntryWriteException(
+									"Exception while writing entry at "
+											+ String.join("/", exceptionPathTracking.currentPath())
+											+ ": " + e.getMessage(),
+									e
+							);
+						} else {
+							throw e;
+						}
+					}
 				};
 			}
 		};
