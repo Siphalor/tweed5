@@ -96,6 +96,9 @@ public interface ReadWriteExtension extends TweedExtension {
 		};
 	}
 
+	<T, C extends ConfigEntry<T>> @Nullable TweedEntryReader<T, C> getDefinedEntryReader(ConfigEntry<T> entry);
+	<T, C extends ConfigEntry<T>> @Nullable TweedEntryWriter<T, C> getDefinedEntryWriter(ConfigEntry<T> entry);
+
 	<T, C extends ConfigEntry<T>> void setEntryReaderWriter(
 			ConfigEntry<T> entry,
 			TweedEntryReader<T, C> entryReader,

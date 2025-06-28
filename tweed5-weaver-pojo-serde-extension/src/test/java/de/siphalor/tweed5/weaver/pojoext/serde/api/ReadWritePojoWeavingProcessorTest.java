@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.read;
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.write;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReadWritePojoWeavingProcessorTest {
@@ -34,18 +36,11 @@ class ReadWritePojoWeavingProcessorTest {
 		ConfigContainer<AnnotatedConfig> configContainer = weaverBootstrapper.weave();
 		configContainer.initialize();
 
-		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
-
 		AnnotatedConfig config = new AnnotatedConfig(123, "test", new TestClass(987));
 
 		StringWriter stringWriter = new StringWriter();
 		HjsonWriter hjsonWriter = new HjsonWriter(stringWriter, new HjsonWriter.Options());
-		readWriteExtension.write(
-				hjsonWriter,
-				config,
-				configContainer.rootEntry(),
-				readWriteExtension.createReadWriteContextExtensionsData()
-		);
+		configContainer.rootEntry().apply(write(hjsonWriter, config));
 
 		assertThat(stringWriter).hasToString("""
 				{
@@ -62,11 +57,8 @@ class ReadWritePojoWeavingProcessorTest {
 						\ttest: { inner: 29 }
 						}"""
 		)));
-		assertThat(readWriteExtension.read(
-				reader,
-				configContainer.rootEntry(),
-				readWriteExtension.createReadWriteContextExtensionsData()
-		)).isEqualTo(new AnnotatedConfig(987, "abdef", new TestClass(29)));
+		assertThat(configContainer.rootEntry().call(read(reader)))
+				.isEqualTo(new AnnotatedConfig(987, "abdef", new TestClass(29)));
 	}
 
 	@AutoService(TweedReaderWriterProvider.class)
@@ -89,7 +81,7 @@ class ReadWritePojoWeavingProcessorTest {
 
 	@PojoWeaving(extensions = ReadWriteExtension.class)
 	@DefaultWeavingExtensions
-	@PojoWeavingExtension(de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoWeavingProcessor.class)
+	@PojoWeavingExtension(ReadWritePojoWeavingProcessor.class)
 	@CompoundWeaving
 	@EntryReadWriteConfig("tweed5.compound")
 	// lombok

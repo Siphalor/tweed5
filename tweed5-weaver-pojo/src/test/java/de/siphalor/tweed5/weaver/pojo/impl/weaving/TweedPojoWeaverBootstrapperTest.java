@@ -28,7 +28,8 @@ class TweedPojoWeaverBootstrapperTest {
 						.hasEntrySatisfying("primitiveInteger", isSimpleEntryForClass(int.class))
 						.hasEntrySatisfying("boxedDouble", isSimpleEntryForClass(Double.class))
 						.hasEntrySatisfying("value", isSimpleEntryForClass(InnerValue.class))
-						.hasEntrySatisfying("list", isSimpleEntryForClass(List.class))
+						.hasEntrySatisfying("list", isCollectionEntryForClass(List.class, list ->
+								assertThat(list.elementEntry()).satisfies(isSimpleEntryForClass(Integer.class))))
 						.hasEntrySatisfying("compound", isCompoundEntryForClassWith(InnerCompound.class, innerCompound ->
 								assertThat(innerCompound.subEntries())
 										.hasEntrySatisfying("string", isSimpleEntryForClass(String.class))

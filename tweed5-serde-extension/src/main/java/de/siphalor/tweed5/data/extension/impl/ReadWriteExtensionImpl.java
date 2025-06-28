@@ -18,7 +18,6 @@ import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.Data;
 import lombok.val;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -76,6 +75,26 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 
 		entryReaderMiddlewareContainer.seal();
 		entryWriterMiddlewareContainer.seal();
+	}
+
+	@Override
+	public @Nullable <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> getDefinedEntryReader(ConfigEntry<T> entry) {
+		CustomEntryData customEntryData = entry.extensionsData().get(customEntryDataAccess);
+		if (customEntryData == null) {
+			return null;
+		}
+		//noinspection unchecked
+		return (TweedEntryReader<T, C>) customEntryData.readerDefinition();
+	}
+
+	@Override
+	public @Nullable <T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> getDefinedEntryWriter(ConfigEntry<T> entry) {
+		CustomEntryData customEntryData = entry.extensionsData().get(customEntryDataAccess);
+		if (customEntryData == null) {
+			return null;
+		}
+		//noinspection unchecked
+		return (TweedEntryWriter<T, C>) customEntryData.writerDefinition();
 	}
 
 	@Override
