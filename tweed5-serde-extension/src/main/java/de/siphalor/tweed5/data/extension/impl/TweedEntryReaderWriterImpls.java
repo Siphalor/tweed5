@@ -9,12 +9,11 @@ import de.siphalor.tweed5.dataapi.api.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -39,9 +38,13 @@ public class TweedEntryReaderWriterImpls {
 
 		@Override
 		public T read(TweedDataReader reader, C entry, TweedReadContext context) throws TweedEntryReadException {
-			if (reader.peekToken().isNull()) {
-				reader.readToken();
-				return null;
+			try {
+				if (reader.peekToken().isNull()) {
+					reader.readToken();
+					return null;
+				}
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException(e, context);
 			}
 			return delegate.read(reader, entry, context);
 		}
@@ -62,19 +65,24 @@ public class TweedEntryReaderWriterImpls {
 	}
 
 	@RequiredArgsConstructor
-	private static class PrimitiveReaderWriter<T extends @Nullable Object> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
-		private final Function<TweedDataToken, T> readerCall;
-		private final BiConsumer<TweedDataVisitor, T> writerCall;
+	private static class PrimitiveReaderWriter<T> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
+		private final PrimitiveReadFunction<T> readerFunction;
+		private final PrimitiveWriteFunction<T> writerFunction;
 
 		@Override
-		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) {
-			return readerCall.apply(reader.readToken());
+		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context)
+				throws TweedEntryReadException {
+			try {
+				return readerFunction.read(reader.readToken());
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException(e, context);
+			}
 		}
 
 		@Override
 		public void write(TweedDataVisitor writer, @Nullable T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value, context);
-			writerCall.accept(writer, value);
+			writerFunction.write(writer, value);
 		}
 	}
 
@@ -82,8 +90,13 @@ public class TweedEntryReaderWriterImpls {
 		@Override
 		public C read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) throws
 				TweedEntryReadException {
-			assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start", context);
-			TweedDataToken token = reader.peekToken();
+			TweedDataToken token;
+			try {
+				assertIsToken(reader.readToken(), TweedDataToken::isListStart, "Expected list start", context);
+				token = reader.peekToken();
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException("Failed reading collection start", e, context);
+			}
 			if (token.isListEnd()) {
 				return entry.instantiateCollection(0);
 			}
@@ -93,15 +106,23 @@ public class TweedEntryReaderWriterImpls {
 
 			List<@Nullable T> list = new ArrayList<>(20);
 			while (true) {
-				token = reader.peekToken();
-				if (token.isListEnd()) {
-					reader.readToken();
-					break;
-				} else if (token.isListValue()) {
-					list.add(elementReader.read(reader, elementEntry, context));
-				} else {
+				try {
+					token = reader.peekToken();
+					if (token.isListEnd()) {
+						reader.readToken();
+						break;
+					} else if (token.isListValue()) {
+						list.add(elementReader.read(reader, elementEntry, context));
+					} else {
+						throw new TweedEntryReadException(
+								"Unexpected token " + token + ": expected next list value or list end",
+								context
+						);
+					}
+				} catch (TweedDataReadException e) {
 					throw new TweedEntryReadException(
-							"Unexpected token " + token + ": expected next list value or list end",
+							"Failed reading element " + list.size() + " of collection",
+							e,
 							context
 					);
 				}
@@ -113,7 +134,8 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, C value, CollectionConfigEntry<T, C> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(TweedDataVisitor writer, C value, CollectionConfigEntry<T, C> entry, TweedWriteContext context)
+				throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value, context);
 
 			if (value.isEmpty()) {
@@ -136,27 +158,35 @@ public class TweedEntryReaderWriterImpls {
 		@Override
 		public T read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) throws
 				TweedEntryReadException {
-			assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start", context);
+			try {
+				assertIsToken(reader.readToken(), TweedDataToken::isMapStart, "Expected map start", context);
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException("Failed reading compound start", e, context);
+			}
 
 			Map<String, ConfigEntry<?>> compoundEntries = entry.subEntries();
 			T compoundValue = entry.instantiateCompoundValue();
 			while (true) {
-				TweedDataToken token = reader.readToken();
-				if (token.isMapEnd()) {
-					break;
-				} else if (token.isMapEntryKey()) {
-					String key = token.readAsString();
+				try {
+					TweedDataToken token = reader.readToken();
+					if (token.isMapEnd()) {
+						break;
+					} else if (token.isMapEntryKey()) {
+						String key = token.readAsString();
 
-					//noinspection unchecked
-					ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
-					TweedEntryReader<Object, ConfigEntry<Object>> subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
-					Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
-					entry.set(compoundValue, key, subEntryValue);
-				} else {
-					throw new TweedEntryReadException(
-							"Unexpected token " + token + ": Expected map key or map end",
-							context
-					);
+						//noinspection unchecked
+						ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
+						var subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
+						Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
+						entry.set(compoundValue, key, subEntryValue);
+					} else {
+						throw new TweedEntryReadException(
+								"Unexpected token " + token + ": Expected map key or map end",
+								context
+						);
+					}
+				} catch (TweedDataReadException e) {
+					throw new TweedEntryReadException("Failed reading compound entry", e, context);
 				}
 			}
 			return compoundValue;
@@ -186,31 +216,36 @@ public class TweedEntryReaderWriterImpls {
 
 	public static class NoopReaderWriter implements TweedEntryReaderWriter<@Nullable Object, ConfigEntry<Object>> {
 		@Override
-		public @Nullable Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) {
-			TweedDataToken token = reader.readToken();
-			if (!token.isListStart() && !token.isMapStart()) {
-				return null;
-			}
+		public @Nullable Object read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context)
+				throws TweedEntryReadException {
+			try {
+				TweedDataToken token = reader.readToken();
+				if (!token.isListStart() && !token.isMapStart()) {
+					return null;
+				}
 
-			ArrayDeque<Context> stack = new ArrayDeque<>(20);
-			if (token.isListStart()) {
-				stack.push(Context.LIST);
-			} else if (token.isMapStart()) {
-				stack.push(Context.MAP);
-			}
-
-			while (true) {
-				token = reader.readToken();
+				ArrayDeque<Context> stack = new ArrayDeque<>(20);
 				if (token.isListStart()) {
 					stack.push(Context.LIST);
 				} else if (token.isMapStart()) {
 					stack.push(Context.MAP);
-				} else if (token.isListEnd() || token.isMapEnd()) {
-					stack.pop();
 				}
-				if (stack.isEmpty()) {
-					return null;
+
+				while (true) {
+					token = reader.readToken();
+					if (token.isListStart()) {
+						stack.push(Context.LIST);
+					} else if (token.isMapStart()) {
+						stack.push(Context.MAP);
+					} else if (token.isListEnd() || token.isMapEnd()) {
+						stack.pop();
+					}
+					if (stack.isEmpty()) {
+						return null;
+					}
 				}
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException("Failed skipping through value", e, context);
 			}
 		}
 
@@ -222,6 +257,14 @@ public class TweedEntryReaderWriterImpls {
 		private enum Context {
 			LIST, MAP,
 		}
+	}
+
+	private interface PrimitiveReadFunction<T extends Object> {
+		T read(TweedDataToken token) throws TweedDataReadException;
+	}
+
+	private interface PrimitiveWriteFunction<T extends Object> {
+		void write(TweedDataVisitor writer, T value) throws TweedDataWriteException;
 	}
 
 	@Contract("null, _ -> fail")

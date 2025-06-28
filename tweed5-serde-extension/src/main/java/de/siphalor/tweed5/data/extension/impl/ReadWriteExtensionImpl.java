@@ -9,7 +9,6 @@ import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
 import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
@@ -146,11 +145,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 			Patchwork contextExtensionsData
 	) throws TweedEntryReadException {
 		TweedReadContext context = new TweedReadWriteContextImpl(this, contextExtensionsData);
-		try {
-			return getReaderChain(entry).read(reader, entry, context);
-		} catch (TweedDataReadException e) {
-			throw new TweedEntryReadException("Failed to read entry", e, context);
-		}
+		return getReaderChain(entry).read(reader, entry, context);
 	}
 
 	@Override

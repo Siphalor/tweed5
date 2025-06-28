@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 
 @Getter
-public class TweedDataReadException extends RuntimeException {
+public class TweedDataReadException extends Exception {
 	@Nullable
 	private final TweedDataReaderRecoverMode recoverMode;
 
