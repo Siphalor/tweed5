@@ -11,8 +11,8 @@ group = rootProject.group
 version = rootProject.version
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
-    targetCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 repositories {
@@ -54,8 +54,8 @@ dependencies {
 }
 
 tasks.compileTestJava {
-    sourceCompatibility = libs.versions.java.test.get()
-    targetCompatibility = libs.versions.java.test.get()
+    sourceCompatibility = JavaVersion.VERSION_21.toString()
+    targetCompatibility = JavaVersion.VERSION_21.toString()
 }
 
 tasks.test {

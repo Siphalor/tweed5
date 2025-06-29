@@ -107,7 +107,9 @@ public class AcyclicGraphSorter {
 			while (outgoingIter.hasNext()) {
 				if (outgoingIter.next()) {
 					if (stack.contains(outgoingIter.index())) {
-						throw new GraphCycleException(stack.reversed());
+						Collection<Integer> reversed = new ArrayList<>(stack.size());
+						stack.descendingIterator().forEachRemaining(reversed::add);
+						throw new GraphCycleException(reversed);
 					}
 					stack.push(outgoingIter.index());
 					continue outer;
@@ -229,7 +231,9 @@ public class AcyclicGraphSorter {
 			int leftBitCount = bitCount;
 			if (words == null) {
 				for (int i = 0; i < wordCount; i++) {
-					sb.repeat("0", Math.min(WORD_SIZE, leftBitCount));
+					for (int j = 0; j < Math.min(WORD_SIZE, leftBitCount); j++) {
+						sb.append("0");
+					}
 					sb.append(" ");
 					leftBitCount -= WORD_SIZE;
 				}

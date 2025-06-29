@@ -89,7 +89,7 @@ public class RepeatableAnnotationContainerHelper {
 
 			MethodHandle constructorHandle = MethodHandles.lookup().findConstructor(
 					generatedClass,
-					MethodType.methodType(void.class, repeatableClass.arrayType())
+					MethodType.methodType(void.class, arrayType(repeatableClass))
 			);
 
 			return (repeatedValues) -> {
@@ -119,9 +119,9 @@ public class RepeatableAnnotationContainerHelper {
 				"java/lang/Object",
 				new String[]{containerClass.getName().replace('.', '/')}
 		);
-		Class<?> repeatableArrayClass = repeatableClass.arrayType();
+		Class<?> repeatableArrayClass = arrayType(repeatableClass);
 
-		classWriter.visitField(Opcodes.ACC_PRIVATE, "values", repeatableArrayClass.descriptorString(), null, null);
+		classWriter.visitField(Opcodes.ACC_PRIVATE, "values", descriptor(repeatableArrayClass), null, null);
 
 		appendConstructor(classWriter, repeatableArrayClass, generatedClassNameInternal);
 		appendValueMethod(classWriter, repeatableArrayClass, generatedClassNameInternal);
@@ -143,7 +143,7 @@ public class RepeatableAnnotationContainerHelper {
 		MethodVisitor methodWriter = classWriter.visitMethod(
 				Opcodes.ACC_PUBLIC,
 				"<init>",
-				"(" + repeatableArrayClass.descriptorString() + ")V",
+				"(" + descriptor(repeatableArrayClass) + ")V",
 				null,
 				null
 		);
@@ -157,7 +157,7 @@ public class RepeatableAnnotationContainerHelper {
 				Opcodes.PUTFIELD,
 				generatedClassNameInternal,
 				"values",
-				repeatableArrayClass.descriptorString()
+				descriptor(repeatableArrayClass)
 		);
 		methodWriter.visitInsn(Opcodes.RETURN);
 		methodWriter.visitMaxs(2, 2);
@@ -172,7 +172,7 @@ public class RepeatableAnnotationContainerHelper {
 		MethodVisitor methodWriter = classWriter.visitMethod(
 				Opcodes.ACC_PUBLIC,
 				"value",
-				"()" + repeatableArrayClass.descriptorString(),
+				"()" + descriptor(repeatableArrayClass),
 				null,
 				null
 		);
@@ -182,7 +182,7 @@ public class RepeatableAnnotationContainerHelper {
 				Opcodes.GETFIELD,
 				generatedClassNameInternal,
 				"values",
-				repeatableArrayClass.descriptorString()
+				descriptor(repeatableArrayClass)
 		);
 		methodWriter.visitInsn(Opcodes.ARETURN);
 		methodWriter.visitMaxs(1, 1);
@@ -216,14 +216,14 @@ public class RepeatableAnnotationContainerHelper {
 				Opcodes.GETFIELD,
 				generatedClassNameInternal,
 				"values",
-				repeatableArrayClass.descriptorString()
+				descriptor(repeatableArrayClass)
 		);
 		methodWriter.visitVarInsn(Opcodes.ALOAD, 1);
 		methodWriter.visitMethodInsn(
 				Opcodes.INVOKEINTERFACE,
 				containerAnnotationClassBinaryName,
 				"value",
-				"()" + repeatableArrayClass.descriptorString(),
+				"()" + descriptor(repeatableArrayClass),
 				true
 		);
 		methodWriter.visitMethodInsn(
@@ -263,7 +263,7 @@ public class RepeatableAnnotationContainerHelper {
 				Opcodes.GETFIELD,
 				generatedClassNameInternal,
 				"values",
-				repeatableArrayClass.descriptorString()
+				descriptor(repeatableArrayClass)
 		);
 		methodWriter.visitMethodInsn(
 				Opcodes.INVOKESTATIC,
@@ -302,7 +302,7 @@ public class RepeatableAnnotationContainerHelper {
 				Opcodes.GETFIELD,
 				generatedClassNameInternal,
 				"values",
-				repeatableArrayClass.descriptorString()
+				descriptor(repeatableArrayClass)
 		);
 		methodWriter.visitMethodInsn(
 				Opcodes.INVOKESTATIC,
@@ -383,5 +383,18 @@ public class RepeatableAnnotationContainerHelper {
 		methodWriter.visitInsn(Opcodes.ARETURN);
 		methodWriter.visitMaxs(1, 1);
 		methodWriter.visitEnd();
+	}
+
+	private static String descriptor(Class<?> clazz) {
+		return Type.getType(clazz).getDescriptor();
+	}
+
+	private static <T> Class<T[]> arrayType(Class<T> clazz) {
+		try {
+			//noinspection unchecked
+			return (Class<T[]>) Class.forName("[L" + clazz.getName() + ";");
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException("Failed to get array class for " + clazz.getName(), e);
+		}
 	}
 }

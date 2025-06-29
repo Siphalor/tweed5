@@ -90,7 +90,7 @@ public abstract class AnnotationRepeatType {
 					valueHandle = MethodHandles.lookup().findVirtual(
 							annotationClass(),
 							"value",
-							MethodType.methodType(elementAnnotationClass.arrayType())
+							MethodType.methodType(Class.forName("[L" + elementAnnotationClass.getName() + ";"))
 					);
 				} catch (Exception e) {
 					throw new IllegalStateException(
