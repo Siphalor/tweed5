@@ -1,18 +1,24 @@
 package de.siphalor.tweed5.defaultextensions.comment.impl;
 
-import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
+import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
+import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 @RequiredArgsConstructor
 class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
-	private final CommentExtension commentExtension;
+	private final CommentExtensionImpl commentExtension;
 
 	@Override
 	public String id() {
@@ -21,122 +27,73 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 
 	@Override
 	public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
+		PatchworkPartAccess<Boolean> writerInstalledAccess = commentExtension.writerInstalledReadWriteContextAccess();
+		assert writerInstalledAccess != null;
+
 		//noinspection unchecked
 		TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 		return (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) (writer, value, entry, context) -> {
-			if (writer instanceof CompoundDataVisitor) {
-				// Comment is already written in front of the key by the CompoundDataWriter,
-				// so we don't have to write it here.
-				// We also want to unwrap the original writer,
-				// so that the special comment writing is limited to compounds.
-				writer = ((CompoundDataVisitor) writer).delegate;
-			} else {
-				String comment = getEntryComment(entry);
-				if (comment != null) {
-					writer.visitComment(comment);
-				}
+			if (!Boolean.TRUE.equals(context.extensionsData().get(writerInstalledAccess))) {
+				context.extensionsData().set(writerInstalledAccess, Boolean.TRUE);
+
+				writer = new MapEntryKeyDeferringWriter(writer);
 			}
 
-			if (entry instanceof CompoundConfigEntry) {
-				innerCasted.write(
-						new CompoundDataVisitor(writer, ((CompoundConfigEntry<?>) entry)),
-						value,
-						entry,
-						context
-				);
-			} else {
-				innerCasted.write(writer, value, entry, context);
+			String comment = commentExtension.getFullComment(entry);
+			if (comment != null) {
+				writer.visitDecoration(new PiercingCommentDecoration(() -> comment));
 			}
+
+			innerCasted.write(writer, value, entry, context);
 		};
 	}
 
-	@RequiredArgsConstructor
-	private class CompoundDataVisitor implements TweedDataVisitor {
-		private final TweedDataVisitor delegate;
-		private final CompoundConfigEntry<?> compoundConfigEntry;
+	private static class MapEntryKeyDeferringWriter extends DelegatingTweedDataVisitor {
+		private final Deque<TweedDataDecoration> decorationQueue = new ArrayDeque<>();
+		private @Nullable String mapEntryKey;
 
-		@Override
-		public void visitNull() {
-			delegate.visitNull();
-		}
-
-		@Override
-		public void visitBoolean(boolean value) {
-			delegate.visitBoolean(value);
-		}
-
-		@Override
-		public void visitByte(byte value) {
-			delegate.visitByte(value);
-		}
-
-		@Override
-		public void visitShort(short value) {
-			delegate.visitShort(value);
-		}
-
-		@Override
-		public void visitInt(int value) {
-			delegate.visitInt(value);
-		}
-
-		@Override
-		public void visitLong(long value) {
-			delegate.visitLong(value);
-		}
-
-		@Override
-		public void visitFloat(float value) {
-			delegate.visitFloat(value);
-		}
-
-		@Override
-		public void visitDouble(double value) {
-			delegate.visitDouble(value);
-		}
-
-		@Override
-		public void visitString(String value) {
-			delegate.visitString(value);
-		}
-
-		@Override
-		public void visitListStart() {
-			delegate.visitListStart();
-		}
-
-		@Override
-		public void visitListEnd() {
-			delegate.visitListEnd();
-		}
-
-		@Override
-		public void visitMapStart() {
-			delegate.visitMapStart();
+		protected MapEntryKeyDeferringWriter(TweedDataVisitor delegate) {
+			super(delegate);
 		}
 
 		@Override
 		public void visitMapEntryKey(String key) {
-			ConfigEntry<?> subEntry = compoundConfigEntry.subEntries().get(key);
-			String subEntryComment = getEntryComment(subEntry);
-			if (subEntryComment != null) {
-				delegate.visitComment(subEntryComment);
+			if (mapEntryKey != null) {
+				throw new IllegalStateException("Map entry key already visited");
+			} else {
+				mapEntryKey = key;
 			}
-			delegate.visitMapEntryKey(key);
 		}
 
 		@Override
-		public void visitMapEnd() {
-			delegate.visitMapEnd();
+		public void visitDecoration(TweedDataDecoration decoration) {
+			if (decoration instanceof PiercingCommentDecoration) {
+				super.visitDecoration(((PiercingCommentDecoration) decoration).commentDecoration());
+				return;
+			}
+			if (mapEntryKey != null) {
+				decorationQueue.addLast(decoration);
+			} else {
+				super.visitDecoration(decoration);
+			}
 		}
 
 		@Override
-		public void visitComment(String comment) {
-			delegate.visitComment(comment);
+		protected void beforeValueWrite() {
+			if (mapEntryKey != null) {
+				super.visitMapEntryKey(mapEntryKey);
+				mapEntryKey = null;
+				TweedDataDecoration decoration;
+				while ((decoration = decorationQueue.pollFirst()) != null) {
+					super.visitDecoration(decoration);
+				}
+			}
+			super.beforeValueWrite();
 		}
 	}
 
-	private @Nullable String getEntryComment(ConfigEntry<?> entry) {
-		return commentExtension.getFullComment(entry);
+	@Value
+	private static class PiercingCommentDecoration implements TweedDataDecoration {
+		TweedDataCommentDecoration commentDecoration;
 	}
 }

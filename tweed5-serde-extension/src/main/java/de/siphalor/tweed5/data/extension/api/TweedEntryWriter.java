@@ -7,5 +7,6 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface TweedEntryWriter<T extends @Nullable Object, C extends ConfigEntry<T>> {
-	void write(TweedDataVisitor writer, @Nullable T value, C entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException;
+	void write(TweedDataVisitor writer, @Nullable T value, C entry, TweedWriteContext context)
+			throws TweedEntryWriteException, TweedDataWriteException;
 }

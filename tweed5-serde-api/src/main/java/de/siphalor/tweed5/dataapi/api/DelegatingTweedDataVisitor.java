@@ -1,115 +1,115 @@
-package de.siphalor.tweed5.defaultextensions.pather.api;
+package de.siphalor.tweed5.dataapi.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataUnsupportedValueException;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
-@RequiredArgsConstructor
-public class PathTrackingDataVisitor implements TweedDataVisitor {
-	private final TweedDataVisitor delegate;
-	private final PathTracking pathTracking;
+@Getter
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+public class DelegatingTweedDataVisitor implements TweedDataVisitor {
+	protected final TweedDataVisitor delegate;
 
 	@Override
 	public void visitNull() {
+		beforeValueWrite();
 		delegate.visitNull();
-		valueVisited();
 	}
 
 	@Override
 	public void visitBoolean(boolean value) {
+		beforeValueWrite();
 		delegate.visitBoolean(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitByte(byte value) {
+		beforeValueWrite();
 		delegate.visitByte(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitShort(short value) {
+		beforeValueWrite();
 		delegate.visitShort(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitInt(int value) {
+		beforeValueWrite();
 		delegate.visitInt(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitLong(long value) {
+		beforeValueWrite();
 		delegate.visitLong(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitFloat(float value) {
+		beforeValueWrite();
 		delegate.visitFloat(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitDouble(double value) {
+		beforeValueWrite();
 		delegate.visitDouble(value);
-		valueVisited();
 	}
 
 	@Override
 	public void visitString(String value) {
+		beforeValueWrite();
 		delegate.visitString(value);
-		valueVisited();
 	}
 
 	@Override
-	public void visitValue(@Nullable Object value) throws TweedDataUnsupportedValueException {
-		TweedDataVisitor.super.visitValue(value);
-		valueVisited();
-	}
-
-	private void valueVisited() {
-		if (pathTracking.currentContext() == PathTracking.Context.LIST) {
-			pathTracking.incrementListIndex();
-		} else {
-			pathTracking.popPathPart();
-		}
+	public void visitEmptyList() {
+		beforeValueWrite();
+		delegate.visitEmptyList();
 	}
 
 	@Override
 	public void visitListStart() {
+		beforeValueWrite();
 		delegate.visitListStart();
-		pathTracking.pushListContext();
 	}
 
 	@Override
 	public void visitListEnd() {
 		delegate.visitListEnd();
-		pathTracking.popContext();
-		valueVisited();
+	}
+
+	@Override
+	public void visitEmptyMap() {
+		beforeValueWrite();
+		delegate.visitEmptyMap();
 	}
 
 	@Override
 	public void visitMapStart() {
+		beforeValueWrite();
 		delegate.visitMapStart();
-		pathTracking.pushMapContext();
 	}
 
 	@Override
 	public void visitMapEntryKey(String key) {
 		delegate.visitMapEntryKey(key);
-		pathTracking.pushPathPart(key);
 	}
 
 	@Override
 	public void visitMapEnd() {
 		delegate.visitMapEnd();
-		pathTracking.popContext();
-		valueVisited();
 	}
+
+	@Override
+	public void visitValue(@Nullable Object value) throws TweedDataUnsupportedValueException {
+		delegate.visitValue(value);
+	}
+
+	protected void beforeValueWrite() {}
 
 	@Override
 	public void visitDecoration(TweedDataDecoration decoration) {

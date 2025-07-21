@@ -134,6 +134,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
 		readContextValidationIssuesAccess = context.registerReadWriteContextExtensionData(ValidationIssues.class);
+		context.registerReaderMiddleware(new EntryValidationReaderMiddleware());
 	}
 
 	@Override
@@ -171,11 +172,6 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			entry.extensionsData().set(customEntryDataAccess, entryData);
 		}
 		return entryData;
-	}
-
-	@Override
-	public @Nullable Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware() {
-		return new EntryValidationReaderMiddleware();
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
+import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
@@ -16,7 +17,6 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.Data;
-import lombok.val;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -48,25 +48,29 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 		Collection<TweedExtension> extensions = configContainer.extensions();
 
 		PatchworkFactory.Builder readWriteContextPatchworkFactorBuilder = PatchworkFactory.builder();
-		ReadWriteExtensionSetupContext setupContext = readWriteContextPatchworkFactorBuilder::registerPart;
-
 		entryReaderMiddlewareContainer = new DefaultMiddlewareContainer<>();
 		entryWriterMiddlewareContainer = new DefaultMiddlewareContainer<>();
 
+		ReadWriteExtensionSetupContext setupContext = new ReadWriteExtensionSetupContext() {
+			@Override
+			public <E> PatchworkPartAccess<E> registerReadWriteContextExtensionData(Class<E> extensionDataClass) {
+				return readWriteContextPatchworkFactorBuilder.registerPart(extensionDataClass);
+			}
+
+			@Override
+			public void registerReaderMiddleware(Middleware<TweedEntryReader<?, ?>> middleware) {
+				entryReaderMiddlewareContainer.register(middleware);
+			}
+
+			@Override
+			public void registerWriterMiddleware(Middleware<TweedEntryWriter<?, ?>> middleware) {
+				entryWriterMiddlewareContainer.register(middleware);
+			}
+		};
+
 		for (TweedExtension extension : extensions) {
 			if (extension instanceof ReadWriteRelatedExtension) {
-				ReadWriteRelatedExtension rwExtension = (ReadWriteRelatedExtension) extension;
-
-				rwExtension.setupReadWriteExtension(setupContext);
-
-				val readerMiddleware = rwExtension.entryReaderMiddleware();
-				if (readerMiddleware != null) {
-					entryReaderMiddlewareContainer.register(readerMiddleware);
-				}
-				val writerMiddleware = rwExtension.entryWriterMiddleware();
-				if (writerMiddleware != null) {
-					entryWriterMiddlewareContainer.register(writerMiddleware);
-				}
+				((ReadWriteRelatedExtension) extension).setupReadWriteExtension(setupContext);
 			}
 		}
 

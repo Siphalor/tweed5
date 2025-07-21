@@ -2,6 +2,8 @@ package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
+import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import lombok.Data;
 
 import java.io.IOException;
@@ -237,7 +239,13 @@ public class HjsonWriter implements TweedDataVisitor {
 	}
 
 	@Override
-	public void visitComment(String comment) {
+	public void visitDecoration(TweedDataDecoration decoration) {
+		if (decoration instanceof TweedDataCommentDecoration) {
+			visitComment(((TweedDataCommentDecoration) decoration).comment());
+		}
+	}
+
+	private void visitComment(String comment) {
 		Matcher lineFeedMatcher = LINE_FEED_PATTERN.matcher(comment);
 		if (lineFeedMatcher.find()) {
 			// Multiline

@@ -7,8 +7,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
-import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
@@ -24,6 +23,8 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	@Getter
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
 	private final DefaultMiddlewareContainer<CommentProducer> middlewareContainer;
+	@Getter
+	private @Nullable PatchworkPartAccess<Boolean> writerInstalledReadWriteContextAccess;
 
 	public CommentExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
 		this.configContainer = configContainer;
@@ -47,8 +48,9 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	}
 
 	@Override
-	public @Nullable Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware() {
-		return new TweedEntryWriterCommentMiddleware(this);
+	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
+		writerInstalledReadWriteContextAccess = context.registerReadWriteContextExtensionData(Boolean.class);
+		context.registerWriterMiddleware(new TweedEntryWriterCommentMiddleware(this));
 	}
 
 	@Override

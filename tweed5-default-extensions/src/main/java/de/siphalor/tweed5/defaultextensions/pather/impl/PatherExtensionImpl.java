@@ -23,9 +23,6 @@ import org.jspecify.annotations.Nullable;
 public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
 	private static final String PATHER_ID = "pather";
 
-	private final Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware = createEntryReaderMiddleware();
-	private final Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware = createEntryWriterMiddleware();
-
 	private @Nullable PatchworkPartAccess<PathTracking> rwContextPathTrackingAccess;
 
 	@Override
@@ -36,6 +33,8 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
 		rwContextPathTrackingAccess = context.registerReadWriteContextExtensionData(PathTracking.class);
+		context.registerReaderMiddleware(createEntryReaderMiddleware());
+		context.registerWriterMiddleware(createEntryWriterMiddleware());
 	}
 
 	@Override
@@ -143,15 +142,5 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 				};
 			}
 		};
-	}
-
-	@Override
-	public @Nullable Middleware<TweedEntryReader<?, ?>> entryReaderMiddleware() {
-		return entryReaderMiddleware;
-	}
-
-	@Override
-	public @Nullable Middleware<TweedEntryWriter<?, ?>> entryWriterMiddleware() {
-		return entryWriterMiddleware;
 	}
 }
