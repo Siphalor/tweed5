@@ -80,11 +80,6 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public String getId() {
-		return "validation";
-	}
-
-	@Override
 	public void extensionsFinalized() {
 		for (TweedExtension extension : configContainer.extensions()) {
 			if (extension instanceof ValidationProvidingExtension) {
@@ -104,7 +99,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		return new Middleware<CommentProducer>() {
 			@Override
 			public String id() {
-				return "validation";
+				return EXTENSION_ID;
 			}
 
 			@Override
@@ -205,12 +200,12 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	private class EntryValidationReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
 		@Override
 		public String id() {
-			return "validation";
+			return EXTENSION_ID;
 		}
 
 		@Override
 		public Set<String> mustComeAfter() {
-			return Collections.singleton("pather");
+			return Collections.singleton(PatherExtension.EXTENSION_ID);
 		}
 
 		@Override

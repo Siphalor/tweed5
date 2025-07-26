@@ -8,6 +8,12 @@ import java.util.function.Consumer;
 
 public interface ValidationFallbackExtension extends TweedExtension {
 	Class<? extends ValidationFallbackExtension> DEFAULT = ValidationFallbackExtensionImpl.class;
+	String EXTENSION_ID = "validation-fallback";
+
+	@Override
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	static <C extends ConfigEntry<T>, T> Consumer<C> validationFallbackValue(T value) {
 		return entry -> {

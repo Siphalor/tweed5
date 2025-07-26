@@ -11,6 +11,11 @@ import java.util.function.Consumer;
 
 public interface AttributesExtension extends TweedExtension {
 	Class<? extends AttributesExtension> DEFAULT = AttributesExtensionImpl.class;
+	String EXTENSION_ID = "attributes";
+
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	static <C extends ConfigEntry<?>> Consumer<C> attribute(String key, String value) {
 		return entry -> entry.container().extension(AttributesExtension.class)

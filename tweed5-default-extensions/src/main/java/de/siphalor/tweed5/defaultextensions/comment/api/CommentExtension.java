@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 public interface CommentExtension extends TweedExtension {
 	Class<? extends CommentExtension> DEFAULT = CommentExtensionImpl.class;
+	String EXTENSION_ID = "comment";
 
 	static <C extends ConfigEntry<?>> Consumer<C> baseComment(String baseComment) {
 		return entry -> {

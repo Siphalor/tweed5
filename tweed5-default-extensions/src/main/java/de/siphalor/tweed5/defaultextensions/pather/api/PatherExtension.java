@@ -7,6 +7,12 @@ import de.siphalor.tweed5.defaultextensions.pather.impl.PatherExtensionImpl;
 
 public interface PatherExtension extends TweedExtension {
 	Class<? extends PatherExtension> DEFAULT = PatherExtensionImpl.class;
+	String EXTENSION_ID = "pather";
+
+	@Override
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	String getPath(TweedReadContext context);
 	String getPath(TweedWriteContext context);

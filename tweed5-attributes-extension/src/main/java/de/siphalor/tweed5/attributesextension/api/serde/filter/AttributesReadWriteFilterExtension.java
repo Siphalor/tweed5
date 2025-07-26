@@ -6,6 +6,11 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 
 public interface AttributesReadWriteFilterExtension extends TweedExtension {
 	Class<? extends AttributesReadWriteFilterExtension> DEFAULT = AttributesReadWriteFilterExtensionImpl.class;
+	String EXTENSION_ID = "attributes-read-write-filter";
+
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	void markAttributeForFiltering(String key);
 

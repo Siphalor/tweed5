@@ -39,11 +39,6 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	}
 
 	@Override
-	public String getId() {
-		return "read-write";
-	}
-
-	@Override
 	public void extensionsFinalized() {
 		Collection<TweedExtension> extensions = configContainer.extensions();
 

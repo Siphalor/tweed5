@@ -27,11 +27,6 @@ public class AttributesExtensionImpl implements AttributesExtension {
 	}
 
 	@Override
-	public String getId() {
-		return "attributes";
-	}
-
-	@Override
 	public void setAttribute(ConfigEntry<?> entry, String key, List<String> values) {
 		requireEditable();
 

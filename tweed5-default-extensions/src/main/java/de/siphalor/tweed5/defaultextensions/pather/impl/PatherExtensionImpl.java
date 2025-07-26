@@ -2,7 +2,6 @@ package de.siphalor.tweed5.defaultextensions.pather.impl;
 
 import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
@@ -20,15 +19,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 @AutoService(PatherExtension.class)
-public class PatherExtensionImpl implements PatherExtension, TweedExtension, ReadWriteRelatedExtension {
-	private static final String PATHER_ID = "pather";
-
+public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExtension {
 	private @Nullable PatchworkPartAccess<PathTracking> rwContextPathTrackingAccess;
-
-	@Override
-	public String getId() {
-		return PATHER_ID;
-	}
 
 	@Override
 	public void setupReadWriteExtension(ReadWriteExtensionSetupContext context) {
@@ -63,7 +55,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 		return new Middleware<TweedEntryReader<?, ?>>() {
 			@Override
 			public String id() {
-				return PATHER_ID;
+				return EXTENSION_ID;
 			}
 
 			@Override
@@ -105,7 +97,7 @@ public class PatherExtensionImpl implements PatherExtension, TweedExtension, Rea
 		return new Middleware<TweedEntryWriter<?, ?>>() {
 			@Override
 			public String id() {
-				return PATHER_ID;
+				return EXTENSION_ID;
 			}
 
 			@Override

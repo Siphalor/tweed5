@@ -29,11 +29,6 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 	}
 
 	@Override
-	public String getId() {
-		return "validation-fallback";
-	}
-
-	@Override
 	public <T> void setFallbackValue(ConfigEntry<T> entry, T value) {
 		getOrCreateCustomEntryData(entry).fallbackValue(value);
 	}
@@ -60,7 +55,7 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 	private class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator> {
 		@Override
 		public String id() {
-			return "validation-fallback";
+			return EXTENSION_ID;
 		}
 
 		@Override

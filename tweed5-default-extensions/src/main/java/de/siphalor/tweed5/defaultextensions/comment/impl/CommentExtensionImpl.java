@@ -34,7 +34,7 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 
 	@Override
 	public String getId() {
-		return "comment";
+		return EXTENSION_ID;
 	}
 
 	@Override

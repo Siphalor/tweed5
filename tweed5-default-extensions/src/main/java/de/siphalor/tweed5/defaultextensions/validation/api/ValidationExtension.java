@@ -16,6 +16,12 @@ import java.util.function.Function;
 
 public interface ValidationExtension extends TweedExtension {
 	Class<? extends ValidationExtension> DEFAULT = ValidationExtensionImpl.class;
+	String EXTENSION_ID = "validation";
+
+	@Override
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	static <C extends ConfigEntry<T>, T> Consumer<C> validators(ConfigEntryValidator... validators) {
 		return entry -> {

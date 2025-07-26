@@ -15,7 +15,6 @@ import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.TweedReadContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
@@ -25,7 +24,10 @@ import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.utils.api.UniqueSymbol;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.var;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +35,6 @@ import java.util.*;
 
 public class AttributesReadWriteFilterExtensionImpl
 		implements AttributesReadWriteFilterExtension, AttributesRelatedExtension, ReadWriteRelatedExtension {
-	private static final String ID = "attributes-serde-filter";
 	private static final Set<String> MIDDLEWARES_MUST_COME_BEFORE = new HashSet<>(Arrays.asList(
 			Middleware.DEFAULT_START,
 			"validation"
@@ -51,11 +52,6 @@ public class AttributesReadWriteFilterExtensionImpl
 		this.configContainer = configContainer;
 
 		entryDataAccess = setupContext.registerEntryExtensionData(EntryCustomData.class);
-	}
-
-	@Override
-	public String getId() {
-		return ID;
 	}
 
 	@Override
@@ -178,7 +174,7 @@ public class AttributesReadWriteFilterExtensionImpl
 	private class ReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
 		@Override
 		public String id() {
-			return ID;
+			return EXTENSION_ID;
 		}
 
 		@Override
@@ -220,7 +216,7 @@ public class AttributesReadWriteFilterExtensionImpl
 	private class WriterMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
 		@Override
 		public String id() {
-			return ID;
+			return EXTENSION_ID;
 		}
 
 		@Override

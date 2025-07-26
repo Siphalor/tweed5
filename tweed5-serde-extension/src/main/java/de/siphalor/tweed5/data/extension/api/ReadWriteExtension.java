@@ -14,6 +14,12 @@ import java.util.function.Function;
 
 public interface ReadWriteExtension extends TweedExtension {
 	Class<? extends ReadWriteExtension> DEFAULT = ReadWriteExtensionImpl.class;
+	String EXTENSION_ID = "read-write";
+
+	@Override
+	default String getId() {
+		return EXTENSION_ID;
+	}
 
 	static <T> Consumer<ConfigEntry<T>> entryReaderWriter(
 			TweedEntryReaderWriter<T, ? extends ConfigEntry<T>> entryReaderWriter
