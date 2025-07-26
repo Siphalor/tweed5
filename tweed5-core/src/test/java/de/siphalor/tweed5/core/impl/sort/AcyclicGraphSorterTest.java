@@ -10,6 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class AcyclicGraphSorterTest {
 
 	@Test
+	void trivialSort() {
+		AcyclicGraphSorter sorter = new AcyclicGraphSorter(2);
+		sorter.addEdge(0, 1);
+		assertArrayEquals(new int[]{ 0, 1 }, assertDoesNotThrow(sorter::sort));
+	}
+
+	@Test
 	void sort1() {
 		AcyclicGraphSorter sorter = new AcyclicGraphSorter(4);
 		sorter.addEdge(2, 1);

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class HjsonWriter implements TweedDataVisitor {
 	private static final int PREFILL_INDENT = 10;
 	private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\\n|\\r\\n");
+	private static final Pattern NUMBER_PATTERN = Pattern.compile("^-?\\d+(?:\\.\\d*)?(?:[eE][+-]?\\d+)?$");
 
 	private final Writer writer;
 	private final Options options;
@@ -101,8 +102,11 @@ public class HjsonWriter implements TweedDataVisitor {
 		if (value.isEmpty() || "true".equals(value) || "false".equals(value) || "null".equals(value)) {
 			return HjsonStringType.INLINE_DOUBLE_QUOTE;
 		}
+		if (NUMBER_PATTERN.matcher(value).matches()) {
+			return HjsonStringType.INLINE_DOUBLE_QUOTE;
+		}
 		int firstCodePoint = value.codePointAt(0);
-		if (Character.isDigit(firstCodePoint) || Character.isWhitespace(firstCodePoint)) {
+		if (Character.isWhitespace(firstCodePoint)) {
 			return HjsonStringType.INLINE_DOUBLE_QUOTE;
 		}
 		int lastCodePoint = value.codePointBefore(value.length());

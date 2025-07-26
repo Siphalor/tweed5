@@ -15,6 +15,9 @@ public interface TweedExtension {
 	default void extensionsFinalized() {
 	}
 
+	default void initialize() {
+	}
+
 	default void initEntry(ConfigEntry<?> configEntry) {
 	}
 }

@@ -217,6 +217,10 @@ public class DefaultConfigContainer<T> implements ConfigContainer<T> {
 	public void initialize() {
 		requireSetupPhase(ConfigContainerSetupPhase.TREE_ATTACHED);
 
+		for (TweedExtension extension : extensions()) {
+			extension.initialize();
+		}
+
 		assert rootEntry != null;
 		rootEntry.visitInOrder(entry -> {
 			for (TweedExtension extension : extensions()) {
