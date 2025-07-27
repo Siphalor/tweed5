@@ -7,6 +7,7 @@ jetbrains-annotations = "26.0.1"
 jspecify = "1.0.0"
 junit = "5.12.0"
 lombok = "1.18.34"
+logback = "1.5.18"
 mockito = "5.14.2"
 slf4j = "2.0.16"
 
@@ -27,4 +28,4 @@ junit-core = { group = "org.junit.jupiter", name = "junit-jupiter" }
 junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
-slf4j-rt = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+slf4j-rt = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
