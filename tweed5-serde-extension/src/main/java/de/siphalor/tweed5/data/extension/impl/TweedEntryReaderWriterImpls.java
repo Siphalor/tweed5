@@ -176,6 +176,11 @@ public class TweedEntryReaderWriterImpls {
 
 						//noinspection unchecked
 						ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
+						if (subEntry == null) {
+							//noinspection DataFlowIssue
+							NOOP_READER_WRITER.read(reader, null, context);
+							continue;
+						}
 						var subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
 						Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
 						entry.set(compoundValue, key, subEntryValue);
