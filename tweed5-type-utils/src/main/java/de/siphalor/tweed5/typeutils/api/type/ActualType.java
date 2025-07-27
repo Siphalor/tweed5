@@ -166,6 +166,8 @@ public class ActualType<T> implements AnnotatedElement {
 		Class<?> currentClass = currentType.declaredType();
 		if (currentClass == targetClass) {
 			return currentType;
+		} else if (currentClass.isPrimitive()) {
+			return null;
 		}
 
 		List<ActualType<?>> currentParameters = currentType.parameters();
