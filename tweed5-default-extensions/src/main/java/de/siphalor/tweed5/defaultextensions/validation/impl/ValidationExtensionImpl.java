@@ -27,6 +27,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
@@ -170,6 +171,11 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
+	public ValidationIssues captureValidationIssues(Patchwork readContextExtensionsData) {
+		return getOrCreateValidationIssues(readContextExtensionsData);
+	}
+
+	@Override
 	public <T> ValidationIssues validate(ConfigEntry<T> entry, @Nullable T value) {
 		PathTracking pathTracking = new PathTracking();
 		ValidatingConfigEntryVisitor validatingVisitor = new ValidatingConfigEntryVisitor(pathTracking);
@@ -215,12 +221,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> castedInner = (TweedEntryReader<Object, ConfigEntry<Object>>) inner;
 			return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-				ValidationIssues validationIssues = context.extensionsData().get(readContextValidationIssuesAccess);
-				if (validationIssues == null) {
-					validationIssues = new ValidationIssuesImpl();
-				} else {
-					validationIssues = (ValidationIssues) context.extensionsData();
-				}
+				ValidationIssues validationIssues = getOrCreateValidationIssues(context.extensionsData());
 
 				Object value = castedInner.read(reader, entry, context);
 
@@ -249,6 +250,16 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 				return validationResult.value();
 			};
 		}
+	}
+
+	private ValidationIssues getOrCreateValidationIssues(Patchwork readContextExtensionsData) {
+		assert readContextValidationIssuesAccess != null;
+		ValidationIssues validationIssues = readContextExtensionsData.get(readContextValidationIssuesAccess);
+		if (validationIssues == null) {
+			validationIssues = new ValidationIssuesImpl();
+			readContextExtensionsData.set(readContextValidationIssuesAccess, validationIssues);
+		}
+		return validationIssues;
 	}
 
 	@Getter

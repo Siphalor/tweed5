@@ -6,26 +6,36 @@ import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
+import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.data.hjson.HjsonLexer;
+import de.siphalor.tweed5.data.hjson.HjsonReader;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
-import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.validators.NumberRangeValidator;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.entryReaderWriter;
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.read;
+import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
 import static de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension.baseComment;
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
 import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidationExtensionImplTest {
@@ -39,17 +49,26 @@ class ValidationExtensionImplTest {
 	void setUp() {
 		configContainer = new DefaultConfigContainer<>();
 
-		configContainer.registerExtension(CommentExtension.DEFAULT);
-		configContainer.registerExtension(ValidationExtension.DEFAULT);
+		configContainer.registerExtension(CommentExtension.class);
+		configContainer.registerExtension(ReadWriteExtension.class);
+		configContainer.registerExtension(ValidationExtension.class);
 		configContainer.finishExtensionSetup();
 
 		byteEntry = new SimpleConfigEntryImpl<>(configContainer, Byte.class)
-				.apply(validators(new NumberRangeValidator<>(Byte.class, (byte) 10, (byte) 100)));
+				.apply(entryReaderWriter(byteReaderWriter()))
+				.apply(validators(
+						NumberRangeValidator.builder(Byte.class)
+								.greaterThanOrEqualTo((byte) 11)
+								.lessThanOrEqualTo((byte) 100)
+								.build()
+				));
 		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
-				.apply(validators(new NumberRangeValidator<>(Integer.class, null, 123)))
+				.apply(entryReaderWriter(intReaderWriter()))
+				.apply(validators(NumberRangeValidator.builder(Integer.class).lessThanOrEqualTo(123).build()))
 				.apply(baseComment("This is the main comment!"));
 		doubleEntry = new SimpleConfigEntryImpl<>(configContainer, Double.class)
-				.apply(validators(new NumberRangeValidator<>(Double.class, 0.5, null)));
+				.apply(entryReaderWriter(doubleReaderWriter()))
+				.apply(validators(NumberRangeValidator.builder(Double.class).greaterThanOrEqualTo(0.5).build()));
 
 		//noinspection unchecked
 		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
@@ -61,7 +80,8 @@ class ValidationExtensionImplTest {
 						entry("int", intEntry),
 						entry("double", doubleEntry)
 				))
-		);
+		)
+				.apply(entryReaderWriter(compoundReaderWriter()));
 
 
 		configContainer.attachTree(rootEntry);
@@ -98,9 +118,71 @@ class ValidationExtensionImplTest {
 		assertNotNull(result.issuesByPath());
 
 		assertAll(
-				() -> assertValidationIssue(result, ".byte", byteEntry, new ValidationIssue("Value must be at least 10", ValidationIssueLevel.WARN)),
-				() -> assertValidationIssue(result, ".int", intEntry, new ValidationIssue("Value must be at most 123", ValidationIssueLevel.WARN)),
-				() -> assertValidationIssue(result, ".double", doubleEntry, new ValidationIssue("Value must be at least 0.5", ValidationIssueLevel.WARN))
+				() -> assertValidationIssue(
+						result,
+						".byte",
+						byteEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("11", "100", "9")
+				),
+				() -> assertValidationIssue(
+						result,
+						".int",
+						intEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("123", "124")
+				),
+				() -> assertValidationIssue(
+						result,
+						".double",
+						doubleEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("0.5", "0.2")
+				)
+		);
+	}
+
+	@Test
+	void readInvalid() {
+		ValidationExtension validationExtension = configContainer.extension(ValidationExtension.class).orElseThrow();
+
+		var reader = new HjsonReader(new HjsonLexer(new StringReader("""
+				{
+					byte: 9
+					int: 124
+					double: 0.2
+				}
+				""")));
+		var validationIssues = new AtomicReference<@Nullable ValidationIssues>();
+		Map<String, Object> value = configContainer.rootEntry().call(read(
+				reader,
+				extensionsData -> validationIssues.set(validationExtension.captureValidationIssues(extensionsData))
+		));
+
+		assertThat(value).isEqualTo(Map.of("byte", (byte) 11, "int", 123, "double", 0.5));
+		//noinspection DataFlowIssue
+		assertThat(validationIssues.get()).isNotNull().satisfies(
+				vi -> assertValidationIssue(
+						vi,
+						".byte",
+						byteEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("11", "100", "9")
+				),
+				vi -> assertValidationIssue(
+						vi,
+						".int",
+						intEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("123", "124")
+				 ),
+				vi -> assertValidationIssue(
+						vi,
+						".double",
+						doubleEntry,
+						ValidationIssueLevel.WARN,
+						message -> assertThat(message).contains("0.5", "0.2")
+				)
 		);
 	}
 
@@ -108,13 +190,15 @@ class ValidationExtensionImplTest {
 			ValidationIssues issues,
 			String expectedPath,
 			ConfigEntry<?> expectedEntry,
-			ValidationIssue expectedIssue
+			ValidationIssueLevel expectedLevel,
+			Consumer<String> issueMessageConsumer
 	) {
-		assertTrue(issues.issuesByPath().containsKey(expectedPath), "Must have issues for path " + expectedPath);
-		ValidationIssues.EntryIssues entryIssues = issues.issuesByPath().get(expectedPath);
-		assertSame(expectedEntry, entryIssues.entry(), "Entry must match");
-		assertEquals(1, entryIssues.issues().size(), "Entry must have exactly one issue");
-		assertEquals(expectedIssue, entryIssues.issues().iterator().next(), "Issue must match");
+		assertThat(issues.issuesByPath()).hasEntrySatisfying(expectedPath, entryIssues -> assertThat(entryIssues).satisfies(
+				eis -> assertThat(eis.entry()).isSameAs(expectedEntry),
+				eis -> assertThat(eis.issues()).singleElement().satisfies(
+						ei -> assertThat(ei.level()).isEqualTo(expectedLevel),
+						ei -> assertThat(ei.message()).satisfies(issueMessageConsumer)
+				)
+		));
 	}
-
 }
