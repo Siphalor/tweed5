@@ -11,8 +11,8 @@ group = rootProject.group
 version = rootProject.version
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
+    targetCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
 }
 
 repositories {
@@ -42,7 +42,8 @@ dependencies {
 
     implementation(libs.acl)
     "localRuntimeOnly"(libs.slf4j.rt)
-    testRuntimeOnly(libs.slf4j.rt)
+	testImplementation(libs.acl)
+    testImplementation(libs.slf4j.rt)
 
     testImplementation(platform(libs.junit.platform))
     testImplementation(libs.junit.core)
@@ -54,8 +55,8 @@ dependencies {
 }
 
 tasks.compileTestJava {
-    sourceCompatibility = JavaVersion.VERSION_21.toString()
-    targetCompatibility = JavaVersion.VERSION_21.toString()
+    sourceCompatibility = libs.versions.java.test.get()
+    targetCompatibility = libs.versions.java.test.get()
 }
 
 tasks.test {
