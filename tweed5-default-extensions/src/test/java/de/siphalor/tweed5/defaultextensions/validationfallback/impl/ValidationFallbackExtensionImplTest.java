@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.StringReader;
@@ -28,14 +29,15 @@ import java.util.Collections;
 
 import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.*;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
+import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validate;
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
 import static de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension.validationFallbackValue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ValidationFallbackExtensionImplTest {
-	private DefaultConfigContainer<Integer> configContainer;
-	private SimpleConfigEntry<Integer> intEntry;
+	private DefaultConfigContainer<@Nullable Integer> configContainer;
+	private SimpleConfigEntry<@Nullable Integer> intEntry;
 
 	@BeforeEach
 	void setUp() {

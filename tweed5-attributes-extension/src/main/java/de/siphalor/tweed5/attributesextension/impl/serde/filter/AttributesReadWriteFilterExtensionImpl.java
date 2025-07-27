@@ -35,11 +35,11 @@ import java.util.*;
 
 public class AttributesReadWriteFilterExtensionImpl
 		implements AttributesReadWriteFilterExtension, AttributesRelatedExtension, ReadWriteRelatedExtension {
-	private static final Set<String> MIDDLEWARES_MUST_COME_BEFORE = new HashSet<>(Arrays.asList(
-			Middleware.DEFAULT_START,
+	private static final Set<String> MIDDLEWARES_MUST_COME_BEFORE = Collections.emptySet();
+	private static final Set<String> MIDDLEWARES_MUST_COME_AFTER = new HashSet<>(Arrays.asList(
+			Middleware.DEFAULT_END,
 			"validation"
 	));
-	private static final Set<String> MIDDLEWARES_MUST_COME_AFTER = Collections.emptySet();
 	private static final UniqueSymbol TWEED_DATA_NOTHING_VALUE = new UniqueSymbol("nothing (skip value)");
 
 	private final ConfigContainer<?> configContainer;
