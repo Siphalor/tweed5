@@ -14,14 +14,14 @@ val expandedSourcesElements = configurations.consumable("expandedSourcesElements
 
 val delombok = tasks.getByName<Delombok>("delombok")
 
-val sourcesJarTask by tasks.registering(Jar::class) {
+val sourcesJar by tasks.registering(Jar::class) {
 	dependsOn(delombok)
 	from(delombok.target)
 	archiveClassifier.set("sources")
 }
-artifacts.add(expandedSourcesElements.name, sourcesJarTask)
+artifacts.add(expandedSourcesElements.name, sourcesJar)
 
-tasks.named("build") { dependsOn(sourcesJarTask) }
+tasks.named("build") { dependsOn(sourcesJar) }
 
 components.named<AdhocComponentWithVariants>("java") {
 	addVariantsFromConfiguration(expandedSourcesElements.get()) {}
