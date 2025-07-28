@@ -27,7 +27,6 @@ import de.siphalor.tweed5.utils.api.UniqueSymbol;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.var;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -133,7 +132,7 @@ public class AttributesReadWriteFilterExtensionImpl
 	public void addFilter(Patchwork contextExtensionsData, String key, String value) {
 		requireInitialized();
 
-		var contextCustomData = getOrCreateReadWriteContextCustomData(contextExtensionsData);
+		ReadWriteContextCustomData contextCustomData = getOrCreateReadWriteContextCustomData(contextExtensionsData);
 		addFilterToRWContextData(key, value, contextCustomData);
 	}
 

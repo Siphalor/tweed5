@@ -9,7 +9,7 @@ import de.siphalor.tweed5.dataapi.api.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
+import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
@@ -181,7 +181,7 @@ public class TweedEntryReaderWriterImpls {
 							NOOP_READER_WRITER.read(reader, null, context);
 							continue;
 						}
-						var subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
+						val subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
 						Object subEntryValue = subEntryReaderChain.read(reader, subEntry, context);
 						entry.set(compoundValue, key, subEntryValue);
 					} else {

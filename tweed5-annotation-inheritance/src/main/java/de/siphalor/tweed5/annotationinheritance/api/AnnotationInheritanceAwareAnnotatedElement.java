@@ -4,7 +4,6 @@ import de.siphalor.tweed5.annotationinheritance.impl.AnnotationInheritanceResolv
 import de.siphalor.tweed5.typeutils.api.annotations.AnnotationRepeatType;
 import de.siphalor.tweed5.utils.api.collection.ClassToInstanceMap;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
@@ -62,7 +61,8 @@ public class AnnotationInheritanceAwareAnnotatedElement implements AnnotatedElem
 
 		AnnotationRepeatType repeatType = AnnotationRepeatType.getType(annotationClass);
 		if (repeatType instanceof AnnotationRepeatType.Repeatable) {
-			var containerRepeatType = ((AnnotationRepeatType.Repeatable) repeatType).containerRepeatType();
+			AnnotationRepeatType.RepeatableContainer containerRepeatType =
+					((AnnotationRepeatType.Repeatable) repeatType).containerRepeatType();
 			Annotation containerAnnotation = getOrResolveAnnotations().get(containerRepeatType.annotationClass());
 			if (containerAnnotation != null) {
 				return containerRepeatType.elements(containerAnnotation);

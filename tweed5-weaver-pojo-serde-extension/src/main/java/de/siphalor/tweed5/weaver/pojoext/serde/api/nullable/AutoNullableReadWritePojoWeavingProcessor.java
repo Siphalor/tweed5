@@ -11,7 +11,7 @@ import de.siphalor.tweed5.weaver.pojo.api.weaving.ProtoWeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
 import lombok.Value;
-import lombok.var;
+import lombok.val;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
@@ -41,7 +41,7 @@ public class AutoNullableReadWritePojoWeavingProcessor implements TweedPojoWeavi
 
 		AutoReadWriteNullability innerNullability = null;
 
-		var behavior = context.annotations().getAnnotation(AutoNullableReadWriteBehavior.class);
+		val behavior = context.annotations().getAnnotation(AutoNullableReadWriteBehavior.class);
 		if (behavior != null) {
 			innerNullability = behavior.defaultNullability();
 		}
@@ -67,14 +67,14 @@ public class AutoNullableReadWritePojoWeavingProcessor implements TweedPojoWeavi
 	@Override
 	public <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {
 		if (getNullability(valueType, context) == AutoReadWriteNullability.NULLABLE) {
-			var definedEntryReader = readWriteExtension.getDefinedEntryReader(configEntry);
+			val definedEntryReader = readWriteExtension.getDefinedEntryReader(configEntry);
 			if (definedEntryReader != null) {
 				readWriteExtension.setEntryReader(
 						configEntry,
 						new TweedEntryReaderWriterImpls.NullableReader<>(definedEntryReader)
 				);
 			}
-			var definedEntryWriter = readWriteExtension.getDefinedEntryWriter(configEntry);
+			val definedEntryWriter = readWriteExtension.getDefinedEntryWriter(configEntry);
 			if (definedEntryWriter != null) {
 				readWriteExtension.setEntryWriter(
 						configEntry,

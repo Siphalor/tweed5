@@ -6,7 +6,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
-import lombok.var;
+import lombok.val;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
@@ -31,12 +31,12 @@ public class AttributesPojoWeavingProcessor implements TweedPojoWeavingExtension
 
 	@Override
 	public <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {
-		var attributeAnnotations = context.annotations().getAnnotationsByType(Attribute.class);
-		var attributes = collectAttributesFromAnnotations(attributeAnnotations, Attribute::key, Attribute::values);
+		val attributeAnnotations = context.annotations().getAnnotationsByType(Attribute.class);
+		val attributes = collectAttributesFromAnnotations(attributeAnnotations, Attribute::key, Attribute::values);
 		attributes.forEach((key, values) -> attributesExtension.setAttribute(configEntry, key, values));
 
-		var attributeDefaultAnnotations = context.annotations().getAnnotationsByType(AttributeDefault.class);
-		var attributeDefaults = collectAttributesFromAnnotations(
+		val attributeDefaultAnnotations = context.annotations().getAnnotationsByType(AttributeDefault.class);
+		val attributeDefaults = collectAttributesFromAnnotations(
 				attributeDefaultAnnotations,
 				AttributeDefault::key,
 				AttributeDefault::defaultValue

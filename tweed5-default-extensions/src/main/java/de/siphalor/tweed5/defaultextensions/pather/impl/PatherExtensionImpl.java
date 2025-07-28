@@ -14,7 +14,6 @@ import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.val;
-import lombok.var;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -76,7 +75,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 					try {
 						return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
 					} catch (TweedEntryReadException e) {
-						var exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
+						val exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
 						if (exceptionPathTracking != null) {
 							throw new TweedEntryReadException(
 									"Exception while reading entry at "
@@ -119,7 +118,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 					try {
 						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
 					} catch (TweedEntryWriteException e) {
-						var exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
+						val exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
 						if (exceptionPathTracking != null) {
 							throw new TweedEntryWriteException(
 									"Exception while writing entry at "

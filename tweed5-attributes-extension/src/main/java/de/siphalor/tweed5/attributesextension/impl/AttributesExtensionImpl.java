@@ -3,7 +3,6 @@ package de.siphalor.tweed5.attributesextension.impl;
 import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
 import de.siphalor.tweed5.attributesextension.api.AttributesRelatedExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
@@ -11,7 +10,6 @@ import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.utils.api.collection.ImmutableArrayBackedMap;
 import lombok.Data;
-import lombok.var;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -30,7 +28,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 	public void setAttribute(ConfigEntry<?> entry, String key, List<String> values) {
 		requireEditable();
 
-		var attributes = getOrCreateEditableAttributes(entry);
+		Map<String, List<String>> attributes = getOrCreateEditableAttributes(entry);
 
 		attributes.compute(key, (k, existingValues) -> {
 			if (existingValues == null) {
@@ -46,7 +44,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 	public void setAttributeDefault(ConfigEntry<?> entry, String key, List<String> values) {
 		requireEditable();
 
-		var attributeDefaults = getOrCreateEditableAttributeDefaults(entry);
+		Map<String, List<String>> attributeDefaults = getOrCreateEditableAttributeDefaults(entry);
 
 		attributeDefaults.compute(key, (k, existingValues) -> {
 			if (existingValues == null) {
@@ -66,7 +64,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 
 	private Map<String, List<String>> getOrCreateEditableAttributes(ConfigEntry<?> entry) {
 		CustomEntryData data = getOrCreateCustomEntryData(entry);
-		var attributes = data.attributes();
+		Map<String, List<String>> attributes = data.attributes();
 		if (attributes == null) {
 			attributes = new HashMap<>();
 			data.attributes(attributes);
@@ -76,7 +74,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 
 	private Map<String, List<String>> getOrCreateEditableAttributeDefaults(ConfigEntry<?> entry) {
 		CustomEntryData data = getOrCreateCustomEntryData(entry);
-		var attributeDefaults = data.attributeDefaults();
+		Map<String, List<String>> attributeDefaults = data.attributeDefaults();
 		if (attributeDefaults == null) {
 			attributeDefaults = new HashMap<>();
 			data.attributeDefaults(attributeDefaults);
@@ -113,13 +111,13 @@ public class AttributesExtensionImpl implements AttributesExtension {
 			}
 
 			private void enterEntry(ConfigEntry<?> entry) {
-				var data = entry.extensionsData().get(dataAccess);
-				var currentDefaults = defaults.getFirst();
+				CustomEntryData data = entry.extensionsData().get(dataAccess);
+				Map<String, List<String>> currentDefaults = defaults.getFirst();
 				if (data == null) {
 					defaults.push(currentDefaults);
 					return;
 				}
-				var entryDefaults = data.attributeDefaults();
+				Map<String, List<String>> entryDefaults = data.attributeDefaults();
 				data.attributeDefaults(null);
 				if (entryDefaults == null || entryDefaults.isEmpty()) {
 					defaults.push(currentDefaults);
@@ -143,8 +141,8 @@ public class AttributesExtensionImpl implements AttributesExtension {
 
 			@Override
 			public void visitEntry(ConfigEntry<?> entry) {
-				var data = getOrCreateCustomEntryData(entry);
-				var currentDefaults = defaults.getFirst();
+				CustomEntryData data = getOrCreateCustomEntryData(entry);
+				Map<String, List<String>> currentDefaults = defaults.getFirst();
 				if (data.attributes() == null || data.attributes().isEmpty()) {
 					data.attributes(currentDefaults);
 				} else {

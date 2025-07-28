@@ -8,7 +8,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.validators.NumberRang
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.var;
+import lombok.val;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.regex.Matcher;
@@ -43,7 +43,7 @@ public class WeavableNumberRangeValidator implements WeavableConfigEntryValidato
 		//noinspection unchecked
 		Class<? extends Number> numberClass = boxClass((Class<? extends Number>) configEntry.valueClass());
 		//noinspection unchecked
-		var builder = NumberRangeValidator.builder((Class<Number>) numberClass);
+		val builder = NumberRangeValidator.builder((Class<Number>) numberClass);
 
 		String minGroup = matcher.group(1);
 		if (minGroup != null) {
