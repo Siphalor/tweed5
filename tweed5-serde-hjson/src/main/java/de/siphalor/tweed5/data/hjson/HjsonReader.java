@@ -75,7 +75,7 @@ public class HjsonReader implements TweedDataReader {
 			if (lexerToken.type() == HjsonLexerToken.Type.BRACE_CLOSE) {
 				contexts.pop();
 				state = State.AFTER_VALUE;
-				return TweedDataTokens.getMapEnd();
+				return wrapValueLikeTokenContextAppropriate(TweedDataTokens.getMapEnd());
 			} else if (lexerToken.type() == HjsonLexerToken.Type.LINE_FEED || lexerToken.type() == HjsonLexerToken.Type.COMMA) {
 				state = State.BEFORE_OBJECT_KEY;
 			} else {
@@ -90,7 +90,7 @@ public class HjsonReader implements TweedDataReader {
 			if (lexerToken.type() == HjsonLexerToken.Type.BRACE_CLOSE) {
 				contexts.pop();
 				state = State.AFTER_VALUE;
-				return TweedDataTokens.getMapEnd();
+				return wrapValueLikeTokenContextAppropriate(TweedDataTokens.getMapEnd());
 			} else if (lexerToken.type() == HjsonLexerToken.Type.QUOTELESS_STRING || lexerToken.type() == HjsonLexerToken.Type.JSON_STRING) {
 				state = State.AFTER_OBJECT_KEY;
 				return TweedDataTokens.asMapEntryKey(createStringToken(lexerToken));
@@ -108,7 +108,7 @@ public class HjsonReader implements TweedDataReader {
 			if (lexerToken.type() == HjsonLexerToken.Type.BRACKET_CLOSE) {
 				contexts.pop();
 				state = State.AFTER_VALUE;
-				return TweedDataTokens.getListEnd();
+				return wrapValueLikeTokenContextAppropriate(TweedDataTokens.getListEnd());
 			} else if (lexerToken.type() == HjsonLexerToken.Type.COMMA || lexerToken.type() == HjsonLexerToken.Type.LINE_FEED) {
 				state = State.BEFORE_VALUE;
 			} else {
@@ -124,7 +124,7 @@ public class HjsonReader implements TweedDataReader {
 				eatGeneralLexerToken();
 				contexts.pop();
 				state = State.AFTER_VALUE;
-				return TweedDataTokens.getListEnd();
+				return wrapValueLikeTokenContextAppropriate(TweedDataTokens.getListEnd());
 			}
 			return TweedDataTokens.asListValue(nextValueToken());
 		}
@@ -138,27 +138,31 @@ public class HjsonReader implements TweedDataReader {
 		switch (lexerToken.type()) {
 			case NULL:
 				state = State.AFTER_VALUE;
-				return TweedDataTokens.getNull();
+				return wrapValueLikeTokenContextAppropriate(TweedDataTokens.getNull());
 			case TRUE:
 			case FALSE:
 				state = State.AFTER_VALUE;
-				return createBooleanToken(lexerToken);
+				return wrapValueLikeTokenContextAppropriate(createBooleanToken(lexerToken));
 			case NUMBER:
 				state = State.AFTER_VALUE;
-				return createNumberToken(lexerToken);
+				return wrapValueLikeTokenContextAppropriate(createNumberToken(lexerToken));
 			case QUOTELESS_STRING:
 			case JSON_STRING:
 			case MULTILINE_STRING:
 				state = State.AFTER_VALUE;
-				return createStringToken(lexerToken);
-			case BRACKET_OPEN:
+				return wrapValueLikeTokenContextAppropriate(createStringToken(lexerToken));
+			case BRACKET_OPEN: {
 				state = State.BEFORE_VALUE;
+				TweedDataToken token = wrapValueLikeTokenContextAppropriate(TweedDataTokens.getListStart());
 				contexts.push(Context.LIST);
-				return TweedDataTokens.getListStart();
-			case BRACE_OPEN:
+				return token;
+			}
+			case BRACE_OPEN: {
 				state = State.BEFORE_OBJECT_KEY;
+				TweedDataToken token = wrapValueLikeTokenContextAppropriate(TweedDataTokens.getMapStart());
 				contexts.push(Context.OBJECT);
-				return TweedDataTokens.getMapStart();
+				return token;
+			}
 			default:
 				throw createIllegalTokenException(
 						lexerToken,
@@ -623,6 +627,16 @@ public class HjsonReader implements TweedDataReader {
 			return token;
 		}
 		return lexer.nextInnerObjectToken();
+	}
+
+	private TweedDataToken wrapValueLikeTokenContextAppropriate(TweedDataToken token) {
+		if (currentContext() == Context.LIST) {
+			return TweedDataTokens.asListValue(token);
+		} else if (currentContext() == Context.OBJECT) {
+			return TweedDataTokens.asMapEntryValue(token);
+		} else {
+			return token;
+		}
 	}
 
 	private Context currentContext() {

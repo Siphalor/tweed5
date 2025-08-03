@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     api(project(":tweed5-serde-api"))
+
+	testImplementation(project(":serde-json-test-utils"))
 }
 
 tasks.shadowJar {

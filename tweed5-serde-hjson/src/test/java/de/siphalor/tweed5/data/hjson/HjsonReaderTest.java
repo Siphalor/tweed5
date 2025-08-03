@@ -1,7 +1,9 @@
 package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
+import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataToken;
+import de.siphalor.tweed5.testutils.serde.json.JsonReaderTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -10,8 +12,13 @@ import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class HjsonReaderTest {
+class HjsonReaderTest implements JsonReaderTest {
 	private static final double DOUBLE_PRECISION = 0.000000001D;
+
+	@Override
+	public TweedDataReader createJsonReader(String text) {
+		return new HjsonReader(new HjsonLexer(new StringReader(text)));
+	}
 
 	@ParameterizedTest
 	@CsvSource({
