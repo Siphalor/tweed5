@@ -1,23 +1,22 @@
 package de.siphaolor.tweed5.data.gson;
 
 import com.google.gson.stream.JsonWriter;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
-import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 public class GsonWriter implements TweedDataWriter {
 	private final JsonWriter writer;
 
 	private final Deque<Context> contextStack = new ArrayDeque<>();
-
-	private @Nullable String deferredFieldComment;
+	private final List<String> deferredFieldComments = new ArrayList<>();
 
 	public GsonWriter(JsonWriter writer) {
 		this.writer = writer;
@@ -148,10 +147,18 @@ public class GsonWriter implements TweedDataWriter {
 	@Override
 	public void visitMapEntryKey(String key) {
 		try {
-			if (deferredFieldComment != null) {
+			if (!deferredFieldComments.isEmpty()) {
 				writer.name(key + "__comment");
-				writer.value(deferredFieldComment);
-				deferredFieldComment = null;
+				if (deferredFieldComments.size() == 1) {
+					writer.value(deferredFieldComments.get(0));
+				} else {
+					writer.beginArray();
+					for (String comment : deferredFieldComments) {
+						writer.value(comment);
+					}
+					writer.endArray();
+				}
+				deferredFieldComments.clear();
 			}
 			writer.name(key);
 			contextStack.push(Context.VALUE);
@@ -174,11 +181,22 @@ public class GsonWriter implements TweedDataWriter {
 	@Override
 	public void visitDecoration(TweedDataDecoration decoration) {
 		if (decoration instanceof TweedDataCommentDecoration) {
-			if (deferredFieldComment == null) {
-				deferredFieldComment = ((TweedDataCommentDecoration) decoration).comment();
-			} else {
-				deferredFieldComment += "\n" + ((TweedDataCommentDecoration) decoration).comment();
+			if (peekContext() == Context.MAP) {
+				appendDeferredComment(((TweedDataCommentDecoration) decoration).comment());
 			}
+		}
+	}
+
+	private void appendDeferredComment(String comment) {
+		int index = 0;
+		while (true) {
+			int next = comment.indexOf('\n', index);
+			if (next == -1) {
+				deferredFieldComments.add(comment.substring(index));
+				break;
+			}
+			deferredFieldComments.add(comment.substring(index, next));
+			index = next + 1;
 		}
 	}
 

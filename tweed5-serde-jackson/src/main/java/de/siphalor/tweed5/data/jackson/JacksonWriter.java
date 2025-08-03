@@ -1,23 +1,23 @@
 package de.siphalor.tweed5.data.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
-import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 public class JacksonWriter implements TweedDataWriter {
 	private final JsonGenerator generator;
 	private final CommentWriteMode commentWriteMode;
 
 	private final Deque<Context> contextStack = new ArrayDeque<>();
-	private @Nullable String deferredFieldComment;
+	private final List<String> deferredFieldComments = new ArrayList<>();
 
 	public JacksonWriter(JsonGenerator generator, CommentWriteMode commentWriteMode) {
 		this.generator = generator;
@@ -149,10 +149,18 @@ public class JacksonWriter implements TweedDataWriter {
 	@Override
 	public void visitMapEntryKey(String key) {
 		try {
-			if (deferredFieldComment != null) {
+			if (!deferredFieldComments.isEmpty()) {
 				generator.writeFieldName(key + "__comment");
-				generator.writeString(deferredFieldComment);
-				deferredFieldComment = null;
+				if (deferredFieldComments.size() == 1) {
+					generator.writeString(deferredFieldComments.get(0));
+				} else {
+					generator.writeStartArray();
+					for (String deferredFieldComment : deferredFieldComments) {
+						generator.writeString(deferredFieldComment);
+					}
+					generator.writeEndArray();
+				}
+				deferredFieldComments.clear();
 			}
 			generator.writeFieldName(key);
 			contextStack.push(Context.VALUE);
@@ -180,11 +188,7 @@ public class JacksonWriter implements TweedDataWriter {
 					break;
 				case MAP_ENTRIES:
 					if (contextStack.peek() == Context.MAP) {
-						if (deferredFieldComment == null) {
-							deferredFieldComment = ((TweedDataCommentDecoration) decoration).comment();
-						} else {
-							deferredFieldComment += "\n" + ((TweedDataCommentDecoration) decoration).comment();
-						}
+						appendDeferredComment(((TweedDataCommentDecoration) decoration).comment());
 					}
 					break;
 				case DOUBLE_SLASHES:
@@ -196,6 +200,19 @@ public class JacksonWriter implements TweedDataWriter {
 						throw createWriteExceptionForIOException(e);
 					}
 			}
+		}
+	}
+
+	private void appendDeferredComment(String comment) {
+		int index = 0;
+		while (true) {
+			int next = comment.indexOf('\n', index);
+			if (next == -1) {
+				deferredFieldComments.add(comment.substring(index));
+				break;
+			}
+			deferredFieldComments.add(comment.substring(index, next));
+			index = next + 1;
 		}
 	}
 
