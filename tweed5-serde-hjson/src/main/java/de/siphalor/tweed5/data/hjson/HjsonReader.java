@@ -630,6 +630,11 @@ public class HjsonReader implements TweedDataReader {
 		return contexts.peek();
 	}
 
+	@Override
+	public void close() throws Exception {
+		lexer.close();
+	}
+
 	private enum Context {
 		VALUE,
 		LIST,

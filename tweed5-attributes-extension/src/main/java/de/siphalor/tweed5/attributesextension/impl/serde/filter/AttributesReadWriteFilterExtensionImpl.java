@@ -16,10 +16,7 @@ import de.siphalor.tweed5.data.extension.api.TweedReadContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
-import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataVisitor;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataUnsupportedValueException;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.dataapi.api.*;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
@@ -285,7 +282,7 @@ public class AttributesReadWriteFilterExtensionImpl
 		return true;
 	}
 
-	private static class MapEntryKeyDeferringWriter extends DelegatingTweedDataVisitor {
+	private static class MapEntryKeyDeferringWriter extends DelegatingTweedDataWriter {
 		private final Deque<Boolean> mapContext = new ArrayDeque<>();
 		private final Deque<TweedDataDecoration> preDecorationQueue = new ArrayDeque<>();
 		private final Deque<TweedDataDecoration> postDecorationQueue = new ArrayDeque<>();

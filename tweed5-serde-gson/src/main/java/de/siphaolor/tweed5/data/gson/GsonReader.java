@@ -266,6 +266,11 @@ public class GsonReader implements TweedDataReader {
 		};
 	}
 
+	@Override
+	public void close() throws Exception {
+		reader.close();
+	}
+
 	private enum Context {
 		VALUE,
 		LIST,

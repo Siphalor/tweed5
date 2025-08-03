@@ -3,6 +3,7 @@ package de.siphaolor.tweed5.data.gson;
 import com.google.gson.stream.JsonWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
+import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class GsonWriter implements TweedDataVisitor {
+public class GsonWriter implements TweedDataWriter {
 	private final JsonWriter writer;
 
 	private final Deque<Context> contextStack = new ArrayDeque<>();
@@ -179,6 +180,11 @@ public class GsonWriter implements TweedDataVisitor {
 				deferredFieldComment += "\n" + ((TweedDataCommentDecoration) decoration).comment();
 			}
 		}
+	}
+
+	@Override
+	public void close() throws Exception {
+		writer.close();
 	}
 
 	private void afterValueWritten() {

@@ -11,7 +11,7 @@ import java.util.PrimitiveIterator;
 
 @ApiStatus.Internal
 @RequiredArgsConstructor
-public class HjsonLexer {
+public class HjsonLexer implements AutoCloseable {
 	private static final int EMPTY_CODEPOINT = -2;
 
 	private final Reader reader;
@@ -481,5 +481,10 @@ public class HjsonLexer {
 		} catch (IOException e) {
 			throw TweedDataReadException.builder().message("Failed to read character from input at " + currentPos).cause(e).build();
 		}
+	}
+
+	@Override
+	public void close() throws Exception {
+		reader.close();
 	}
 }

@@ -3,8 +3,9 @@ package de.siphalor.tweed5.defaultextensions.comment.impl;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataVisitor;
+import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
@@ -48,7 +49,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 		};
 	}
 
-	private static class MapEntryKeyDeferringWriter extends DelegatingTweedDataVisitor {
+	private static class MapEntryKeyDeferringWriter extends DelegatingTweedDataWriter {
 		private final Deque<TweedDataDecoration> decorationQueue = new ArrayDeque<>();
 		private @Nullable String mapEntryKey;
 

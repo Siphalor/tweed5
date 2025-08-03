@@ -36,4 +36,9 @@ public class PathTrackingDataReader implements TweedDataReader {
 		}
 		return token;
 	}
+
+	@Override
+	public void close() throws Exception {
+		delegate.close();
+	}
 }

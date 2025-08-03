@@ -3,6 +3,7 @@ package de.siphalor.tweed5.data.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
+import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class JacksonWriter implements TweedDataVisitor {
+public class JacksonWriter implements TweedDataWriter {
 	private final JsonGenerator generator;
 	private final CommentWriteMode commentWriteMode;
 
@@ -196,6 +197,11 @@ public class JacksonWriter implements TweedDataVisitor {
 					}
 			}
 		}
+	}
+
+	@Override
+	public void close() throws Exception {
+		generator.close();
 	}
 
 	private void afterValueVisited() {

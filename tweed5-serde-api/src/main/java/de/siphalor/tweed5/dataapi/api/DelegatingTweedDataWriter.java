@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public class DelegatingTweedDataVisitor implements TweedDataVisitor {
+public class DelegatingTweedDataWriter implements TweedDataWriter {
 	protected final TweedDataVisitor delegate;
 
 	@Override
@@ -114,5 +114,12 @@ public class DelegatingTweedDataVisitor implements TweedDataVisitor {
 	@Override
 	public void visitDecoration(TweedDataDecoration decoration) {
 		delegate.visitDecoration(decoration);
+	}
+
+	@Override
+	public void close() throws Exception {
+		if (delegate instanceof AutoCloseable) {
+			((AutoCloseable) delegate).close();
+		}
 	}
 }

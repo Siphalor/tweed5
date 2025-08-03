@@ -256,6 +256,11 @@ public class JacksonReader implements TweedDataReader {
 		};
 	}
 
+	@Override
+	public void close() throws Exception {
+		parser.close();
+	}
+
 	private enum Context {
 		VALUE,
 		LIST,

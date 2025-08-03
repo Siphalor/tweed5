@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
 import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HjsonWriter implements TweedDataVisitor {
+public class HjsonWriter implements TweedDataWriter {
 	private static final int PREFILL_INDENT = 10;
 	private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\\n|\\r\\n");
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("^-?\\d+(?:\\.\\d*)?(?:[eE][+-]?\\d+)?$");
@@ -578,6 +578,11 @@ public class HjsonWriter implements TweedDataVisitor {
 
 	private TweedDataWriteException createExceptionForIOException(IOException e) {
 		return new TweedDataWriteException("Writing Hjson failed", e);
+	}
+
+	@Override
+	public void close() throws Exception {
+		writer.close();
 	}
 
 	private enum Context {
