@@ -17,3 +17,10 @@ include("tweed5-weaver-pojo")
 include("tweed5-weaver-pojo-attributes-extension")
 include("tweed5-weaver-pojo-serde-extension")
 include("tweed5-weaver-pojo-validation-extension")
+
+includeAs("minecraft:tweed5-bundle", "minecraft/tweed5-bundle")
+
+fun includeAs(name: String, path: String) {
+    include(name)
+    project(":$name").projectDir = file(path)
+}

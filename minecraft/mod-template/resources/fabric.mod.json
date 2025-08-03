@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"license": "LGPL-3.0-only",
+	"contact": {
+		"email": "info@siphalor.de",
+		"issues": "https://gitea.siphalor.de/Siphalor/tweed5/issues",
+		"sources": "https://gitea.siphalor.de/Siphalor/tweed5"
+	},
+	"custom": {
+		"modmenu": {
+			"badges": [
+				"library"
+			],
+			"links": {
+				"modmenu.discord": "https://discord.gg/6gaXmbj"
+			},
+			"parent": {
+				"id": "tweed5",
+				"name": "Tweed 5",
+				"description": "Configuration focused libraries",
+				"icon": "assets/tweed4_base/icon.png",
+				"badges": [
+					"library"
+				]
+			}
+		},
+		"modmenu:api": true
+	},
+	"icon": "assets/tweed5/icon.png",
+	"id": "${id}",
+	"name": "${name}",
+	"description": "${description}",
+	"authors": [
+		"Siphalor"
+	],
+	"version": "${version}"
+}
