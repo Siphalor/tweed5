@@ -127,6 +127,26 @@ public class JacksonReader implements TweedDataReader {
 						public long readAsLong() {
 							return longValue;
 						}
+
+						@Override
+						public boolean canReadAsFloat() {
+							return true;
+						}
+
+						@Override
+						public float readAsFloat() {
+							return (float) longValue;
+						}
+
+						@Override
+						public boolean canReadAsDouble() {
+							return true;
+						}
+
+						@Override
+						public double readAsDouble() {
+							return (double) longValue;
+						}
 					});
 					afterValueRead();
 					return token;
