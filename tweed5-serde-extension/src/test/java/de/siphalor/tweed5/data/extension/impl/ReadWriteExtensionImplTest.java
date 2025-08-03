@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.entryReaderWriter;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
-import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
+import static de.siphalor.tweed5.testutils.generic.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

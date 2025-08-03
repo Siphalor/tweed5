@@ -6,12 +6,8 @@ plugins {
 
 dependencies {
     implementation(project(":tweed5-serde-api"))
-	implementation(libs.jackson.core)
-	shadowOnly(libs.jackson.core)
+	implementation(libs.gson)
 
 	testImplementation(project(":serde-json-test-utils"))
 }
 
-tasks.shadowJar {
-	relocate("com.fasterxml.jackson.core", "de.siphalor.tweed5.data.jackson.shadowed.jackson.core")
-}

@@ -51,7 +51,7 @@ dependencies {
     testImplementation(libs.mockito)
     testAgent(libs.mockito)
     testImplementation(libs.assertj)
-    testImplementation(project(":test-utils"))
+    testImplementation(project(":generic-test-utils"))
 }
 
 tasks.compileTestJava {

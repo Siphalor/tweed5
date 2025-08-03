@@ -1,4 +1,4 @@
-package de.siphalor.tweed5.testutils;
+package de.siphalor.tweed5.testutils.generic;
 
 import java.util.*;
 

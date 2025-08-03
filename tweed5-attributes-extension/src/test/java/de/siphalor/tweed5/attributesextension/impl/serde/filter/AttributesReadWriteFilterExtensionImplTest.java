@@ -23,14 +23,13 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static de.siphalor.tweed5.attributesextension.api.AttributesExtension.attribute;
 import static de.siphalor.tweed5.attributesextension.api.AttributesExtension.attributeDefault;
 import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.*;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.compoundReaderWriter;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.stringReaderWriter;
-import static de.siphalor.tweed5.testutils.MapTestUtils.sequencedMap;
+import static de.siphalor.tweed5.testutils.generic.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.map;
