@@ -21,5 +21,7 @@ public interface CommentExtension extends TweedExtension {
 
 	void setBaseComment(ConfigEntry<?> configEntry, String baseComment);
 
+	void recomputeFullComments();
+
 	@Nullable String getFullComment(ConfigEntry<?> configEntry);
 }

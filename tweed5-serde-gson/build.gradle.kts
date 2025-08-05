@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     implementation(project(":tweed5-serde-api"))
-	implementation(libs.gson)
+	api(libs.gson)
 
 	testImplementation(project(":serde-json-test-utils"))
 }

@@ -65,9 +65,16 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	}
 
 	@Override
-	public void initEntry(ConfigEntry<?> configEntry) {
-		CustomEntryData entryData = getOrCreateCustomEntryData(configEntry);
-		entryData.commentProducer(middlewareContainer.process(entry -> entryData.baseComment()));
+	public void initialize() {
+		recomputeFullComments();
+	}
+
+	@Override
+	public void recomputeFullComments() {
+		configContainer.rootEntry().visitInOrder(entry -> {
+			CustomEntryData entryData = getOrCreateCustomEntryData(entry);
+			entryData.commentProducer(middlewareContainer.process(_entry -> entryData.baseComment()));
+		});
 	}
 
 	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {
