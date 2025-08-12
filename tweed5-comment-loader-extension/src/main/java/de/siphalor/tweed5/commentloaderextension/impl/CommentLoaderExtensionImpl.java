@@ -93,7 +93,7 @@ public class CommentLoaderExtensionImpl implements CommentLoaderExtension, Comme
 		}
 
 		Map<String, String> commentsByKey = collectingCommentsVisitor.commentsByKey();
-		PathTracking pathTracking = new PathTracking();
+		PathTracking pathTracking = PathTracking.create();
 		configContainer.rootEntry().visitInOrder(new PathTrackingConfigEntryVisitor(
 				entry -> {
 					String key = pathTracking.currentPath();

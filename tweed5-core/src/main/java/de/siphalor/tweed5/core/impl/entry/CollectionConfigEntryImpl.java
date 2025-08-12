@@ -32,26 +32,6 @@ public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseC
 	}
 
 	@Override
-	public void visitInOrder(ConfigEntryVisitor visitor) {
-		if (visitor.enterCollectionEntry(this)) {
-			elementEntry.visitInOrder(visitor);
-			visitor.leaveCollectionEntry(this);
-		}
-	}
-
-	@Override
-	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
-		if (visitor.enterCollectionEntry(this, value)) {
-			if (value != null) {
-				for (E element : value) {
-					visitor.visitEntry(elementEntry, element);
-				}
-			}
-			visitor.leaveCollectionEntry(this, value);
-		}
-	}
-
-	@Override
 	public T deepCopy(T value) {
 		T copy = collectionConstructor.apply(value.size());
 		for (E element : value) {

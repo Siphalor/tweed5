@@ -12,37 +12,16 @@ public class PathTrackingConfigEntryVisitor implements ConfigEntryVisitor {
 	@Override
 	public void visitEntry(ConfigEntry<?> entry) {
 		delegate.visitEntry(entry);
-		entryVisited();
 	}
 
 	@Override
-	public boolean enterCollectionEntry(ConfigEntry<?> entry) {
-		boolean enter = delegate.enterCollectionEntry(entry);
-		if (enter) {
-			pathTracking.pushListContext();
-		}
-		return enter;
+	public boolean enterStructuredEntry(ConfigEntry<?> entry) {
+		return delegate.enterStructuredEntry(entry);
 	}
 
 	@Override
-	public void leaveCollectionEntry(ConfigEntry<?> entry) {
-		delegate.leaveCollectionEntry(entry);
-		pathTracking.popContext();
-		entryVisited();
-	}
-
-	@Override
-	public boolean enterCompoundEntry(ConfigEntry<?> entry) {
-		boolean enter = delegate.enterCompoundEntry(entry);
-		if (enter) {
-			pathTracking.pushMapContext();
-		}
-		return enter;
-	}
-
-	@Override
-	public boolean enterCompoundSubEntry(String key) {
-		boolean enter = delegate.enterCompoundSubEntry(key);
+	public boolean enterStructuredSubEntry(String key) {
+		boolean enter = delegate.enterStructuredSubEntry(key);
 		if (enter) {
 			pathTracking.pushPathPart(key);
 		}
@@ -50,21 +29,13 @@ public class PathTrackingConfigEntryVisitor implements ConfigEntryVisitor {
 	}
 
 	@Override
-	public void leaveCompoundSubEntry(String key) {
-		delegate.leaveCompoundSubEntry(key);
+	public void leaveStructuredSubEntry(String key) {
+		delegate.leaveStructuredSubEntry(key);
 		pathTracking.popPathPart();
 	}
 
 	@Override
-	public void leaveCompoundEntry(ConfigEntry<?> entry) {
-		delegate.leaveCompoundEntry(entry);
-		pathTracking.popContext();
-		entryVisited();
-	}
-
-	private void entryVisited() {
-		if (pathTracking.currentContext() == PathTracking.Context.LIST) {
-			pathTracking.incrementListIndex();
-		}
+	public void leaveStructuredEntry(ConfigEntry<?> entry) {
+		delegate.leaveStructuredEntry(entry);
 	}
 }

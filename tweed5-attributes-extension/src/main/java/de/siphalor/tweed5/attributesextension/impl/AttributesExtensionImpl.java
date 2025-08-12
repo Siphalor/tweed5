@@ -99,13 +99,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 			);
 
 			@Override
-			public boolean enterCompoundEntry(ConfigEntry<?> entry) {
-				enterEntry(entry);
-				return true;
-			}
-
-			@Override
-			public boolean enterCollectionEntry(ConfigEntry<?> entry) {
+			public boolean enterStructuredEntry(ConfigEntry<?> entry) {
 				enterEntry(entry);
 				return true;
 			}
@@ -130,12 +124,7 @@ public class AttributesExtensionImpl implements AttributesExtension {
 			}
 
 			@Override
-			public void leaveCompoundEntry(ConfigEntry<?> entry) {
-				defaults.pop();
-			}
-
-			@Override
-			public void leaveCollectionEntry(ConfigEntry<?> entry) {
+			public void leaveStructuredEntry(ConfigEntry<?> entry) {
 				defaults.pop();
 			}
 

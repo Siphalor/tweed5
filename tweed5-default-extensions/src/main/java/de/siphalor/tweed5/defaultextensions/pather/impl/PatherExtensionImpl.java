@@ -6,7 +6,6 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.dataapi.api.DelegatingTweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
@@ -71,7 +70,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 						return castedInner.read(reader, entry, context);
 					}
 
-					pathTracking = new PathTracking();
+					pathTracking = PathTracking.create();
 					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
 					try {
 						return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
@@ -80,7 +79,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 						if (exceptionPathTracking != null) {
 							throw new TweedEntryReadException(
 									"Exception while reading entry at "
-											+ String.join("/", exceptionPathTracking.currentPath())
+											+ exceptionPathTracking.currentPath()
 											+ ": " + e.getMessage(),
 									e
 							);
@@ -114,7 +113,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 						return;
 					}
 
-					pathTracking = new PathTracking();
+					pathTracking = PathTracking.create();
 					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
 					try {
 						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
@@ -123,7 +122,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 						if (exceptionPathTracking != null) {
 							throw new TweedEntryWriteException(
 									"Exception while writing entry at "
-											+ String.join("/", exceptionPathTracking.currentPath())
+											+ exceptionPathTracking.currentPath()
 											+ ": " + e.getMessage(),
 									e
 							);

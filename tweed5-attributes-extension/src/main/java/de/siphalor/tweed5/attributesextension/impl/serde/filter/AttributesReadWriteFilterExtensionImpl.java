@@ -88,26 +88,14 @@ public class AttributesReadWriteFilterExtensionImpl
 			}
 
 			@Override
-			public boolean enterCollectionEntry(ConfigEntry<?> entry) {
+			public boolean enterStructuredEntry(ConfigEntry<?> entry) {
 				attributesCollectors.push(new HashMap<>());
 				visitEntry(entry);
 				return true;
 			}
 
 			@Override
-			public void leaveCollectionEntry(ConfigEntry<?> entry) {
-				leaveContainerEntry(entry);
-			}
-
-			@Override
-			public boolean enterCompoundEntry(ConfigEntry<?> entry) {
-				attributesCollectors.push(new HashMap<>());
-				visitEntry(entry);
-				return true;
-			}
-
-			@Override
-			public void leaveCompoundEntry(ConfigEntry<?> entry) {
+			public void leaveStructuredEntry(ConfigEntry<?> entry) {
 				leaveContainerEntry(entry);
 			}
 

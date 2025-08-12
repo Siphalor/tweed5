@@ -20,6 +20,7 @@ import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
+import de.siphalor.tweed5.defaultextensions.pather.api.ValuePathTracking;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
@@ -177,7 +178,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	@Override
 	public <T> ValidationIssues validate(ConfigEntry<T> entry, @Nullable T value) {
-		PathTracking pathTracking = new PathTracking();
+		ValuePathTracking pathTracking = ValuePathTracking.create();
 		ValidatingConfigEntryVisitor validatingVisitor = new ValidatingConfigEntryVisitor(pathTracking);
 
 		entry.visitInOrder(new PathTrackingConfigEntryValueVisitor(validatingVisitor, pathTracking), value);
@@ -281,22 +282,12 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public <T> boolean enterCollectionEntry(ConfigEntry<T> entry, T value) {
+		public <T> boolean enterStructuredEntry(ConfigEntry<T> entry, T value) {
 			return true;
 		}
 
 		@Override
-		public <T> void leaveCollectionEntry(ConfigEntry<T> entry, T value) {
-			visitEntry(entry, value);
-		}
-
-		@Override
-		public <T> boolean enterCompoundEntry(ConfigEntry<T> entry, T value) {
-			return true;
-		}
-
-		@Override
-		public <T> void leaveCompoundEntry(ConfigEntry<T> entry, T value) {
+		public <T> void leaveStructuredEntry(ConfigEntry<T> entry, T value) {
 			visitEntry(entry, value);
 		}
 	}

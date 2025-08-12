@@ -52,31 +52,18 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 	}
 
 	@Override
-	public void visitInOrder(ConfigEntryVisitor visitor) {
-		if (visitor.enterCompoundEntry(this)) {
-			compoundEntries.forEach((key, entry) -> {
-				if (visitor.enterCompoundSubEntry(key)) {
-					entry.visitInOrder(visitor);
-					visitor.leaveCompoundSubEntry(key);
-				}
-			});
-			visitor.leaveCompoundEntry(this);
-		}
-	}
-
-	@Override
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
-		if (visitor.enterCompoundEntry(this, value)) {
+		if (visitor.enterStructuredEntry(this, value)) {
 			if (value != null) {
 				compoundEntries.forEach((key, entry) -> {
-					if (visitor.enterCompoundSubEntry(key)) {
+					if (visitor.enterStructuredSubEntry(key, key)) {
 						//noinspection unchecked
 						((ConfigEntry<Object>) entry).visitInOrder(visitor, value.get(key));
-						visitor.leaveCompoundSubEntry(key);
+						visitor.leaveStructuredSubEntry(key, key);
 					}
 				});
 			}
-			visitor.leaveCompoundEntry(this, value);
+			visitor.leaveStructuredEntry(this, value);
 		}
 	}
 

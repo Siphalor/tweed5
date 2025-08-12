@@ -8,64 +8,35 @@ import org.jspecify.annotations.Nullable;
 @RequiredArgsConstructor
 public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisitor {
 	private final ConfigEntryValueVisitor delegate;
-	private final PathTracking pathTracking;
+	private final ValuePathTracking pathTracking;
 
 	@Override
 	public <T extends @Nullable Object> void visitEntry(ConfigEntry<T> entry, T value) {
 		delegate.visitEntry(entry, value);
-		entryVisited();
 	}
 
 	@Override
-	public <T> boolean enterCollectionEntry(ConfigEntry<T> entry, T value) {
-		boolean enter = delegate.enterCollectionEntry(entry, value);
+	public <T> boolean enterStructuredEntry(ConfigEntry<T> entry, T value) {
+		return delegate.enterStructuredEntry(entry, value);
+	}
+
+	@Override
+	public boolean enterStructuredSubEntry(String entryKey, String valueKey) {
+		boolean enter = delegate.enterStructuredSubEntry(entryKey, valueKey);
 		if (enter) {
-			pathTracking.pushListContext();
+			pathTracking.pushPathPart(entryKey, valueKey);
 		}
 		return enter;
 	}
 
 	@Override
-	public <T> void leaveCollectionEntry(ConfigEntry<T> entry, T value) {
-		delegate.leaveCollectionEntry(entry, value);
-		pathTracking.popContext();
-		entryVisited();
-	}
-
-	@Override
-	public <T> boolean enterCompoundEntry(ConfigEntry<T> entry, T value) {
-		boolean enter = delegate.enterCompoundEntry(entry, value);
-		if (enter) {
-			pathTracking.pushMapContext();
-		}
-		return enter;
-	}
-
-	@Override
-	public boolean enterCompoundSubEntry(String key) {
-		boolean enter = delegate.enterCompoundSubEntry(key);
-		if (enter) {
-			pathTracking.pushPathPart(key);
-		}
-		return enter;
-	}
-
-	@Override
-	public void leaveCompoundSubEntry(String key) {
-		delegate.leaveCompoundSubEntry(key);
+	public void leaveStructuredSubEntry(String entryKey, String valueKey) {
+		delegate.leaveStructuredSubEntry(entryKey, valueKey);
 		pathTracking.popPathPart();
 	}
 
 	@Override
-	public <T> void leaveCompoundEntry(ConfigEntry<T> entry, T value) {
-		delegate.leaveCompoundEntry(entry, value);
-		pathTracking.popContext();
-		entryVisited();
-	}
-
-	private void entryVisited() {
-		if (pathTracking.currentContext() == PathTracking.Context.LIST) {
-			pathTracking.incrementListIndex();
-		}
+	public <T> void leaveStructuredEntry(ConfigEntry<T> entry, T value) {
+		delegate.leaveStructuredEntry(entry, value);
 	}
 }

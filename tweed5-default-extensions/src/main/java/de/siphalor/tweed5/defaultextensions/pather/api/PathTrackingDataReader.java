@@ -5,10 +5,14 @@ import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.dataapi.api.TweedDataToken;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayDeque;
+
 @RequiredArgsConstructor
 public class PathTrackingDataReader implements TweedDataReader {
 	private final TweedDataReader delegate;
 	private final PathTracking pathTracking;
+	private final ArrayDeque<Context> contextStack = new ArrayDeque<>(50);
+	private final ArrayDeque<Integer> listIndexStack = new ArrayDeque<>(50);
 
 	@Override
 	public TweedDataToken peekToken() throws TweedDataReadException {
@@ -18,21 +22,35 @@ public class PathTrackingDataReader implements TweedDataReader {
 	@Override
 	public TweedDataToken readToken() throws TweedDataReadException {
 		TweedDataToken token = delegate.readToken();
+		if (token.isListValue()) {
+			if (contextStack.peek() == Context.LIST) {
+				int index = listIndexStack.pop() + 1;
+				if (index != 0) {
+					pathTracking.popPathPart();
+				}
+				pathTracking.pushPathPart(Integer.toString(index));
+				listIndexStack.push(index);
+			}
+		}
+
 		if (token.isListStart()) {
-			pathTracking.pushListContext();
-		} else if (token.isListValue()) {
-			pathTracking.incrementListIndex();
+			contextStack.push(Context.LIST);
+			listIndexStack.push(-1);
 		} else if (token.isListEnd()) {
-			pathTracking.popContext();
+			contextStack.pop();
+			int lastIndex = listIndexStack.pop();
+			if (lastIndex >= 0) {
+				pathTracking.popPathPart();
+			}
 		} else if (token.isMapStart()) {
-			pathTracking.pushMapContext();
+			contextStack.push(Context.MAP);
 			pathTracking.pushPathPart("$");
 		} else if (token.isMapEntryKey()) {
 			pathTracking.popPathPart();
 			pathTracking.pushPathPart(token.readAsString());
 		} else if (token.isMapEnd()) {
 			pathTracking.popPathPart();
-			pathTracking.popContext();
+			contextStack.pop();
 		}
 		return token;
 	}
@@ -40,5 +58,9 @@ public class PathTrackingDataReader implements TweedDataReader {
 	@Override
 	public void close() throws Exception {
 		delegate.close();
+	}
+
+	private enum Context {
+		LIST, MAP,
 	}
 }

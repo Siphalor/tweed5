@@ -86,22 +86,22 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 
 	@Override
 	public void visitInOrder(ConfigEntryVisitor visitor) {
-		if (visitor.enterCompoundEntry(this)) {
+		if (visitor.enterStructuredEntry(this)) {
 			subConfigEntries.forEach((key, entry) -> {
-				if (visitor.enterCompoundSubEntry(key)) {
+				if (visitor.enterStructuredSubEntry(key)) {
 					entry.visitInOrder(visitor);
-					visitor.leaveCompoundSubEntry(key);
+					visitor.leaveStructuredSubEntry(key);
 				}
 			});
-			visitor.leaveCompoundEntry(this);
+			visitor.leaveStructuredEntry(this);
 		}
 	}
 
 	@Override
 	public void visitInOrder(ConfigEntryValueVisitor visitor, @Nullable T value) {
-		if (visitor.enterCompoundEntry(this, value)) {
+		if (visitor.enterStructuredEntry(this, value)) {
 			subEntries.forEach((key, entry) -> {
-				if (visitor.enterCompoundSubEntry(key)) {
+				if (visitor.enterStructuredSubEntry(key, key)) {
 					try {
 						Object subValue = entry.getter().invoke(value);
 						//noinspection unchecked

@@ -6,10 +6,14 @@ import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayDeque;
+
 @RequiredArgsConstructor
 public class PathTrackingDataVisitor implements TweedDataVisitor {
 	private final TweedDataVisitor delegate;
 	private final PathTracking pathTracking;
+	private final ArrayDeque<Context> contextStack = new ArrayDeque<>(50);
+	private final ArrayDeque<Integer> listIndexStack = new ArrayDeque<>(50);
 
 	@Override
 	public void visitNull() {
@@ -72,47 +76,59 @@ public class PathTrackingDataVisitor implements TweedDataVisitor {
 	}
 
 	private void valueVisited() {
-		if (pathTracking.currentContext() == PathTracking.Context.LIST) {
-			pathTracking.incrementListIndex();
-		} else {
+		Context context = contextStack.peek();
+		if (context == Context.MAP_ENTRY) {
+			contextStack.pop();
 			pathTracking.popPathPart();
+		} else if (context == Context.LIST) {
+			pathTracking.popPathPart();
+			int index = listIndexStack.pop();
+			listIndexStack.push(index + 1);
+			pathTracking.pushPathPart(Integer.toString(index));
 		}
 	}
 
 	@Override
 	public void visitListStart() {
 		delegate.visitListStart();
-		pathTracking.pushListContext();
+		contextStack.push(Context.LIST);
+		listIndexStack.push(0);
+		pathTracking.pushPathPart("0");
 	}
 
 	@Override
 	public void visitListEnd() {
 		delegate.visitListEnd();
-		pathTracking.popContext();
+		contextStack.pop();
+		listIndexStack.pop();
+		pathTracking.popPathPart();
 		valueVisited();
 	}
 
 	@Override
 	public void visitMapStart() {
 		delegate.visitMapStart();
-		pathTracking.pushMapContext();
 	}
 
 	@Override
 	public void visitMapEntryKey(String key) {
 		delegate.visitMapEntryKey(key);
 		pathTracking.pushPathPart(key);
+		contextStack.push(Context.MAP_ENTRY);
 	}
 
 	@Override
 	public void visitMapEnd() {
 		delegate.visitMapEnd();
-		pathTracking.popContext();
 		valueVisited();
 	}
 
 	@Override
 	public void visitDecoration(TweedDataDecoration decoration) {
 		delegate.visitDecoration(decoration);
+	}
+
+	private enum Context {
+		LIST, MAP_ENTRY,
 	}
 }
