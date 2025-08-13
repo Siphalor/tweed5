@@ -1,6 +1,3 @@
-import gradle.kotlin.dsl.accessors._182d53d78a136df48d95cf7411f9259f.lombok
-import org.gradle.kotlin.dsl.assign
-
 plugins {
 	java
 	alias(libs.plugins.lombok)

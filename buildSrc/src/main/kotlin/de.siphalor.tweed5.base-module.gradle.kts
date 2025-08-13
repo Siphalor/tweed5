@@ -1,6 +1,7 @@
 plugins {
     java
     `java-library`
+	jacoco
     `maven-publish`
     alias(libs.plugins.lombok)
     id("de.siphalor.tweed5.local-runtime-only")
@@ -61,6 +62,7 @@ tasks.compileTestJava {
 
 tasks.test {
     dependsOn(testAgentClasspath)
+	finalizedBy(tasks.jacocoTestReport)
 
     useJUnitPlatform()
     jvmArgs(testAgentClasspath.get().files.map { file -> "-javaagent:${file.absolutePath}" })
@@ -69,6 +71,10 @@ tasks.test {
         "junit.jupiter.execution.timeout.testable.method.default" to "10s",
         "junit.jupiter.execution.timeout.thread.mode.default" to "SEPARATE_THREAD",
     )
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
 }
 
 publishing {
