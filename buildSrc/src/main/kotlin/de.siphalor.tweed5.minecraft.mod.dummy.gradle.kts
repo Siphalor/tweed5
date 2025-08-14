@@ -5,12 +5,12 @@ plugins {
 
 val processMinecraftModResources = tasks.register<Copy>("processMinecraftModResources") {
 	from(project.layout.settingsDirectory.dir("minecraft/mod-template/resources"))
-	expand(
+	expand(mapOf(
 		"id" to project.name,
 		"version" to project.version,
 		"name" to properties["minecraft.mod.name"],
 		"description" to properties["minecraft.mod.description"]
-	)
+	))
 	into(project.layout.buildDirectory.dir("minecraftModResources"))
 }
 
