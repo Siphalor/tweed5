@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ValidatorsPojoWeavingProcesorTest {
+class ValidatorsPojoWeavingProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({"-1,true", "0,false", "50,false", "99,false", "100,true", "101,true"})
@@ -38,7 +38,7 @@ class ValidatorsPojoWeavingProcesorTest {
 
 	@PojoWeaving(extensions = {ValidationExtension.class})
 	@DefaultWeavingExtensions
-	@PojoWeavingExtension(ValidatorsPojoWeavingProcesor.class)
+	@PojoWeavingExtension(ValidatorsPojoWeavingProcessor.class)
 	@CompoundWeaving
 	@Data
 	@AllArgsConstructor

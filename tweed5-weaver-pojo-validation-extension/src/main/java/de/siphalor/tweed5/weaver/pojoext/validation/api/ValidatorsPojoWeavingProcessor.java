@@ -12,11 +12,11 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Arrays;
 
-public class ValidatorsPojoWeavingProcesor implements TweedPojoWeavingExtension {
+public class ValidatorsPojoWeavingProcessor implements TweedPojoWeavingExtension {
 	private final ValidationExtension validationExtension;
 
 	@ApiStatus.Internal
-	public ValidatorsPojoWeavingProcesor(ConfigContainer<?> configContainer) {
+	public ValidatorsPojoWeavingProcessor(ConfigContainer<?> configContainer) {
 		validationExtension = configContainer.extension(ValidationExtension.class)
 				.orElseThrow(() -> new IllegalStateException(
 						"You must register a " + ValidationExtension.class.getSimpleName()
