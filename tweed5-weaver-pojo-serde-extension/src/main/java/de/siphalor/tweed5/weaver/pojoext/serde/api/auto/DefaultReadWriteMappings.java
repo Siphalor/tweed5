@@ -19,6 +19,7 @@ import java.util.Collection;
 @AutoReadWriteMapping(valueClasses = {float.class, Float.class}, spec = "tweed5.float")
 @AutoReadWriteMapping(valueClasses = {double.class, Double.class}, spec = "tweed5.double")
 @AutoReadWriteMapping(valueClasses = String.class, spec = "tweed5.string")
+@AutoReadWriteMapping(valueClasses = Enum.class, spec = "tweed5.enum")
 @AutoReadWriteMapping(
 		entryClasses = CollectionConfigEntry.class,
 		valueClasses = Collection.class,

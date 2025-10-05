@@ -46,6 +46,11 @@ public class TweedEntryReaderWriters {
 		return TweedEntryReaderWriterImpls.STRING_READER_WRITER;
 	}
 
+	public static <T extends Enum<T>> TweedEntryReaderWriter<T, ConfigEntry<T>> enumReaderWriter() {
+		//noinspection unchecked,rawtypes
+		return (TweedEntryReaderWriter<T, @NonNull ConfigEntry<T>>)(TweedEntryReaderWriter) TweedEntryReaderWriterImpls.ENUM_READER_WRITER;
+	}
+
 	public static <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> nullableReader(TweedEntryReader<T, C> delegate) {
 		return new TweedEntryReaderWriterImpls.NullableReader<>(delegate);
 	}

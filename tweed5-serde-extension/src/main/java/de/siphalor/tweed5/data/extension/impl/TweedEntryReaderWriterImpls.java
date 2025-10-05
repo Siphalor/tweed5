@@ -26,6 +26,7 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<Float, ConfigEntry<Float>> FLOAT_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsFloat, TweedDataVisitor::visitFloat);
 	public static final TweedEntryReaderWriter<Double, ConfigEntry<Double>> DOUBLE_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsDouble, TweedDataVisitor::visitDouble);
 	public static final TweedEntryReaderWriter<String, ConfigEntry<String>> STRING_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsString, TweedDataVisitor::visitString);
+	public static final TweedEntryReaderWriter<Enum<?>, ConfigEntry<Enum<?>>> ENUM_READER_WRITER = new EnumReaderWriter<>();
 
 	public static final TweedEntryReaderWriter<Collection<Object>, CollectionConfigEntry<Object, Collection<Object>>> COLLECTION_READER_WRITER = new CollectionReaderWriter<>();
 	public static final TweedEntryReaderWriter<Object, CompoundConfigEntry<Object>> COMPOUND_READER_WRITER = new CompoundReaderWriter<>();
@@ -83,6 +84,37 @@ public class TweedEntryReaderWriterImpls {
 		public void write(TweedDataVisitor writer, @Nullable T value, ConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value, context);
 			writerFunction.write(writer, value);
+		}
+	}
+
+	@RequiredArgsConstructor
+	public static class EnumReaderWriter<T extends Enum<?>> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
+		@Override
+		public T read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) throws
+				TweedEntryReadException {
+			try {
+				TweedDataToken token = reader.readToken();
+				assertIsToken(token, TweedDataToken::canReadAsString, "Expected string", context);
+				//noinspection unchecked,rawtypes
+				return (T) Enum.valueOf(((Class) entry.valueClass()), token.readAsString());
+			} catch (TweedDataReadException | IllegalArgumentException e) {
+				throw new TweedEntryReadException(
+						"Failed reading enum value for " + entry.valueClass().getName(),
+						e,
+						context
+				);
+			}
+		}
+
+		@Override
+		public void write(
+				TweedDataVisitor writer,
+				@Nullable T value,
+				ConfigEntry<T> entry,
+				TweedWriteContext context
+		) throws TweedEntryWriteException, TweedDataWriteException {
+			requireNonNullWriteValue(value, context);
+			writer.visitString(value.name());
 		}
 	}
 
