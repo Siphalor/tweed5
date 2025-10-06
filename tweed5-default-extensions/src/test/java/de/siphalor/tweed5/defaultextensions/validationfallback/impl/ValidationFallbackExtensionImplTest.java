@@ -131,7 +131,7 @@ class ValidationFallbackExtensionImplTest {
 				"""
 				// Must not be null.
 				// Must be between 1 and 6
-				//\s
+				//
 				// Default/Fallback value: 3
 				5
 				""", stringWriter.toString());

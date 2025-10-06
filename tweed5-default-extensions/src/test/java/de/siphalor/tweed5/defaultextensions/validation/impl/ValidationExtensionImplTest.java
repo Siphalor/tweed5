@@ -7,8 +7,10 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.data.hjson.HjsonCommentType;
 import de.siphalor.tweed5.data.hjson.HjsonLexer;
 import de.siphalor.tweed5.data.hjson.HjsonReader;
+import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
@@ -21,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,8 +31,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.entryReaderWriter;
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.read;
+import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.*;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
 import static de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension.baseComment;
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
@@ -184,6 +186,31 @@ class ValidationExtensionImplTest {
 						message -> assertThat(message).contains("0.5", "0.2")
 				)
 		);
+	}
+
+	@Test
+	void writeWithComments() {
+		var stringWriter = new StringWriter();
+		var writer = new HjsonWriter(stringWriter, new HjsonWriter.Options().multilineCommentType(HjsonCommentType.SLASHES));
+
+		configContainer.rootEntry().apply(write(writer, Map.of(
+				"byte", (byte) 123,
+				"int", 456,
+				"double", 789.123
+		)));
+
+		assertThat(stringWriter.toString()).isEqualTo("""
+				{
+					// Must be inclusively between 11 and 100.
+					byte: 123
+					// This is the main comment!
+					//
+					// Must be less than or equal to 123.
+					int: 456
+					// Must be greater than or equal to 0.5.
+					double: 789.123
+				}
+				""");
 	}
 
 	private static void assertValidationIssue(

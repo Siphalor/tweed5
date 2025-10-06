@@ -121,7 +121,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 					if (baseComment.isEmpty()) {
 						return validationDescription;
 					} else {
-						return "\n\n" + validationDescription;
+						return baseComment + "\n\n" + validationDescription;
 					}
 				};
 			}

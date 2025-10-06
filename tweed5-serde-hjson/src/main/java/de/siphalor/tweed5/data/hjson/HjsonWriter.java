@@ -293,18 +293,21 @@ public class HjsonWriter implements TweedDataWriter {
 	private void writeCommentLine(HjsonCommentType commentType, CharSequence text, int begin, int end) {
 		writeCurrentIndentIfApplicable();
 		write(getCommentLineStart(commentType));
-		write(text, begin, end);
+		if (end > begin) {
+			write(" ");
+			write(text, begin, end);
+		}
 		writeLineFeed();
 	}
 
 	private CharSequence getCommentLineStart(HjsonCommentType commentType) {
 		switch (commentType) {
 			case HASH:
-				return "# ";
+				return "#";
 			case SLASHES:
-				return "// ";
+				return "//";
 			case BLOCK:
-				return " * ";
+				return " *";
 			default:
 				throw new IllegalStateException("Unknown comment type: " + commentType);
 		}
