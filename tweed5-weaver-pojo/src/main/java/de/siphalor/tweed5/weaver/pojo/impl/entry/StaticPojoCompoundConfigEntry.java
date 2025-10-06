@@ -5,7 +5,6 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
-import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 import org.jspecify.annotations.Nullable;
 
@@ -34,11 +33,6 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 			this.subEntries.put(subEntry.name(), subEntry);
 			this.subConfigEntries.put(subEntry.name(), subEntry.configEntry());
 		}
-	}
-
-	public void registerSubEntry(SubEntry subEntry) {
-		subEntries.put(subEntry.name(), subEntry);
-		subConfigEntries.put(subEntry.name(), subEntry.configEntry());
 	}
 
 	@Override
@@ -81,19 +75,6 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 			return noArgsConstructor.get();
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to instantiate compound class", e);
-		}
-	}
-
-	@Override
-	public void visitInOrder(ConfigEntryVisitor visitor) {
-		if (visitor.enterStructuredEntry(this)) {
-			subConfigEntries.forEach((key, entry) -> {
-				if (visitor.enterStructuredSubEntry(key)) {
-					entry.visitInOrder(visitor);
-					visitor.leaveStructuredSubEntry(key);
-				}
-			});
-			visitor.leaveStructuredEntry(this);
 		}
 	}
 
