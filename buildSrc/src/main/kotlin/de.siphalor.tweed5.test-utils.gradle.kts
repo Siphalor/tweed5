@@ -3,10 +3,6 @@ plugins {
 	alias(libs.plugins.lombok)
 }
 
-repositories {
-	mavenCentral()
-}
-
 dependencies {
 	implementation(project(":tweed5-serde-api"))
 	implementation(platform(libs.junit.platform))

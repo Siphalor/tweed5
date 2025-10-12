@@ -1,5 +1,4 @@
 plugins {
-	java
 	id("de.siphalor.tweed5.minecraft.mod.base")
 }
 

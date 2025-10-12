@@ -3,10 +3,6 @@ plugins {
 	`java-gradle-plugin`
 }
 
-repositories {
-	gradlePluginPortal()
-}
-
 gradlePlugin {
 	plugins.register("minecraftModComponent") {
 		id = "de.siphalor.tweed5.minecraft.mod.component"

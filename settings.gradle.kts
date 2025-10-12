@@ -1,5 +1,11 @@
 rootProject.name = "tweed5"
 
+dependencyResolutionManagement {
+	repositories {
+		mavenCentral()
+	}
+}
+
 include("test-utils")
 include("tweed5-annotation-inheritance")
 include("tweed5-attributes-extension")

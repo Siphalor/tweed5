@@ -2,22 +2,15 @@ plugins {
     java
     `java-library`
 	jacoco
-    `maven-publish`
     alias(libs.plugins.lombok)
+	id("de.siphalor.tweed5.publishing")
     id("de.siphalor.tweed5.local-runtime-only")
     id("de.siphalor.tweed5.expanded-sources-jar")
 }
 
-group = rootProject.group
-version = rootProject.version
-
 java {
     sourceCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
     targetCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
-}
-
-repositories {
-    mavenCentral()
 }
 
 val testAgent = configurations.dependencyScope("mockitoAgent")

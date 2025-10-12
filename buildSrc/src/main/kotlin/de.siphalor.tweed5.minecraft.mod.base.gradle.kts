@@ -1,7 +1,8 @@
 plugins {
 	`maven-publish`
 	alias(libs.plugins.shadow)
-	id("de.siphalor.tweed5.expanded-sources-jar")
+	java
+	`java-library`
 	id("de.siphalor.tweed5.minecraft.mod.component")
 }
 

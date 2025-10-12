@@ -6,10 +6,6 @@ plugins {
 group = "de.siphalor.tweed5"
 version = properties["version"]!!
 
-repositories {
-	mavenCentral()
-}
-
 dependencies {
 	rootProject.subprojects.forEach { subproject ->
 		subproject.plugins.withId("jacoco") {
