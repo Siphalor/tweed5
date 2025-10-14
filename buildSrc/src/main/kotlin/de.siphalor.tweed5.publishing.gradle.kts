@@ -23,9 +23,11 @@ publishing {
 	publications.all {
 		if (this is MavenPublication) {
 			pom {
-				url.set("https://github.com/Siphalor/tweed-5")
+				name = project.property("module.name") as String
+				description = project.property("module.description") as String
+				url = project.property("git.url") as String
 				scm {
-					url.set("https://github.com/Siphalor/tweed-5")
+					url = project.property("git.url") as String
 				}
 			}
 		}
