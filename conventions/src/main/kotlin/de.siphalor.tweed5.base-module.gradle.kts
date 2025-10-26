@@ -54,11 +54,14 @@ tasks.compileTestJava {
 }
 
 tasks.test {
+    val testAgentFiles = testAgentClasspath.map { it.files }
+    doFirst {
+        jvmArgs(testAgentFiles.get().map { file -> "-javaagent:${file.absolutePath}" })
+    }
     dependsOn(testAgentClasspath)
 	finalizedBy(tasks.jacocoTestReport)
 
     useJUnitPlatform()
-    jvmArgs(testAgentClasspath.get().files.map { file -> "-javaagent:${file.absolutePath}" })
     systemProperties(
         "junit.jupiter.execution.timeout.mode" to "disabled_on_debug",
         "junit.jupiter.execution.timeout.testable.method.default" to "10s",
