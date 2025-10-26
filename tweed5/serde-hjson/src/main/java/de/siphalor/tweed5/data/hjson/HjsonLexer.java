@@ -2,14 +2,12 @@ package de.siphalor.tweed5.data.hjson;
 
 import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.PrimitiveIterator;
 
-@ApiStatus.Internal
 @RequiredArgsConstructor
 public class HjsonLexer implements AutoCloseable {
 	private static final int EMPTY_CODEPOINT = -2;
