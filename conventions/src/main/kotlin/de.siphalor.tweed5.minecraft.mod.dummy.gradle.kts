@@ -8,7 +8,7 @@ val processMinecraftModResources = tasks.register<Copy>("processMinecraftModReso
 	inputs.property("name", properties["module.name"])
 	inputs.property("description", properties["module.description"])
 
-	from(project.layout.settingsDirectory.dir("minecraft/mod-template/resources"))
+	from(project.layout.settingsDirectory.dir("../tweed5-minecraft/mod-template/resources"))
 	expand(mapOf(
 		"id" to project.name,
 		"version" to project.version,

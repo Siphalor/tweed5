@@ -1,10 +1,11 @@
 plugins {
 	`jacoco-report-aggregation`
 	`maven-publish`
+	id("de.siphalor.tweed5.root-properties")
 }
 
 group = "de.siphalor.tweed5"
-version = properties["version"]!!
+version = project.property("tweed5.version").toString()
 
 dependencies {
 	rootProject.subprojects.forEach { subproject ->

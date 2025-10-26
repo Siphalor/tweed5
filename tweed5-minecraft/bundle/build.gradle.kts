@@ -12,14 +12,14 @@ val bundledSourcesConfiguration = configurations.resolvable("bundledSources") {
 }
 
 dependencies {
-	implementation(project(":tweed5-core"))
-	implementation(project(":tweed5-attributes-extension"))
-	implementation(project(":tweed5-default-extensions"))
-	implementation(project(":tweed5-serde-extension"))
-	implementation(project(":tweed5-weaver-pojo"))
-	implementation(project(":tweed5-weaver-pojo-attributes-extension"))
-	implementation(project(":tweed5-weaver-pojo-serde-extension"))
-	implementation(project(":tweed5-weaver-pojo-validation-extension"))
+	implementation("de.siphalor.tweed5:tweed5-core")
+	implementation("de.siphalor.tweed5:tweed5-attributes-extension")
+	implementation("de.siphalor.tweed5:tweed5-default-extensions")
+	implementation("de.siphalor.tweed5:tweed5-serde-extension")
+	implementation("de.siphalor.tweed5:tweed5-weaver-pojo")
+	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-attributes-extension")
+	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-serde-extension")
+	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-validation-extension")
 }
 
 tasks.shadowJar {
