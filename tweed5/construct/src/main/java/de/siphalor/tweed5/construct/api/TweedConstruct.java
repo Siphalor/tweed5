@@ -1,15 +1,13 @@
 package de.siphalor.tweed5.construct.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Indicates a method or constructor that should be used for construction using {@link TweedConstructFactory}.
  * <p>
  * There must only be a single annotation for a certain target class on any constructor or static method of a class.
  */
+@Repeatable(TweedConstructs.class)
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TweedConstruct {
