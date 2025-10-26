@@ -33,7 +33,8 @@ tasks.named<Jar>("minecraftModSourcesJar") {
 publishing {
 	publications {
 		create<MavenPublication>("minecraftMod") {
-			groupId = "${project.group}.minecraft"
+			val projectGroup = project.group.toString()
+			groupId = if (projectGroup.endsWith(".minecraft")) projectGroup else "$projectGroup.minecraft"
 			artifactId = project.name
 			version = project.version.toString()
 
