@@ -1,0 +1,10 @@
+{
+	"schemaVersion": 1,
+	"id": "tweed5_fabric_helper_testmod",
+	"version": "0.1.0",
+	"entrypoints": {
+		"main": [
+			"de.siphalor.tweed5.fabric.helper.testmod.FabricHelperTestMod"
+		]
+	}
+}

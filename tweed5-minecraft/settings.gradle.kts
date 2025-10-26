@@ -27,6 +27,13 @@ pluginManagement {
 dependencyResolutionManagement {
 	repositories {
 		mavenCentral()
+		maven {
+			name = "FabricMC"
+			url = uri("https://maven.fabricmc.net")
+			mavenContent {
+				includeGroupAndSubgroups("net.fabricmc")
+			}
+		}
 	}
 
 	versionCatalogs {
@@ -46,7 +53,7 @@ dependencyResolutionManagement {
 includeBuild("../tweed5")
 
 includeNormalModule("bundle")
-includeNormalModule("coat-bridge")
+includeNormalModule("fabric-helper")
 
 fun includeNormalModule(name: String) {
 	includeAs("tweed5-$name", name)

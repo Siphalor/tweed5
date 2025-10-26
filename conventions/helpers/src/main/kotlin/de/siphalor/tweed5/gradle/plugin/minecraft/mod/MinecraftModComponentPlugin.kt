@@ -43,6 +43,20 @@ abstract class MinecraftModComponentPlugin : Plugin<Project> {
 			}
 		}
 
+		val modApiElementsConfiguration = project.configurations.consumable("minecraftModApiElements") {
+			attributes {
+				attribute(MinecraftModded.MINECRAFT_MODDED_ATTRIBUTE, objectFactory.named(MinecraftModded.MODDED))
+				attribute(Category.CATEGORY_ATTRIBUTE, objectFactory.named(Category.LIBRARY))
+				attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objectFactory.named(LibraryElements.JAR))
+				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.SHADOWED))
+				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_API))
+
+				project.afterEvaluate {
+					attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, targetJvmVersion.get().toInt())
+				}
+			}
+		}
+
 		val apiConfiguration = project.configurations.named("api")
 		val modSourcesElementsConfiguration = project.configurations.consumable("minecraftModSourcesElements") {
 			extendsFrom(apiConfiguration.get())
@@ -56,6 +70,9 @@ abstract class MinecraftModComponentPlugin : Plugin<Project> {
 
 		modComponent.addVariantsFromConfiguration(modElementsConfiguration.get()) {
 			mapToMavenScope("runtime")
+		}
+		modComponent.addVariantsFromConfiguration(modApiElementsConfiguration.get()) {
+			mapToMavenScope("compile")
 		}
 		modComponent.addVariantsFromConfiguration(modSourcesElementsConfiguration.get()) {
 			mapToOptional()

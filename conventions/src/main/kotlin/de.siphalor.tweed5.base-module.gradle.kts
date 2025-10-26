@@ -9,8 +9,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
-    targetCompatibility = JavaVersion.toVersion(libs.versions.java.main.get())
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 val testAgent = configurations.dependencyScope("mockitoAgent")

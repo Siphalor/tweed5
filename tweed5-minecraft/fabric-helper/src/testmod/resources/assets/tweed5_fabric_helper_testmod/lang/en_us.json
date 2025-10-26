@@ -1,0 +1,4 @@
+{
+	"tweed5_fabric_helper_testmod.config.hello-start": "Whom to greet when the game starts",
+	"tweed5_fabric_helper_testmod.config.hello-in-game": "Whom to greet when the player joins a game"
+}

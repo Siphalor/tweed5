@@ -7,7 +7,7 @@ plugins {
 group = "de.siphalor.tweed5"
 
 dependencies {
-	implementation(project(":helpers"))
+	implementation(project(":tweed5-conventions-helpers"))
 	implementation(pluginMarker(libs.plugins.lombok))
 	implementation(pluginMarker(libs.plugins.shadow))
 }

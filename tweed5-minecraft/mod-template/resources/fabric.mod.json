@@ -3,8 +3,8 @@
 	"license": "LGPL-3.0-only",
 	"contact": {
 		"email": "info@siphalor.de",
-		"issues": "https://gitea.siphalor.de/Siphalor/tweed5/issues",
-		"sources": "https://gitea.siphalor.de/Siphalor/tweed5"
+		"issues": "${repoUrl}/issues",
+		"sources": "${repoUrl}"
 	},
 	"custom": {
 		"modmenu": {

@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 	}
 }
 
-include("helpers")
+include(":tweed5-conventions-helpers")
+project(":tweed5-conventions-helpers").projectDir = file("helpers")
 
 rootProject.name = "tweed5-conventions"

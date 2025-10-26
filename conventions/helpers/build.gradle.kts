@@ -3,6 +3,8 @@ plugins {
 	`java-gradle-plugin`
 }
 
+group = "de.siphalor.tweed5"
+
 gradlePlugin {
 	plugins.register("minecraftModComponent") {
 		id = "de.siphalor.tweed5.minecraft.mod.component"
