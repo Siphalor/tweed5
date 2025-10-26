@@ -1,3 +1,5 @@
+import de.siphalor.tweed5.minecraft.bundled.sources.BundledSourcesJar
+
 plugins {
 	id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
@@ -25,12 +27,7 @@ tasks.shadowJar {
 	relocate("org.objectweb.asm", "de.siphalor.tweed5.shadowed.org.objectweb.asm")
 }
 
-tasks.register<Jar>("sourcesJar") {
-	inputs.files(bundledSourcesConfiguration)
-	from(
-		bundledSourcesConfiguration.get().resolve()
-			.filter { it.name.startsWith(rootProject.name) }
-			.map { zipTree(it) }
-	)
+tasks.register<BundledSourcesJar>("sourcesJar") {
+	sources.from(bundledSourcesConfiguration)
 	archiveClassifier.set("sources")
 }

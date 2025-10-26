@@ -2,7 +2,6 @@ rootProject.name = "tweed5-minecraft"
 
 pluginManagement {
 	includeBuild("../conventions")
-	includeBuild("conventions")
 
 	repositories {
 		gradlePluginPortal()
