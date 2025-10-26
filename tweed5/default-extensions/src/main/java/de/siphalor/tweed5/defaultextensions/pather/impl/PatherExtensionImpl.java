@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.defaultextensions.pather.impl;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.data.extension.api.*;
@@ -17,7 +16,6 @@ import lombok.val;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-@AutoService(PatherExtension.class)
 public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExtension {
 	private @Nullable PatchworkPartAccess<PathTracking> rwContextPathTrackingAccess;
 

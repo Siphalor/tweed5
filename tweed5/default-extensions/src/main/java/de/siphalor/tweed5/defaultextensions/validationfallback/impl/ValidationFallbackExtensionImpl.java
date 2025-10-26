@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.defaultextensions.validationfallback.impl;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
@@ -19,7 +18,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@AutoService(ValidationFallbackExtension.class)
 public class ValidationFallbackExtensionImpl implements ValidationFallbackExtension, ValidationProvidingExtension {
 
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;

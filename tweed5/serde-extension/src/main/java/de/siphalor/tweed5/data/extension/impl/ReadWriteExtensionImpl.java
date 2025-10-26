@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.data.extension.impl;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
@@ -21,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
-@AutoService(ReadWriteExtension.class)
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	private final ConfigContainer<?> configContainer;
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;

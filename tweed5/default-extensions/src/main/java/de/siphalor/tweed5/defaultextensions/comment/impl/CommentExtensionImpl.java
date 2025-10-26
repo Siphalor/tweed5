@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.defaultextensions.comment.impl;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
@@ -17,7 +16,6 @@ import lombok.Data;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
-@AutoService(CommentExtension.class)
 public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentExtension {
 	private final ConfigContainer<?> configContainer;
 	@Getter

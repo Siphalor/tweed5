@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
@@ -57,7 +56,6 @@ class TweedPojoWeaverBootstrapperTest {
 		));
 	}
 
-	@AutoService(DummyExtension.class)
 	public static class DummyExtension implements TweedExtension {
 		@Override
 		public String getId() {

@@ -1,6 +1,5 @@
 package de.siphalor.tweed5.defaultextensions.validation.impl;
 
-import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
@@ -35,7 +34,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-@AutoService(ValidationExtension.class)
 public class ValidationExtensionImpl implements ReadWriteRelatedExtension, ValidationExtension, CommentModifyingExtension {
 	private static final ValidationResult<?> PRIMITIVE_IS_NULL_RESULT = ValidationResult.withIssues(
 			null,
