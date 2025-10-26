@@ -6,6 +6,11 @@ import java.io.OutputStream;
 
 public interface TweedSerde {
 	TweedDataReader createReader(InputStream inputStream);
-	TweedDataVisitor createWriter(OutputStream outputStream) throws IOException;
+	TweedDataWriter createWriter(OutputStream outputStream) throws IOException;
+
+	/**
+	 * Yields the file extension that should normally be used for this serde.
+	 * @return the file extension, typically with a leading dot.
+	 */
 	String getPreferredFileExtension();
 }
