@@ -1,8 +1,8 @@
 plugins {
-	`maven-publish`
-	alias(libs.plugins.shadow)
+	id("com.gradleup.shadow")
 	java
 	`java-library`
+	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.minecraft.mod.component")
 }
 
@@ -32,16 +32,3 @@ val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 
 artifacts.add("minecraftModElements", minecraftModJar)
 artifacts.add("minecraftModSourcesElements", minecraftModSourcesJar)
-
-publishing {
-	publications {
-		create<MavenPublication>("minecraftMod") {
-			groupId = "${project.group}.minecraft"
-			artifactId = project.name
-			version = project.version.toString()
-
-			from(components["minecraftMod"])
-		}
-	}
-}
-

@@ -1,0 +1,11 @@
+[versions]
+fabric-loader = "0.17.2"
+fabric-loom = "1.11-SNAPSHOT"
+jcyo = "0.4.2"
+
+[plugins]
+jcyo = { id = "de.siphalor.jcyo", version.ref = "jcyo" }
+fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
+
+[libraries]
+fabric-loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabric-loader" }

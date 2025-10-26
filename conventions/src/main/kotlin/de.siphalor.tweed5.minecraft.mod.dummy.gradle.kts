@@ -1,4 +1,6 @@
 plugins {
+	`maven-publish`
+	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.minecraft.mod.base")
 }
 
@@ -27,3 +29,16 @@ tasks.named<Jar>("minecraftModSourcesJar") {
 	from(project.layout.buildDirectory.dir("minecraftModResources"))
 	dependsOn(processMinecraftModResources)
 }
+
+publishing {
+	publications {
+		create<MavenPublication>("minecraftMod") {
+			groupId = "${project.group}.minecraft"
+			artifactId = project.name
+			version = project.version.toString()
+
+			from(components["minecraftMod"])
+		}
+	}
+}
+

@@ -1,5 +1,4 @@
 plugins {
-	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
 

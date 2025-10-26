@@ -3,7 +3,7 @@ import io.freefair.gradle.plugins.lombok.tasks.Delombok
 plugins {
 	java
 	`java-library`
-	alias(libs.plugins.lombok)
+	id("io.freefair.lombok")
 }
 
 val expandedSourcesElements = configurations.consumable("expandedSourcesElements") {

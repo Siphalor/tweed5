@@ -2,7 +2,7 @@ plugins {
     java
     `java-library`
 	jacoco
-    alias(libs.plugins.lombok)
+    id("io.freefair.lombok")
 	id("de.siphalor.tweed5.publishing")
     id("de.siphalor.tweed5.local-runtime-only")
     id("de.siphalor.tweed5.expanded-sources-jar")

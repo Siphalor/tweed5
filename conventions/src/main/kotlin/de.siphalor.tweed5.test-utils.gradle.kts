@@ -1,6 +1,6 @@
 plugins {
 	java
-	alias(libs.plugins.lombok)
+	id("io.freefair.lombok")
 }
 
 dependencies {
