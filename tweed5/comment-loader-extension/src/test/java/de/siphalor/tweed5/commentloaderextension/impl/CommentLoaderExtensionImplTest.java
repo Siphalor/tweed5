@@ -7,7 +7,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
-import de.siphaolor.tweed5.data.gson.GsonReader;
+import de.siphalor.tweed5.data.gson.GsonReader;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 

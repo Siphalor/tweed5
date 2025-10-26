@@ -1,4 +1,4 @@
-package de.siphaolor.tweed5.data.gson;
+package de.siphalor.tweed5.data.gson;
 
 import com.google.gson.stream.JsonWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
