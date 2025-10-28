@@ -17,6 +17,11 @@ import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * @deprecated The recommended approach is to use {@link de.siphalor.tweed5.weaver.pojo.api.weaving.NullablePojoWeaver}
+ * and set @{@link Nullable} on all nullable entries.
+ */
+@Deprecated
 public class AutoNullableReadWritePojoWeavingProcessor implements TweedPojoWeavingExtension {
 	private final ReadWriteExtension readWriteExtension;
 	private @Nullable PatchworkPartAccess<CustomData> customDataAccess;
@@ -71,14 +76,14 @@ public class AutoNullableReadWritePojoWeavingProcessor implements TweedPojoWeavi
 			if (definedEntryReader != null) {
 				readWriteExtension.setEntryReader(
 						configEntry,
-						new TweedEntryReaderWriterImpls.NullableReader<>(definedEntryReader)
+						new TweedEntryReaderWriterImpls.FixedNullableReader<>(definedEntryReader)
 				);
 			}
 			val definedEntryWriter = readWriteExtension.getDefinedEntryWriter(configEntry);
 			if (definedEntryWriter != null) {
 				readWriteExtension.setEntryWriter(
 						configEntry,
-						new TweedEntryReaderWriterImpls.NullableWriter<>(definedEntryWriter)
+						new TweedEntryReaderWriterImpls.FixedNullableWriter<>(definedEntryWriter)
 				);
 			}
 		}

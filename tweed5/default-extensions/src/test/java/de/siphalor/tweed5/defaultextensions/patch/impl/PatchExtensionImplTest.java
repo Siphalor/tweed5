@@ -5,6 +5,7 @@ import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.CollectionConfigEntryImpl;
+import de.siphalor.tweed5.core.impl.entry.NullableConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
@@ -51,40 +52,39 @@ class PatchExtensionImplTest {
 
 		var int1Entry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
 				.apply(entryReaderWriter(intReaderWriter()));
-		var int2Entry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
-				.apply(entryReaderWriter(
-						nullableReader(intReaderWriter()),
-						nullableWriter(intReaderWriter())
-				));
-		var listEntry = new CollectionConfigEntryImpl<>(
+		var int2Entry = new NullableConfigEntryImpl<>(
+				configContainer, Integer.class,
+				new SimpleConfigEntryImpl<>(configContainer, Integer.class)
+					.apply(entryReaderWriter(intReaderWriter())));
+		var listEntry = new NullableConfigEntryImpl<>(
 				configContainer,
 				(Class<List<Integer>>)(Class) List.class,
-				ArrayList::new,
-				new SimpleConfigEntryImpl<>(configContainer, Integer.class)
-						.apply(entryReaderWriter(intReaderWriter()))
-		)
-				.apply(entryReaderWriter(
-						nullableReader(collectionReaderWriter()),
-						nullableWriter(collectionReaderWriter())
-				));
+				new CollectionConfigEntryImpl<>(
+						configContainer,
+						(Class<List<Integer>>)(Class) List.class,
+						ArrayList::new,
+						new SimpleConfigEntryImpl<>(configContainer, Integer.class)
+								.apply(entryReaderWriter(intReaderWriter()))
+				).apply(entryReaderWriter(collectionReaderWriter()))
+		).apply(entryReaderWriter(nullableReaderWriter()));
 
 		var nestedInt1Entry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
 				.apply(entryReaderWriter(intReaderWriter()));
 		var nestedInt2Entry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
 				.apply(entryReaderWriter(intReaderWriter()));
-		var compoundEntry = new StaticMapCompoundConfigEntryImpl<>(
+		var compoundEntry = new NullableConfigEntryImpl<>(
 				configContainer,
 				(Class<Map<String, Object>>)(Class) Map.class,
-				HashMap::new,
-				sequencedMap(List.of(
-						entry("int1", nestedInt1Entry),
-						entry("int2", nestedInt2Entry)
-				))
-		)
-				.apply(entryReaderWriter(
-						nullableReader(compoundReaderWriter()),
-						nullableWriter(compoundReaderWriter())
-				));
+				new StaticMapCompoundConfigEntryImpl<>(
+						configContainer,
+						(Class<Map<String, Object>>)(Class) Map.class,
+						HashMap::new,
+						sequencedMap(List.of(
+								entry("int1", nestedInt1Entry),
+								entry("int2", nestedInt2Entry)
+						))
+				).apply(entryReaderWriter(compoundReaderWriter()))
+		).apply(entryReaderWriter(nullableReaderWriter()));
 
 		rootEntry = new StaticMapCompoundConfigEntryImpl<>(
 				configContainer,

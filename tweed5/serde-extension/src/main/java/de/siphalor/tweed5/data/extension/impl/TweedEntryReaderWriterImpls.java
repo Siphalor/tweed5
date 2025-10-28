@@ -3,6 +3,7 @@ package de.siphalor.tweed5.data.extension.impl;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.data.extension.api.*;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.dataapi.api.*;
@@ -28,13 +29,48 @@ public class TweedEntryReaderWriterImpls {
 	public static final TweedEntryReaderWriter<String, ConfigEntry<String>> STRING_READER_WRITER = new PrimitiveReaderWriter<>(TweedDataToken::readAsString, TweedDataVisitor::visitString);
 	public static final TweedEntryReaderWriter<Enum<?>, ConfigEntry<Enum<?>>> ENUM_READER_WRITER = new EnumReaderWriter<>();
 
+	public static final TweedEntryReaderWriter<Object, NullableConfigEntry<Object>> NULLABLE_READER_WRITER = new NullableReaderWriter<>();
 	public static final TweedEntryReaderWriter<Collection<Object>, CollectionConfigEntry<Object, Collection<Object>>> COLLECTION_READER_WRITER = new CollectionReaderWriter<>();
 	public static final TweedEntryReaderWriter<Object, CompoundConfigEntry<Object>> COMPOUND_READER_WRITER = new CompoundReaderWriter<>();
 
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
 
+	public static class NullableReaderWriter<T extends @Nullable Object> implements TweedEntryReaderWriter<T, NullableConfigEntry<T>> {
+		@Override
+		public T read(TweedDataReader reader, NullableConfigEntry<T> entry, TweedReadContext context)
+				throws TweedEntryReadException {
+			try {
+				if (reader.peekToken().isNull()) {
+					reader.readToken();
+					return null;
+				}
+			} catch (TweedDataReadException e) {
+				throw new TweedEntryReadException(e, context);
+			}
+
+			TweedEntryReader<T, ConfigEntry<T>> nonNullReader = context.readWriteExtension().getReaderChain(entry.nonNullEntry());
+			return nonNullReader.read(reader, entry.nonNullEntry(), context);
+		}
+
+		@Override
+		public void write(
+				TweedDataVisitor writer,
+				@Nullable T value,
+				NullableConfigEntry<T> entry,
+				TweedWriteContext context
+		) throws TweedEntryWriteException, TweedDataWriteException {
+			if (value == null) {
+				writer.visitNull();
+			} else {
+				TweedEntryWriter<T, ConfigEntry<T>> nonNullWriter = context.readWriteExtension().getWriterChain(entry.nonNullEntry());
+				nonNullWriter.write(writer, value, entry.nonNullEntry(), context);
+			}
+		}
+	}
+
+	@Deprecated
 	@RequiredArgsConstructor
-	public static class NullableReader<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryReader<T, C> {
+	public static class FixedNullableReader<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryReader<T, C> {
 		private final TweedEntryReader<T, C> delegate;
 
 		@Override
@@ -51,8 +87,9 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
+	@Deprecated
 	@RequiredArgsConstructor
-	public static class NullableWriter<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryWriter<T, C> {
+	public static class FixedNullableWriter<T extends @Nullable Object, C extends ConfigEntry<T>> implements TweedEntryWriter<T, C> {
 		private final TweedEntryWriter<T, C> delegate;
 
 		@Override

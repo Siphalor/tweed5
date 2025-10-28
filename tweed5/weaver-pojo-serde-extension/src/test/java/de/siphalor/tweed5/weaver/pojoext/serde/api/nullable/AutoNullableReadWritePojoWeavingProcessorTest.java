@@ -85,22 +85,22 @@ class AutoNullableReadWritePojoWeavingProcessorTest {
 
 	private void assertNullableReader(ConfigEntry<?> entry) {
 		assertThat(readWriteExtension.getDefinedEntryReader(entry))
-				.isInstanceOf(TweedEntryReaderWriterImpls.NullableReader.class);
+				.isInstanceOf(TweedEntryReaderWriterImpls.FixedNullableReader.class);
 	}
 
 	private void assertNonNullableReader(ConfigEntry<?> entry) {
 		assertThat(readWriteExtension.getDefinedEntryReader(entry))
-				.isNotInstanceOf(TweedEntryReaderWriterImpls.NullableReader.class);
+				.isNotInstanceOf(TweedEntryReaderWriterImpls.FixedNullableReader.class);
 	}
 
 	private void assertNullableWriter(ConfigEntry<?> entry) {
 		assertThat(readWriteExtension.getDefinedEntryWriter(entry))
-				.isInstanceOf(TweedEntryReaderWriterImpls.NullableWriter.class);
+				.isInstanceOf(TweedEntryReaderWriterImpls.FixedNullableWriter.class);
 	}
 
 	private void assertNonNullableWriter(ConfigEntry<?> entry) {
 		assertThat(readWriteExtension.getDefinedEntryWriter(entry))
-				.isNotInstanceOf(TweedEntryReaderWriterImpls.NullableWriter.class);
+				.isNotInstanceOf(TweedEntryReaderWriterImpls.FixedNullableWriter.class);
 	}
 
 	@SneakyThrows

@@ -33,6 +33,21 @@ public class TweedPojoWeaverBootstrapper<T> {
 	private final AnnotatedElement pojoAnnotations;
 	private final ConfigContainer<T> configContainer;
 	private final Collection<TweedPojoWeavingExtension> weavingExtensions;
+	private final WeavingContext.WeavingFn weavingContextFn = new WeavingContext.WeavingFn() {
+		@Override
+		public <U> ConfigEntry<U> weaveEntry(
+				ActualType<U> valueType,
+				Patchwork extensionsData,
+				ProtoWeavingContext context
+		) {
+			return TweedPojoWeaverBootstrapper.this.weaveEntry(valueType, extensionsData, context);
+		}
+
+		@Override
+		public <U> ConfigEntry<U> weavePseudoEntry(WeavingContext parentContext, String pseudoEntryName, Patchwork extensionsData) {
+			return TweedPojoWeaverBootstrapper.this.weavePseudoEntry(parentContext, pseudoEntryName, extensionsData);
+		}
+	};
 	@Nullable
 	private PatchworkFactory weavingExtensionsPatchworkFactory;
 
@@ -119,18 +134,19 @@ public class TweedPojoWeaverBootstrapper<T> {
 	}
 
 	private <U> ConfigEntry<U> weaveEntry(
-			ActualType<U> dataClass,
+			ActualType<U> valueType,
 			Patchwork extensionsData,
 			ProtoWeavingContext protoContext
 	) {
 		extensionsData = extensionsData.copy();
 
-		runBeforeWeaveHooks(dataClass, extensionsData, protoContext);
+		runBeforeWeaveHooks(valueType, extensionsData, protoContext);
 
 		WeavingContext context = WeavingContext.builder()
 				.parent(protoContext.parent())
-				.weavingFunction(this::weaveEntry)
+				.weavingFunction(weavingContextFn)
 				.configContainer(configContainer)
+				.valueType(valueType)
 				.path(protoContext.path())
 				.extensionsData(extensionsData)
 				.annotations(new AnnotationInheritanceAwareAnnotatedElement(protoContext.annotations()))
@@ -138,17 +154,70 @@ public class TweedPojoWeaverBootstrapper<T> {
 
 		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
 			try {
-				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(dataClass, context);
+				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(valueType, context);
 				if (configEntry != null) {
-					runAfterWeaveHooks(dataClass, configEntry, context);
+					runAfterWeaveHooks(valueType, configEntry, context);
 					return configEntry;
 				}
 			} catch (Exception e) {
-				log.error("Failed to run Tweed POJO weaver (" + weavingExtension.getClass().getName() + ")", e);
+				log.error(
+						"Failed to run Tweed POJO weaver (" + weavingExtension.getClass().getName() + ")"
+								+ " for entry at " + Arrays.toString(context.path()),
+						e
+				);
 			}
 		}
 
-		throw new PojoWeavingException("Failed to weave " + dataClass + ": No matching weavers found");
+		throw new PojoWeavingException(
+				"Failed to weave entry for " + valueType + " at " + Arrays.toString(context.path())
+						+ ": No matching weavers found"
+		);
+	}
+
+	private <U> ConfigEntry<U> weavePseudoEntry(
+			WeavingContext parentContext,
+			String pseudoEntryName,
+			Patchwork extensionsData
+	) {
+		extensionsData = extensionsData.copy();
+
+		//noinspection unchecked
+		ActualType<U> valueType = (ActualType<U>) parentContext.valueType();
+
+		String[] path = Arrays.copyOf(parentContext.path(), parentContext.path().length + 1);
+		path[path.length - 1] = ":" + pseudoEntryName;
+
+		WeavingContext context = WeavingContext.builder()
+				.parent(parentContext)
+				.weavingFunction(weavingContextFn)
+				.configContainer(configContainer)
+				.path(path)
+				.valueType(parentContext.valueType())
+				.isPseudo(true)
+				.extensionsData(extensionsData)
+				.annotations(parentContext.annotations())
+				.build();
+
+		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
+			try {
+				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(valueType, context);
+				if (configEntry != null) {
+					runAfterWeaveHooks(valueType, configEntry, context);
+					return configEntry;
+				}
+			} catch (Exception e) {
+				log.error(
+						"Failed to run Tweed POJO weaver (" + weavingExtension.getClass().getName() + ")"
+								+ " for pseudo entry at " + Arrays.toString(context.path()),
+						e
+				);
+			}
+		}
+
+		throw new PojoWeavingException(
+				"Failed to weave pseudo entry for " + valueType + " at " + Arrays.toString(context.path())
+						+ ": No matching weavers found"
+		);
 	}
 
 	private <U> void runBeforeWeaveHooks(

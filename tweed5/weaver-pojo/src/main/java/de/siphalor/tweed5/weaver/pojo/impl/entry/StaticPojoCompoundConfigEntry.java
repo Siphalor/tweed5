@@ -79,7 +79,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public void visitInOrder(ConfigEntryValueVisitor visitor, @Nullable T value) {
+	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
 			subEntries.forEach((key, entry) -> {
 				if (visitor.enterStructuredSubEntry(key, key)) {

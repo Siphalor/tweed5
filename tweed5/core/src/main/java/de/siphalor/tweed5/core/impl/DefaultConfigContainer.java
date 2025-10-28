@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-public class DefaultConfigContainer<T> implements ConfigContainer<T> {
+public class DefaultConfigContainer<T extends @Nullable Object> implements ConfigContainer<T> {
 	@Getter
 	private ConfigContainerSetupPhase setupPhase = ConfigContainerSetupPhase.EXTENSIONS_SETUP;
 	private final Set<Class<? extends TweedExtension>> requestedExtensions = new HashSet<>();

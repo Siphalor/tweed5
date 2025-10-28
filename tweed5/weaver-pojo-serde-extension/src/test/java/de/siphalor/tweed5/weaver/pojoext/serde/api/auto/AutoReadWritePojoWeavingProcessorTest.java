@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
@@ -12,9 +13,11 @@ import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.weaving.NullablePojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import lombok.Data;
 import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +27,7 @@ import java.util.List;
 
 import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.write;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 @NullUnmarked
 class AutoReadWritePojoWeavingProcessorTest {
@@ -50,7 +54,11 @@ class AutoReadWritePojoWeavingProcessorTest {
 		assertReaderAndWriter(primitiveIntEntry, TweedEntryReaderWriterImpls.INT_READER_WRITER);
 
 		var boxedLongEntry = rootEntry.subEntries().get("boxedLong");
-		assertReaderAndWriter(boxedLongEntry, TweedEntryReaderWriterImpls.LONG_READER_WRITER);
+		assertReaderAndWriter(boxedLongEntry, TweedEntryReaderWriterImpls.NULLABLE_READER_WRITER);
+		assertThat(boxedLongEntry).asInstanceOf(type(NullableConfigEntry.class))
+				.satisfies(nullableEntry -> assertReaderAndWriter(
+						nullableEntry.nonNullEntry(), TweedEntryReaderWriterImpls.LONG_READER_WRITER
+				));
 
 		var stringEntry = rootEntry.subEntries().get("string");
 		assertReaderAndWriter(stringEntry, TweedEntryReaderWriterImpls.STRING_READER_WRITER);
@@ -115,6 +123,7 @@ class AutoReadWritePojoWeavingProcessorTest {
 	}
 
 	@PojoWeaving(extensions = ReadWriteExtension.class)
+	@PojoWeavingExtension(NullablePojoWeaver.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(AutoReadWritePojoWeavingProcessor.class)
 	@DefaultReadWriteMappings
@@ -122,7 +131,7 @@ class AutoReadWritePojoWeavingProcessorTest {
 	@Data
 	public static class AnnotatedConfig {
 		private int primitiveInt;
-		private Long boxedLong;
+		private @Nullable Long boxedLong;
 		private String string;
 		private List<@CompoundWeaving Nested> nesteds;
 	}

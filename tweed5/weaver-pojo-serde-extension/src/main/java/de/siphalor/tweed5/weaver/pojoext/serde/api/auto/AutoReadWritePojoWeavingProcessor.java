@@ -2,10 +2,12 @@ package de.siphalor.tweed5.weaver.pojoext.serde.api.auto;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
+import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
@@ -113,6 +115,15 @@ public class AutoReadWritePojoWeavingProcessor implements TweedPojoWeavingExtens
 
 	@Override
 	public <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {
+		if (configEntry instanceof NullableConfigEntry) {
+			readWriteExtension.setEntryReaderWriter(
+					configEntry,
+					TweedEntryReaderWriters.nullableReaderWriter(),
+					TweedEntryReaderWriters.nullableReaderWriter()
+			);
+			return;
+		}
+
 		assert customDataAccess != null;
 		CustomData customData = context.extensionsData().get(customDataAccess);
 		if (customData == null || customData.mappings().isEmpty()) {

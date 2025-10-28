@@ -7,10 +7,11 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import org.jspecify.annotations.NullUnmarked;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isCompoundEntryForClassWith;
 import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.isSimpleEntryForClass;
@@ -18,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unused")
-@NullUnmarked
 class CompoundPojoWeaverTest {
 
 	@Test
@@ -30,27 +30,40 @@ class CompoundPojoWeaverTest {
 
 		PatchworkFactory weavingContextExtensionDataFactory = weavingContextExtensionDataFactoryBuilder.build();
 
+		AtomicReference<WeavingContext.@Nullable WeavingFn> weavingFunction = new AtomicReference<>();
+		weavingFunction.set(new WeavingContext.WeavingFn() {
+			@Override
+			public <T> ConfigEntry<T> weaveEntry(
+					ActualType<T> valueType,
+					Patchwork extensionsData,
+					ProtoWeavingContext protoContext
+			) {
+				WeavingContext context = WeavingContext.builder()
+						.configContainer(protoContext.configContainer())
+						.annotations(valueType)
+						.extensionsData(extensionsData.copy())
+						.path(protoContext.path())
+						.weavingFunction(Objects.requireNonNull(weavingFunction.get()))
+						.build();
+				return Objects.requireNonNullElseGet(
+						compoundWeaver.weaveEntry(valueType, context),
+						() -> new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType())
+				);
+			}
+
+			@Override
+			public <T> ConfigEntry<T> weavePseudoEntry(
+					WeavingContext parentContext,
+					String pseudoEntryName,
+					Patchwork extensionsData
+			) {
+				assert false;
+				return null;
+			}
+		});
+
 		WeavingContext weavingContext = WeavingContext.builder()
-				.weavingFunction(new WeavingContext.WeavingFn() {
-					@Override
-					public <T> ConfigEntry<T> weaveEntry(
-							ActualType<T> valueType,
-							Patchwork extensionsData,
-							ProtoWeavingContext protoContext
-					) {
-						WeavingContext context = WeavingContext.builder()
-								.configContainer(protoContext.configContainer())
-								.annotations(valueType)
-								.extensionsData(extensionsData.copy())
-								.path(protoContext.path())
-								.weavingFunction(protoContext.parent()::weaveEntry)
-								.build();
-						return Objects.requireNonNullElseGet(
-								compoundWeaver.weaveEntry(valueType, context),
-								() -> new SimpleConfigEntryImpl<>(context.configContainer(), valueType.declaredType())
-						);
-					}
-				})
+				.weavingFunction(Objects.requireNonNull(weavingFunction.get()))
 				.extensionsData(weavingContextExtensionDataFactory.create())
 				.annotations(Compound.class)
 				.path(new String[0])

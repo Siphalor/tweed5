@@ -3,12 +3,14 @@ package de.siphalor.tweed5.data.extension.api.readwrite;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -51,12 +53,25 @@ public class TweedEntryReaderWriters {
 		return (TweedEntryReaderWriter<T, @NonNull ConfigEntry<T>>)(TweedEntryReaderWriter) TweedEntryReaderWriterImpls.ENUM_READER_WRITER;
 	}
 
-	public static <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> nullableReader(TweedEntryReader<T, C> delegate) {
-		return new TweedEntryReaderWriterImpls.NullableReader<>(delegate);
+	public static <T extends @Nullable Object> TweedEntryReaderWriter<T, NullableConfigEntry<T>> nullableReaderWriter() {
+		//noinspection unchecked
+		return (TweedEntryReaderWriter<T, @NonNull NullableConfigEntry<T>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.NULLABLE_READER_WRITER;
 	}
 
+	/**
+	 * @deprecated You probably want to use {@link #nullableReaderWriter()} instead.
+	 */
+	@Deprecated
+	public static <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> nullableReader(TweedEntryReader<T, C> delegate) {
+		return new TweedEntryReaderWriterImpls.FixedNullableReader<>(delegate);
+	}
+
+	/**
+	 * @deprecated You probably want to use {@link #nullableReaderWriter()} instead.
+	 */
+	@Deprecated
 	public static <T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> nullableWriter(TweedEntryWriter<T, C> delegate) {
-		return new TweedEntryReaderWriterImpls.NullableWriter<>(delegate);
+		return new TweedEntryReaderWriterImpls.FixedNullableWriter<>(delegate);
 	}
 
 	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> collectionReaderWriter() {

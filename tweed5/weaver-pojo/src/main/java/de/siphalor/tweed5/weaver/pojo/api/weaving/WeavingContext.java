@@ -20,6 +20,8 @@ public class WeavingContext {
 	WeavingFn weavingFunction;
 	ConfigContainer<?> configContainer;
 	String[] path;
+	ActualType<?> valueType;
+	boolean isPseudo;
 	Patchwork extensionsData;
 	AnnotatedElement annotations;
 
@@ -27,7 +29,12 @@ public class WeavingContext {
 		return weavingFunction.weaveEntry(valueType, extensionsData, context);
 	}
 
+	public <T> ConfigEntry<T> weavePseudoEntry(WeavingContext parentContext, String pseudoEntryName, Patchwork extensionsData) {
+		return weavingFunction.weavePseudoEntry(parentContext, pseudoEntryName, extensionsData);
+	}
+
 	public interface WeavingFn {
 		<T> ConfigEntry<T> weaveEntry(ActualType<T> valueType, Patchwork extensionsData, ProtoWeavingContext context);
+		<T> ConfigEntry<T> weavePseudoEntry(WeavingContext parentContext, String pseudoEntryName, Patchwork extensionsData);
 	}
 }

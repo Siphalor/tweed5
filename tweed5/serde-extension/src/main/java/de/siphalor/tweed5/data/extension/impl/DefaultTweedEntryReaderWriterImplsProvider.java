@@ -4,6 +4,10 @@ import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
+import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters;
+import lombok.RequiredArgsConstructor;
+
+import java.util.function.Function;
 
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
 
@@ -39,22 +43,32 @@ public class DefaultTweedEntryReaderWriterImplsProvider implements TweedReaderWr
 		context.registerWriterFactory("tweed5.string", new StaticReaderWriterFactory<>(stringReaderWriter()));
 		context.registerReaderFactory("tweed5.enum", new StaticReaderWriterFactory<>(enumReaderWriter()));
 		context.registerWriterFactory("tweed5.enum", new StaticReaderWriterFactory<>(enumReaderWriter()));
+		context.registerReaderFactory("tweed5.nullable", new NullableReaderWriterFactory<>(
+				TweedEntryReaderWriters::nullableReader
+		));
+		context.registerWriterFactory("tweed5.nullable", new NullableReaderWriterFactory<>(
+				TweedEntryReaderWriters::nullableWriter
+		));
 		context.registerReaderFactory("tweed5.collection", new StaticReaderWriterFactory<>(collectionReaderWriter()));
 		context.registerWriterFactory("tweed5.collection", new StaticReaderWriterFactory<>(collectionReaderWriter()));
 		context.registerReaderFactory("tweed5.compound", new StaticReaderWriterFactory<>(compoundReaderWriter()));
 		context.registerWriterFactory("tweed5.compound", new StaticReaderWriterFactory<>(compoundReaderWriter()));
+	}
 
-		context.registerReaderFactory("tweed5.nullable", delegateReaders -> {
-			if (delegateReaders.length != 1) {
-				throw new IllegalArgumentException("Nullable reader requires a single delegate argument, got " + delegateReaders.length);
+	@RequiredArgsConstructor
+	private static class NullableReaderWriterFactory<T> implements ReaderWriterFactory<T> {
+		private final Function<T, T> delegateBasedFactory;
+
+		@Override
+		public T create(T... delegateReaderWriters) {
+			if (delegateReaderWriters.length == 0) {
+				//noinspection unchecked
+				return (T) TweedEntryReaderWriters.nullableReaderWriter();
+			} else if (delegateReaderWriters.length == 1) {
+				return delegateBasedFactory.apply(delegateReaderWriters[0]);
+			} else {
+				throw new IllegalArgumentException("Nullable readers and writers may have only one or zero delegates");
 			}
-			return nullableReader(delegateReaders[0]);
-		});
-		context.registerWriterFactory("tweed5.nullable", delegateWriters -> {
-			if (delegateWriters.length != 1) {
-				throw new IllegalArgumentException("Nullable writer requires a single delegate argument, got " + delegateWriters.length);
-			}
-			return nullableWriter(delegateWriters[0]);
-		});
+		}
 	}
 }

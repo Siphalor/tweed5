@@ -2,7 +2,6 @@ package de.siphalor.tweed5.core.api.entry;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -26,7 +25,7 @@ public interface ConfigEntry<T extends @Nullable Object> {
 	}
 
 	void visitInOrder(ConfigEntryVisitor visitor);
-	void visitInOrder(ConfigEntryValueVisitor visitor, @Nullable T value);
+	void visitInOrder(ConfigEntryValueVisitor visitor, T value);
 
-	T deepCopy(@NonNull T value);
+	T deepCopy(T value);
 }

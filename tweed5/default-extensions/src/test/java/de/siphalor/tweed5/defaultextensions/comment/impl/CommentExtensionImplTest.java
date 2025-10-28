@@ -1,10 +1,12 @@
 package de.siphalor.tweed5.defaultextensions.comment.impl;
 
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
+import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
+import de.siphalor.tweed5.core.impl.entry.NullableConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
@@ -36,7 +38,7 @@ class CommentExtensionImplTest {
 
 	private DefaultConfigContainer<@NonNull Map<String, Object>> configContainer;
 	private CompoundConfigEntry<Map<String, Object>> rootEntry;
-	private SimpleConfigEntry<Integer> intEntry;
+	private NullableConfigEntry<Integer> intEntry;
 	private SimpleConfigEntry<String> stringEntry;
 	private SimpleConfigEntry<Long> noCommentEntry;
 
@@ -49,9 +51,13 @@ class CommentExtensionImplTest {
 		configContainer.registerExtensions(extraExtensions);
 		configContainer.finishExtensionSetup();
 
-		intEntry = new SimpleConfigEntryImpl<>(configContainer, Integer.class)
-				.apply(entryReaderWriter(intReaderWriter()))
-				.apply(baseComment("It is an integer"));
+		intEntry = new NullableConfigEntryImpl<>(
+				configContainer, Integer.class,
+				new SimpleConfigEntryImpl<>(configContainer, Integer.class)
+					.apply(entryReaderWriter(intReaderWriter()))
+					.apply(baseComment("It is an integer")))
+				.apply(entryReaderWriter(nullableReaderWriter()))
+				.apply(baseComment("This is nullable"));
 		stringEntry = new SimpleConfigEntryImpl<>(configContainer, String.class)
 				.apply(entryReaderWriter(stringReaderWriter()))
 				.apply(baseComment("It is a string"));
@@ -80,7 +86,7 @@ class CommentExtensionImplTest {
 		configContainer.initialize();
 
 		CommentExtension commentExtension = configContainer.extension(CommentExtension.class).orElseThrow();
-		assertEquals("It is an integer", commentExtension.getFullComment(intEntry));
+		assertEquals("This is nullable", commentExtension.getFullComment(intEntry));
 		assertEquals("It is a string", commentExtension.getFullComment(stringEntry));
 		assertNull(commentExtension.getFullComment(noCommentEntry));
 	}
@@ -91,7 +97,7 @@ class CommentExtensionImplTest {
 		configContainer.initialize();
 
 		CommentExtension commentExtension = configContainer.extension(CommentExtension.class).orElseThrow();
-		assertEquals("The comment is:\nIt is an integer\nEND", commentExtension.getFullComment(intEntry));
+		assertEquals("The comment is:\nThis is nullable\nEND", commentExtension.getFullComment(intEntry));
 		assertEquals("The comment is:\nIt is a string\nEND", commentExtension.getFullComment(stringEntry));
 		assertEquals("The comment is:\n\nEND", commentExtension.getFullComment(noCommentEntry));
 	}
@@ -120,6 +126,7 @@ class CommentExtensionImplTest {
 				// This is the root value.
 				// It is the topmost value in the tree.
 				{
+				\t// This is nullable
 				\t// It is an integer
 				\tint: 123
 				\t// It is a string
