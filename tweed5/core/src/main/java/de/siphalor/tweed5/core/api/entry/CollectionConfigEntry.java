@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.core.api.entry;
 
+import de.siphalor.tweed5.core.api.Arity;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -12,6 +13,19 @@ public interface CollectionConfigEntry<E, T extends Collection<E>> extends Struc
 	default CollectionConfigEntry<E, T> apply(Consumer<ConfigEntry<T>> function) {
 		StructuredConfigEntry.super.apply(function);
 		return this;
+	}
+
+	@Override
+	default void visitInOrder(ConfigEntryVisitor visitor) {
+		if (visitor.enterStructuredEntry(this)) {
+			subEntries().forEach((key, entry) -> {
+				if (visitor.enterStructuredSubEntry(key, Arity.ANY)) {
+					entry.visitInOrder(visitor);
+					visitor.leaveStructuredSubEntry(key, Arity.ANY);
+				}
+			});
+			visitor.leaveStructuredEntry(this);
+		}
 	}
 
 	@Override

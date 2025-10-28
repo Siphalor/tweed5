@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.core.api.entry;
 
+import de.siphalor.tweed5.core.api.Arity;
+
 public interface ConfigEntryVisitor {
 	void visitEntry(ConfigEntry<?> entry);
 
@@ -8,11 +10,11 @@ public interface ConfigEntryVisitor {
 		return true;
 	}
 
-	default boolean enterStructuredSubEntry(String key) {
+	default boolean enterStructuredSubEntry(String key, Arity arity) {
 		return true;
 	}
 
-	default void leaveStructuredSubEntry(String key) {
+	default void leaveStructuredSubEntry(String key, Arity arity) {
 	}
 
 	default void leaveStructuredEntry(ConfigEntry<?> entry) {

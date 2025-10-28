@@ -10,18 +10,5 @@ public interface StructuredConfigEntry<T> extends ConfigEntry<T> {
 		return this;
 	}
 
-	@Override
-	default void visitInOrder(ConfigEntryVisitor visitor) {
-		if (visitor.enterStructuredEntry(this)) {
-			subEntries().forEach((key, entry) -> {
-				if (visitor.enterStructuredSubEntry(key)) {
-					entry.visitInOrder(visitor);
-					visitor.leaveStructuredSubEntry(key);
-				}
-			});
-			visitor.leaveStructuredEntry(this);
-		}
-	}
-
 	Map<String, ConfigEntry<?>> subEntries();
 }

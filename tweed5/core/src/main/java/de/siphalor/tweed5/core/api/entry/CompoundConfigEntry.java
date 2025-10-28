@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.core.api.entry;
 
+import de.siphalor.tweed5.core.api.Arity;
+
 import java.util.function.Consumer;
 
 public interface CompoundConfigEntry<T> extends StructuredConfigEntry<T> {
@@ -13,4 +15,17 @@ public interface CompoundConfigEntry<T> extends StructuredConfigEntry<T> {
 	<V> V get(T compoundValue, String key);
 
 	T instantiateCompoundValue();
+
+	@Override
+	default void visitInOrder(ConfigEntryVisitor visitor) {
+		if (visitor.enterStructuredEntry(this)) {
+			subEntries().forEach((key, entry) -> {
+				if (visitor.enterStructuredSubEntry(key, Arity.SINGLE)) {
+					entry.visitInOrder(visitor);
+					visitor.leaveStructuredSubEntry(key, Arity.SINGLE);
+				}
+			});
+			visitor.leaveStructuredEntry(this);
+		}
+	}
 }

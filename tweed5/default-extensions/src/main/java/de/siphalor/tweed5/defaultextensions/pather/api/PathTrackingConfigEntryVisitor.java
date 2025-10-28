@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.defaultextensions.pather.api;
 
+import de.siphalor.tweed5.core.api.Arity;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,8 @@ public class PathTrackingConfigEntryVisitor implements ConfigEntryVisitor {
 	}
 
 	@Override
-	public boolean enterStructuredSubEntry(String key) {
-		boolean enter = delegate.enterStructuredSubEntry(key);
+	public boolean enterStructuredSubEntry(String key, Arity arity) {
+		boolean enter = delegate.enterStructuredSubEntry(key, arity);
 		if (enter) {
 			pathTracking.pushPathPart(key);
 		}
@@ -29,8 +30,8 @@ public class PathTrackingConfigEntryVisitor implements ConfigEntryVisitor {
 	}
 
 	@Override
-	public void leaveStructuredSubEntry(String key) {
-		delegate.leaveStructuredSubEntry(key);
+	public void leaveStructuredSubEntry(String key, Arity arity) {
+		delegate.leaveStructuredSubEntry(key, arity);
 		pathTracking.popPathPart();
 	}
 
