@@ -1,0 +1,10 @@
+{
+	"schemaVersion": 1,
+	"id": "tweed5_coat_bridge_testmod",
+	"version": "0.1.0",
+	"entrypoints": {
+		"client": [
+			"de.siphalor.tweed5.coat.bridge.testmod.TweedCoatBridgeTestMod"
+		]
+	}
+}

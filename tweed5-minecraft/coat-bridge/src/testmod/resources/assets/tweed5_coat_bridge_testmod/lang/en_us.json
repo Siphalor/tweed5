@@ -1,0 +1,8 @@
+{
+	"tweed5_coat_bridge_testmod.title": "Test Mod",
+	"tweed5_coat_bridge_testmod.config": "Test Mod config",
+	"tweed5_coat_bridge_testmod.config.test": "Test entry",
+	"tweed5_coat_bridge_testmod.config.test.description": "Just a simple string entry",
+	"tweed5_coat_bridge_testmod.config.some-integer": "Some integer",
+	"tweed5_coat_bridge_testmod.config.integer-in-range": "Integer in range"
+}

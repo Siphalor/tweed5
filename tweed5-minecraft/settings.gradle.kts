@@ -52,6 +52,7 @@ dependencyResolutionManagement {
 includeBuild("../tweed5")
 
 includeNormalModule("bundle")
+includeNormalModule("coat-bridge")
 includeNormalModule("fabric-helper")
 
 fun includeNormalModule(name: String) {
