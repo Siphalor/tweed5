@@ -2,6 +2,7 @@ package de.siphalor.tweed5.core.api.entry;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -27,5 +28,6 @@ public interface ConfigEntry<T extends @Nullable Object> {
 	void visitInOrder(ConfigEntryVisitor visitor);
 	void visitInOrder(ConfigEntryValueVisitor visitor, T value);
 
+	@Contract(value = "null -> null; !null -> new", pure = true)
 	T deepCopy(T value);
 }
