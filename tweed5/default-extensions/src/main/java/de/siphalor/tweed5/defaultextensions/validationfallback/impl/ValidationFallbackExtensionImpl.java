@@ -100,7 +100,12 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 					return ValidationResult.withIssues(
 							(T) fallbackValue,
 							result.issues().stream()
-									.map(issue -> new ValidationIssue(issue.message(), ValidationIssueLevel.WARN))
+									.map(issue -> new ValidationIssue(
+											issue.message(),
+											issue.level() == ValidationIssueLevel.ERROR
+													? ValidationIssueLevel.WARN
+													: issue.level()
+									))
 									.collect(Collectors.toList())
 					);
 				}
