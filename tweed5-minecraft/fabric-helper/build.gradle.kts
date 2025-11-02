@@ -10,6 +10,11 @@ dependencies {
 	compileOnly("de.siphalor.tweed5:tweed5-default-extensions")
 	compileOnly("de.siphalor.tweed5:tweed5-serde-extension")
 	compileOnly("de.siphalor.tweed5:tweed5-serde-gson")
+	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo")
+	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-attributes-extension")
+	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-serde-extension")
+	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-validation-extension")
+	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-presets-extension")
 
 	listOf("fabric-networking-api-v1", "fabric-lifecycle-events-v1").forEach {
 		modTestmodImplementation(fabricApi.module(it, mcLibs.versions.fabric.api.get()))

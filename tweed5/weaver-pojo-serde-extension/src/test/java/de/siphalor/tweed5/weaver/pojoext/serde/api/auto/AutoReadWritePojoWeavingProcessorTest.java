@@ -9,10 +9,7 @@ import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.NullablePojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import lombok.Data;
@@ -122,7 +119,8 @@ class AutoReadWritePojoWeavingProcessorTest {
 				""");
 	}
 
-	@PojoWeaving(extensions = ReadWriteExtension.class)
+	@PojoWeaving
+	@TweedExtension(ReadWriteExtension.class)
 	@PojoWeavingExtension(NullablePojoWeaver.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(AutoReadWritePojoWeavingProcessor.class)

@@ -8,6 +8,7 @@ import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.TweedExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.ProtoWeavingContext;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
@@ -61,7 +62,11 @@ public class TweedPojoWeaverBootstrapper<T> {
 				configContainer
 				= (ConfigContainer<T>) createConfigContainer((Class<? extends ConfigContainer<?>>) rootWeavingConfig.container());
 
-		configContainer.registerExtensions(rootWeavingConfig.extensions());
+		TweedExtension[] tweedExtensions = pojoAnnotations.getAnnotationsByType(TweedExtension.class);
+		//noinspection unchecked
+		configContainer.registerExtensions(
+				Arrays.stream(tweedExtensions).map(TweedExtension::value).toArray(Class[]::new)
+		);
 		configContainer.finishExtensionSetup();
 
 		Collection<TweedPojoWeavingExtension> extensions = loadWeavingExtensions(

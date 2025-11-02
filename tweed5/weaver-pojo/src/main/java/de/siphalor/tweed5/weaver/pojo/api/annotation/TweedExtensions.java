@@ -1,8 +1,5 @@
 package de.siphalor.tweed5.weaver.pojo.api.annotation;
 
-import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
-public @interface PojoWeaving {
-	Class<? extends ConfigContainer> container() default DefaultConfigContainer.class;
+public @interface TweedExtensions {
+	TweedExtension[] value();
 }

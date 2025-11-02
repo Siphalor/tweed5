@@ -3,10 +3,7 @@ package de.siphalor.tweed5.weaver.pojoext.validation.api;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.validators.WeavableNumberRangeValidator;
 import lombok.AllArgsConstructor;
@@ -36,7 +33,8 @@ class ValidatorsPojoWeavingProcessorTest {
 		}
 	}
 
-	@PojoWeaving(extensions = {ValidationExtension.class})
+	@PojoWeaving
+	@TweedExtension(ValidationExtension.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(ValidatorsPojoWeavingProcessor.class)
 	@CompoundWeaving

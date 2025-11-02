@@ -4,10 +4,7 @@ import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +66,8 @@ class AttributesPojoWeavingProcessorTest {
 		);
 	}
 
-	@PojoWeaving(extensions = AttributesExtension.class)
+	@PojoWeaving
+	@TweedExtension(AttributesExtension.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(AttributesPojoWeavingProcessor.class)
 	@CompoundWeaving

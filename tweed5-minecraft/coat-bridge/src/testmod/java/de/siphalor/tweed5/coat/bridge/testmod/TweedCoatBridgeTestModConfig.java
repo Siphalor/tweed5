@@ -1,36 +1,18 @@
 package de.siphalor.tweed5.coat.bridge.testmod;
 
-import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
 import de.siphalor.tweed5.coat.bridge.api.TweedCoatAttributes;
-import de.siphalor.tweed5.coat.bridge.api.TweedCoatBridgeExtension;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
+import de.siphalor.tweed5.fabric.helper.api.DefaultTweedMinecraftWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojoext.attributes.api.Attribute;
-import de.siphalor.tweed5.weaver.pojoext.attributes.api.AttributesPojoWeavingProcessor;
-import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
-import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.DefaultReadWriteMappings;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.Validator;
-import de.siphalor.tweed5.weaver.pojoext.validation.api.ValidatorsPojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.validators.WeavableNumberRangeValidator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@PojoWeaving(extensions = {
-		ReadWriteExtension.class,
-		TweedCoatBridgeExtension.class,
-		ValidationExtension.class,
-		AttributesExtension.class,
-})
-@PojoWeavingExtension(AutoReadWritePojoWeavingProcessor.class)
-@PojoWeavingExtension(ValidatorsPojoWeavingProcessor.class)
-@PojoWeavingExtension(AttributesPojoWeavingProcessor.class)
-@DefaultWeavingExtensions
-@DefaultReadWriteMappings
+@PojoWeaving
+@DefaultTweedMinecraftWeaving
 @CompoundWeaving(namingFormat = "kebab_case")
 @Data
 public class TweedCoatBridgeTestModConfig {

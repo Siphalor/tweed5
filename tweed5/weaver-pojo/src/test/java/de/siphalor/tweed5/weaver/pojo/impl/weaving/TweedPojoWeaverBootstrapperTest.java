@@ -1,11 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.core.api.extension.TweedExtension;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.CollectionPojoWeaver;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
@@ -56,14 +52,15 @@ class TweedPojoWeaverBootstrapperTest {
 		));
 	}
 
-	public static class DummyExtension implements TweedExtension {
+	public static class DummyExtension implements de.siphalor.tweed5.core.api.extension.TweedExtension {
 		@Override
 		public String getId() {
 			return "dummy";
 		}
 	}
 
-	@PojoWeaving(extensions = {DummyExtension.class})
+	@PojoWeaving
+	@TweedExtension(DummyExtension.class)
 	@DefaultWeavingExtensions
 	@CompoundWeaving(namingFormat = "camel_case")
 	@Data

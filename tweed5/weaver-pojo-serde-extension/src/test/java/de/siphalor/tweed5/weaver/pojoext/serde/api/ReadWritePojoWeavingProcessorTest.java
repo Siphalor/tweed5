@@ -9,10 +9,7 @@ import de.siphalor.tweed5.data.hjson.HjsonReader;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
 import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
@@ -79,7 +76,8 @@ class ReadWritePojoWeavingProcessorTest {
 		}
 	}
 
-	@PojoWeaving(extensions = ReadWriteExtension.class)
+	@PojoWeaving
+	@TweedExtension(ReadWriteExtension.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(ReadWritePojoWeavingProcessor.class)
 	@CompoundWeaving

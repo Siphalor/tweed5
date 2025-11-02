@@ -8,10 +8,7 @@ import de.siphalor.tweed5.data.extension.api.TweedEntryWriteException;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
@@ -144,7 +141,9 @@ class AutoNullableReadWritePojoWeavingProcessorTest {
 				.hasMessageContaining("at .boxedInteger");
 	}
 
-	@PojoWeaving(extensions = {ReadWriteExtension.class, PatherExtension.class})
+	@PojoWeaving
+	@TweedExtension(ReadWriteExtension.class)
+	@TweedExtension(PatherExtension.class)
 	@DefaultWeavingExtensions
 	@PojoWeavingExtension(AutoReadWritePojoWeavingProcessor.class)
 	@PojoWeavingExtension(ReadWritePojoWeavingProcessor.class)
