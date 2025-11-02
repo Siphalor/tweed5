@@ -1,4 +1,6 @@
 import de.siphalor.tweed5.gradle.plugin.minecraft.mod.MinecraftModded
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.Properties
 
 plugins {
@@ -91,6 +93,31 @@ java {
 
 lombok {
 	version = libs.versions.lombok.get()
+}
+
+val testmodLombokConfigSource = project.layout.settingsDirectory.file("lombok.testmod.config").asFile
+val testmodLombokConfigTarget = file("src/testmod/lombok.config")
+val copyTestmodLombokConfig by tasks.register("copyTestmodLombokConfig") {
+	val source = testmodLombokConfigSource
+	val target = testmodLombokConfigTarget
+	inputs.file(source)
+	outputs.file(target)
+
+	doFirst {
+		target.parentFile.mkdirs()
+		Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
+	}
+}
+
+tasks.named("compileTestmodJava") {
+	inputs.file(testmodLombokConfigSource)
+	dependsOn(copyTestmodLombokConfig)
+}
+afterEvaluate {
+	tasks.named("generateTestmodEffectiveLombokConfig") {
+		inputs.file(testmodLombokConfigSource)
+		dependsOn(copyTestmodLombokConfig)
+	}
 }
 
 tasks.jar {

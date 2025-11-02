@@ -7,11 +7,11 @@ import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigCommentLoader;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigContainerHelper;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
-import lombok.extern.apachecommons.CommonsLog;
+import lombok.CustomLog;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
-@CommonsLog
+@CustomLog
 public class FabricHelperTestMod implements ModInitializer {
 	public static final String MOD_ID = "tweed5_fabric_helper_testmod";
 
