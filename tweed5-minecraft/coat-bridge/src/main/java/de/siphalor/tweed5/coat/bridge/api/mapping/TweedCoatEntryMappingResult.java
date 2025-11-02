@@ -5,7 +5,6 @@ import de.siphalor.coat.input.ConfigInput;
 import de.siphalor.coat.screen.ConfigContentWidget;
 import org.jspecify.annotations.Nullable;
 
-import java.util.function.Consumer;
 
 /**
  * The result of a {@link TweedCoatMapper}.

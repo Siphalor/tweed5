@@ -2,7 +2,6 @@ package de.siphalor.tweed5.coat.bridge.api.mapping.handler;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
-import de.siphalor.tweed5.coat.bridge.impl.TweedCoatMappersImpl;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
