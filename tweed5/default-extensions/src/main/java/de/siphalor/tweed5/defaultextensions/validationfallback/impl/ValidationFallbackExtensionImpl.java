@@ -1,16 +1,16 @@
 package de.siphalor.tweed5.defaultextensions.validationfallback.impl;
 
+import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
+import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
-import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
-import lombok.Data;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -19,35 +19,32 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ValidationFallbackExtensionImpl implements ValidationFallbackExtension, ValidationProvidingExtension {
+	private final ConfigContainer<?> configContainer;
+	private @Nullable PresetsExtension presetsExtension;
 
-	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
+	private String fallbackPresetName = PresetsExtension.DEFAULT_PRESET_NAME;
 
-	public ValidationFallbackExtensionImpl(TweedExtensionSetupContext context) {
-		customEntryDataAccess = context.registerEntryExtensionData(CustomEntryData.class);
+	public ValidationFallbackExtensionImpl(TweedExtensionSetupContext context, ConfigContainer<?> configContainer) {
+		this.configContainer = configContainer;
+		context.registerExtension(PresetsExtension.class);
+	}
+
+	private PresetsExtension getOrResolvePresetsExtension() {
+		if (presetsExtension == null) {
+			presetsExtension = configContainer.extension(PresetsExtension.class)
+					.orElseThrow(() -> new IllegalStateException("No presets extension registered"));
+		}
+		return presetsExtension;
 	}
 
 	@Override
-	public <T> void setFallbackValue(ConfigEntry<T> entry, T value) {
-		getOrCreateCustomEntryData(entry).fallbackValue(value);
-	}
-
-	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {
-		CustomEntryData customEntryData = entry.extensionsData().get(customEntryDataAccess);
-		if (customEntryData == null) {
-			customEntryData = new CustomEntryData();
-			entry.extensionsData().set(customEntryDataAccess, customEntryData);
-		}
-		return customEntryData;
+	public void fallbackToPreset(String presetName) {
+		this.fallbackPresetName = presetName;
 	}
 
 	@Override
 	public Middleware<ConfigEntryValidator> validationMiddleware() {
 		return new ValidationFallbackMiddleware();
-	}
-
-	@Data
-	private static class CustomEntryData {
-		@Nullable Object fallbackValue;
 	}
 
 	private class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator> {
@@ -75,16 +72,12 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 					if (!result.hasError()) {
 						return result;
 					}
-					CustomEntryData entryData = configEntry.extensionsData().get(customEntryDataAccess);
-					if (entryData == null) {
-						return result;
-					}
+					PresetsExtension presetsExtension = getOrResolvePresetsExtension();
 
-					Object fallbackValue = entryData.fallbackValue();
+					T fallbackValue = presetsExtension.presetValue(configEntry, fallbackPresetName);
 					if (fallbackValue != null) {
 						if (configEntry.valueClass().isInstance(fallbackValue)) {
-							//noinspection unchecked
-							fallbackValue = configEntry.deepCopy((T) fallbackValue);
+							fallbackValue = configEntry.deepCopy(fallbackValue);
 						} else {
 							ArrayList<ValidationIssue> issues = new ArrayList<>(result.issues());
 							issues.add(new ValidationIssue(
@@ -96,9 +89,8 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 						}
 					}
 
-					//noinspection unchecked
 					return ValidationResult.withIssues(
-							(T) fallbackValue,
+							fallbackValue,
 							result.issues().stream()
 									.map(issue -> new ValidationIssue(
 											issue.message(),
@@ -112,11 +104,8 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 
 				@Override
 				public <T> String description(ConfigEntry<T> configEntry) {
-					CustomEntryData entryData = configEntry.extensionsData().get(customEntryDataAccess);
-					if (entryData == null) {
-						return inner.description(configEntry);
-					}
-					return inner.description(configEntry) + "\n\nDefault/Fallback value: " + entryData.fallbackValue();
+					T fallbackValue = getOrResolvePresetsExtension().presetValue(configEntry, fallbackPresetName);
+					return inner.description(configEntry) + "\n\nDefault/Fallback value: " + fallbackValue;
 				}
 			};
 		}

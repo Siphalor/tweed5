@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.StringReader;
@@ -29,11 +28,9 @@ import java.util.Collections;
 
 import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.*;
 import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
-import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validate;
+import static de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension.presetValue;
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
-import static de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension.validationFallbackValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ValidationFallbackExtensionImplTest {
 	private DefaultConfigContainer<@Nullable Integer> configContainer;
@@ -106,7 +103,9 @@ class ValidationFallbackExtensionImplTest {
 							}
 						}
 				))
-				.apply(validationFallbackValue(3));
+				.apply(presetValue("custom", 3));
+
+		configContainer.extension(ValidationFallbackExtension.class).orElseThrow().fallbackToPreset("custom");
 
 		configContainer.attachTree(intEntry);
 		configContainer.initialize();
