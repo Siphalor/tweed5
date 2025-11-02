@@ -9,6 +9,8 @@ import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojoext.attributes.api.AttributesPojoWeavingProcessor;
+import de.siphalor.tweed5.weaver.pojoext.presets.api.DefaultPresetWeavingProcessor;
+import de.siphalor.tweed5.weaver.pojoext.presets.api.PresetsWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.DefaultReadWriteMappings;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.ValidatorsPojoWeavingProcessor;
@@ -26,7 +28,9 @@ import java.lang.annotation.Target;
 		DefaultReadWriteMappings.class,
 		CompoundWeaving.class
 })
+@PojoWeaving
 @TweedExtension(ReadWriteExtension.class)
+@TweedExtension(PresetsExtension.class)
 @TweedExtension(ValidationExtension.class)
 @TweedExtension(ValidationFallbackExtension.class)
 @TweedExtension(AttributesExtension.class)
@@ -34,6 +38,8 @@ import java.lang.annotation.Target;
 @PojoWeavingExtension(AutoReadWritePojoWeavingProcessor.class)
 @PojoWeavingExtension(ValidatorsPojoWeavingProcessor.class)
 @PojoWeavingExtension(AttributesPojoWeavingProcessor.class)
+@PojoWeavingExtension(PresetsWeavingProcessor.class)
+@PojoWeavingExtension(DefaultPresetWeavingProcessor.class)
 @DefaultWeavingExtensions
 @DefaultReadWriteMappings
 @CompoundWeaving

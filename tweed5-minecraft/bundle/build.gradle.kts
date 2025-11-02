@@ -19,6 +19,7 @@ dependencies {
 	implementation("de.siphalor.tweed5:tweed5-serde-extension")
 	implementation("de.siphalor.tweed5:tweed5-weaver-pojo")
 	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-attributes-extension")
+	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-presets-extension")
 	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-serde-extension")
 	implementation("de.siphalor.tweed5:tweed5-weaver-pojo-validation-extension")
 }

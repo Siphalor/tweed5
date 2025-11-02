@@ -123,6 +123,8 @@ public class TweedPojoWeaverBootstrapper<T> {
 
 		configContainer.attachTree(rootEntry);
 
+		runAfterWeaveHooks();
+
 		return configContainer;
 	}
 
@@ -145,7 +147,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 	) {
 		extensionsData = extensionsData.copy();
 
-		runBeforeWeaveHooks(valueType, extensionsData, protoContext);
+		runBeforeWeaveEntryHooks(valueType, extensionsData, protoContext);
 
 		WeavingContext context = WeavingContext.builder()
 				.parent(protoContext.parent())
@@ -161,7 +163,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 			try {
 				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(valueType, context);
 				if (configEntry != null) {
-					runAfterWeaveHooks(valueType, configEntry, context);
+					runAfterWeaveEntryHooks(valueType, configEntry, context);
 					return configEntry;
 				}
 			} catch (Exception e) {
@@ -175,7 +177,12 @@ public class TweedPojoWeaverBootstrapper<T> {
 
 		throw new PojoWeavingException(
 				"Failed to weave entry for " + valueType + " at " + Arrays.toString(context.path())
-						+ ": No matching weavers found"
+						+ ": No matching weavers found.\n"
+						+ "Registered weaving extensions: "
+						+ weavingExtensions.stream()
+						.map(TweedPojoWeavingExtension::getClass)
+						.map(Class::getName)
+						.collect(Collectors.joining(", "))
 		);
 	}
 
@@ -207,7 +214,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 			try {
 				ConfigEntry<U> configEntry = weavingExtension.weaveEntry(valueType, context);
 				if (configEntry != null) {
-					runAfterWeaveHooks(valueType, configEntry, context);
+					runAfterWeaveEntryHooks(valueType, configEntry, context);
 					return configEntry;
 				}
 			} catch (Exception e) {
@@ -225,7 +232,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 		);
 	}
 
-	private <U> void runBeforeWeaveHooks(
+	private <U> void runBeforeWeaveEntryHooks(
 			ActualType<U> dataClass,
 			Patchwork extensionsData,
 			ProtoWeavingContext protoContext
@@ -243,7 +250,7 @@ public class TweedPojoWeaverBootstrapper<T> {
 		}
 	}
 
-	private <U> void runAfterWeaveHooks(ActualType<U> dataClass, ConfigEntry<U> configEntry, WeavingContext context) {
+	private <U> void runAfterWeaveEntryHooks(ActualType<U> dataClass, ConfigEntry<U> configEntry, WeavingContext context) {
 		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
 			try {
 				weavingExtension.afterWeaveEntry(dataClass, configEntry, context);
@@ -254,6 +261,12 @@ public class TweedPojoWeaverBootstrapper<T> {
 						e
 				);
 			}
+		}
+	}
+
+	private void runAfterWeaveHooks() {
+		for (TweedPojoWeavingExtension weavingExtension : weavingExtensions) {
+			weavingExtension.afterWeave();
 		}
 	}
 }

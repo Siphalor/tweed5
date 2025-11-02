@@ -27,6 +27,8 @@ public interface TweedPojoWeavingExtension extends TweedPojoWeavingFunction {
 
 	default <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {}
 
+	default <T> void afterWeave() {}
+
 	interface SetupContext {
 		<E> PatchworkPartAccess<E> registerWeavingContextExtensionData(Class<E> dataClass);
 	}

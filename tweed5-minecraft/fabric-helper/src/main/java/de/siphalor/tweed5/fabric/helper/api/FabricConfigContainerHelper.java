@@ -8,6 +8,7 @@ import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
 import de.siphalor.tweed5.dataapi.api.TweedSerde;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
+import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import lombok.Getter;
 import lombok.extern.apachecommons.CommonsLog;
@@ -29,6 +30,7 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 	private final ConfigContainer<T> configContainer;
 	private final ReadWriteExtension readWriteExtension;
 	private final @Nullable PatchExtension patchExtension;
+	private final @Nullable PresetsExtension presetsExtension;
 	private final TweedSerde serde;
 	@Getter
 	private final String modId;
@@ -54,8 +56,14 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 		this.readWriteExtension = configContainer.extension(ReadWriteExtension.class)
 				.orElseThrow(() -> new IllegalStateException("ReadWriteExtension not declared in config container"));
 		this.patchExtension = configContainer.extension(PatchExtension.class).orElse(null);
+		this.presetsExtension = configContainer.extension(PresetsExtension.class).orElse(null);
 		this.serde = serde;
 		this.modId = modId;
+	}
+
+	public T loadAndUpdateInConfigDirectory() {
+		T defaultPresetValue = getDefaultPresetValue();
+		return loadAndUpdateInConfigDirectory(() -> configContainer.rootEntry().deepCopy(defaultPresetValue));
 	}
 
 	public T loadAndUpdateInConfigDirectory(Supplier<T> defaultValueSupplier) {
@@ -87,6 +95,11 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 		} catch (Exception e) {
 			log.error("Failed loading config file " + configFile.getAbsolutePath(), e);
 		}
+	}
+
+	public T readConfigInConfigDirectory() {
+		T defaultPresetValue = getDefaultPresetValue();
+		return readConfigInConfigDirectory(() -> configContainer.rootEntry().deepCopy(defaultPresetValue));
 	}
 
 	public T readConfigInConfigDirectory(Supplier<T> defaultValueSupplier) {
@@ -157,5 +170,14 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 			tempConfigDirectory.toFile().mkdirs();
 		}
 		return tempConfigDirectory;
+	}
+
+	private T getDefaultPresetValue() {
+		if (presetsExtension == null) {
+			throw new IllegalStateException(
+					"No presets extension registered, either register such extension or provide a default value manually"
+			);
+		}
+		return presetsExtension.presetValue(configContainer.rootEntry(), PresetsExtension.DEFAULT_PRESET_NAME);
 	}
 }

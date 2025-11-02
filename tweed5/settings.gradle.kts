@@ -32,6 +32,7 @@ includeNormalModule("type-utils")
 includeNormalModule("utils")
 includeNormalModule("weaver-pojo")
 includeNormalModule("weaver-pojo-attributes-extension")
+includeNormalModule("weaver-pojo-presets-extension")
 includeNormalModule("weaver-pojo-serde-extension")
 includeNormalModule("weaver-pojo-validation-extension")
 
