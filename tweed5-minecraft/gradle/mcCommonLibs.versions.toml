@@ -1,7 +1,7 @@
 [versions]
 fabric-loader = "0.17.2"
 fabric-loom = "1.11-SNAPSHOT"
-jcyo = "0.4.2"
+jcyo = "0.5.0"
 
 [plugins]
 jcyo = { id = "de.siphalor.jcyo", version.ref = "jcyo" }
