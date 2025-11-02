@@ -8,6 +8,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
+import lombok.extern.apachecommons.CommonsLog;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+@CommonsLog
 public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements ConfigEntryHandler<T> {
 	protected final ConfigEntry<T> configEntry;
 	protected final T defaultValue;
@@ -73,7 +75,7 @@ public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements C
 	protected T processSaveValue(T value) {
 		ValidationResult<T> validationResult = validationExtension.validateValueFlat(configEntry, value);
 		if (validationResult.hasError()) {
-			TweedCoatMappersImpl.log.warn(
+			log.warn(
 					"Failed to save value " + value + " because of issues: " + validationResult.issues()
 							+ "; using default: " + defaultValue + " instead"
 			);
