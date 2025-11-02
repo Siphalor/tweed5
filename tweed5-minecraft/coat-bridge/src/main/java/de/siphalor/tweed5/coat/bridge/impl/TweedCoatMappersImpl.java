@@ -94,12 +94,14 @@ public class TweedCoatMappersImpl {
 
 		@Override
 		public TweedCoatEntryMappingResult<T, String> mapEntry(ConfigEntry<T> entry, TweedCoatEntryMappingContext context) {
-			boolean applicable = anyClassMatches(entry.valueClass(), valueClasses);
+			if (!anyClassMatches(entry.valueClass(), valueClasses)) {
+				return TweedCoatEntryMappingResult.notApplicable();
+			}
 
 			return new TweedCoatEntryMappingResult<T, String>() {
 				@Override
 				public boolean isApplicable() {
-					return applicable;
+					return true;
 				}
 
 				@Override
@@ -198,12 +200,7 @@ public class TweedCoatMappersImpl {
 
 		@Override
 		public TweedCoatEntryMappingResult<T, T> mapEntry(ConfigEntry<T> entry, TweedCoatEntryMappingContext context) {
-			matchingClass: {
-				for (Class<T> valueClass : valueClasses) {
-					if (entry.valueClass() == valueClass) {
-						break matchingClass;
-					}
-				}
+			if (!anyClassMatches(entry.valueClass(), valueClasses)) {
 				return TweedCoatEntryMappingResult.notApplicable();
 			}
 
@@ -359,9 +356,9 @@ public class TweedCoatMappersImpl {
 		}
 	}
 
-	private static boolean anyClassMatches(Object value, Class<?>... classes) {
+	private static boolean anyClassMatches(Class<?> valueClass, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
-			if (clazz.isInstance(value)) {
+			if (clazz.isAssignableFrom(valueClass)) {
 				return true;
 			}
 		}

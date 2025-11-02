@@ -54,7 +54,7 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 
 		KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(MOD_ID + ".config", 84, KeyMapping.Category.MISC));
 
-		log.info("current config");
+		log.info("Current config: " + config);
 	}
 
 	private class ScreenKeyBinding extends KeyMapping implements PriorityKeyBinding {

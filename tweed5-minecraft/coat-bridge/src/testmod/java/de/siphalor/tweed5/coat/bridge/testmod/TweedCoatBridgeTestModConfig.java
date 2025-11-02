@@ -1,18 +1,17 @@
 package de.siphalor.tweed5.coat.bridge.testmod;
 
 import de.siphalor.tweed5.coat.bridge.api.TweedCoatAttributes;
+import de.siphalor.tweed5.coat.bridge.api.TweedCoatBridgeExtension;
 import de.siphalor.tweed5.fabric.helper.api.DefaultTweedMinecraftWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.TweedExtension;
 import de.siphalor.tweed5.weaver.pojoext.attributes.api.Attribute;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.Validator;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.validators.WeavableNumberRangeValidator;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@PojoWeaving
 @DefaultTweedMinecraftWeaving
+@TweedExtension(TweedCoatBridgeExtension.class)
 @CompoundWeaving(namingFormat = "kebab_case")
 @Data
 public class TweedCoatBridgeTestModConfig {
@@ -26,9 +25,11 @@ public class TweedCoatBridgeTestModConfig {
 	@Attribute(key = TweedCoatAttributes.BACKGROUND_TEXTURE, values = "textures/block/red_terracotta.png")
 	private Greeting clientGreeting = new Greeting("Hello client!", "Client");
 
+	@CompoundWeaving
 	@NoArgsConstructor
 	@AllArgsConstructor
-	@CompoundWeaving
+	@EqualsAndHashCode
+	@ToString
 	public static class Greeting {
 		public String greeting;
 		public String greeter;

@@ -7,16 +7,19 @@ import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.TweedExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojoext.attributes.api.AttributesPojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.DefaultReadWriteMappings;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.ValidatorsPojoWeavingProcessor;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 @AnnotationInheritance(passOn = {
+		PojoWeaving.class,
 		TweedExtension.class,
 		PojoWeavingExtension.class,
 		DefaultWeavingExtensions.class,
@@ -34,5 +37,7 @@ import de.siphalor.tweed5.weaver.pojoext.validation.api.ValidatorsPojoWeavingPro
 @DefaultWeavingExtensions
 @DefaultReadWriteMappings
 @CompoundWeaving
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 public @interface DefaultTweedMinecraftWeaving {
 }
