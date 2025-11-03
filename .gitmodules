@@ -1,3 +1,6 @@
 [submodule "tweed5-minecraft/vendor/commons-logging"]
 	path = tweed5-minecraft/vendor/commons-logging
 	url = https://gitea.siphalor.de/Siphalor/tweed5-commons-logging.git
+[submodule "tweed5-minecraft/helpers"]
+	path = tweed5-minecraft/helpers
+	url = https://github.com/Siphalor/mc-cross-version-helpers.git
