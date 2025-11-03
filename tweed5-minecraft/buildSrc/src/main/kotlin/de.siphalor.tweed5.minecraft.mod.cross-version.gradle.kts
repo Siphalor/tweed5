@@ -110,10 +110,6 @@ tasks.named("compileTestmodJava") {
 	dependsOn(testmodJcyo)
 }
 
-java {
-	withSourcesJar()
-}
-
 lombok {
 	version = libs.versions.lombok.get()
 }

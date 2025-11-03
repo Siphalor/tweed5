@@ -40,9 +40,16 @@ tasks.assemble {
 val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 	group = LifecycleBasePlugin.BUILD_GROUP
 
+	dependsOn(tasks.named("sourcesJar"))
 	dependsOn(processMinecraftModResources)
 
-	from(zipTree(tasks.named<Jar>("sourcesJar").get().archiveFile))
+	from(tasks.named<Jar>("sourcesJar").get().archiveFile.map {
+		if (it.asFile.exists()) {
+			zipTree(it)
+		} else {
+			files()
+		}
+	})
 	from(project.layout.buildDirectory.dir("minecraftModResources"))
 
 	archiveClassifier = "sources"
