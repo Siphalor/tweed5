@@ -82,6 +82,15 @@ public class AnnotationInheritanceAwareAnnotatedElement implements AnnotatedElem
 		return inner.getDeclaredAnnotations();
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getSimpleName()).append('[');
+		getOrResolveAnnotations().forEach(annotation ->
+			sb.append(annotation).append(';')
+		);
+		return sb.append(']').toString();
+	}
+
 	private ClassToInstanceMap<Annotation> getOrResolveAnnotations() {
 		if (resolvedAnnotations == null) {
 			resolvedAnnotations = new AnnotationInheritanceResolver(inner).resolve();
