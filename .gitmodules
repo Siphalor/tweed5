@@ -1,0 +1,3 @@
+[submodule "tweed5-minecraft/vendor/commons-logging"]
+	path = tweed5-minecraft/vendor/commons-logging
+	url = https://gitea.siphalor.de/Siphalor/tweed5-commons-logging.git
