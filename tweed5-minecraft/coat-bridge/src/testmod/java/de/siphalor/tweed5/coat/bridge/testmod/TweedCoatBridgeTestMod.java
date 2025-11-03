@@ -16,9 +16,11 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
+
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
 
 @CustomLog
 public class TweedCoatBridgeTestMod implements ClientModInitializer {
@@ -52,13 +54,25 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 
 		config = configContainerHelper.loadAndUpdateInConfigDirectory(() -> DEFAULT_CONFIG_VALUE);
 
-		KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(MOD_ID + ".config", 84, KeyMapping.Category.MISC));
+		KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(
+				MOD_ID + ".config",
+				GLFW.GLFW_KEY_T,
+				//# if MC_VERSION_NUMBER >= 12109
+				KeyMapping.Category.MISC
+				//# else
+				//- "key.categories.misc"
+				//# end
+		));
 
 		log.info("Current config: " + config);
 	}
 
 	private class ScreenKeyBinding extends KeyMapping implements PriorityKeyBinding {
+		//# if MC_VERSION_NUMBER >= 12109
 		public ScreenKeyBinding(String name, int key, Category category) {
+		//# else
+		//- public ScreenKeyBinding(String name, int key, String category) {
+		//# end
 			super(name, key, category);
 		}
 
@@ -71,7 +85,7 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 			ConfigScreen configScreen = configCoatBridgeExtension.createConfigScreen(
 					ConfigScreenCreateParams.<TweedCoatBridgeTestModConfig>builder()
 							.translationKeyPrefix(MOD_ID + ".config")
-							.title(Component.translatable(MOD_ID + ".title"))
+							.title(translatableComponent(MOD_ID + ".title"))
 							.rootEntry(configContainer.rootEntry())
 							.currentValue(config)
 							.defaultValue(DEFAULT_CONFIG_VALUE)

@@ -1,3 +1,4 @@
+import de.siphalor.jcyo.gradle.JcyoTask
 import de.siphalor.tweed5.gradle.plugin.minecraft.mod.MinecraftModded
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -6,6 +7,7 @@ import java.util.Properties
 plugins {
 	java
 	id("fabric-loom")
+	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.expanded-sources-jar")
 	id("de.siphalor.jcyo")
 	id("io.freefair.lombok")
@@ -21,7 +23,7 @@ val mcProps = Properties().apply {
 
 val mcCatalog = versionCatalogs.named("mcLibs")
 
-group = "de.siphalor.tweed5.minecraft.${project.name}"
+group = "de.siphalor.tweed5.minecraft"
 val archivesBaseName = "${project.name}-mc$minecraftVersionDescriptor"
 base {
 	archivesName.set(archivesBaseName)
@@ -63,6 +65,7 @@ repositories {
 			includeGroupAndSubgroups("de.siphalor")
 		}
 	}
+	mavenLocal()
 }
 
 configurations {
@@ -86,9 +89,29 @@ dependencies {
 	"testmodImplementation"(sourceSets.main.map { it.output })
 }
 
+val jcyoVars = mcProps.stringPropertyNames()
+	.filter { it.startsWith("preprocessor.") }
+	.map { it to mcProps[it] }
+	.associate { (key, value) -> key.substring("preprocessor.".length) to value.toString() }
+val jcyo = tasks.register<JcyoTask>("jcyo") {
+	inputDirectory = file("src/main/java")
+	variables = jcyoVars
+}
+val testmodJcyo = tasks.register<JcyoTask>("testmodJcyo") {
+	inputDirectory = file("src/testmod/java")
+	variables = jcyoVars
+}
+
+tasks.compileJava {
+	dependsOn(jcyo)
+}
+
+tasks.named("compileTestmodJava") {
+	dependsOn(testmodJcyo)
+}
+
 java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	withSourcesJar()
 }
 
 lombok {
@@ -120,14 +143,23 @@ afterEvaluate {
 	}
 }
 
-tasks.jar {
-	dependsOn(tasks.processMinecraftModResources)
-	from(project.layout.buildDirectory.dir("minecraftModResources"))
-}
+tasks.named<Copy>("processResources") {
+	inputs.property("id", project.name)
+	inputs.property("version", project.version)
+	inputs.property("name", properties["module.name"])
+	inputs.property("description", properties["module.description"])
+	inputs.property("repoUrl", properties["git.url"])
 
-tasks.sourcesJar {
-	dependsOn(tasks.processMinecraftModResources)
-	from(project.layout.buildDirectory.dir("minecraftModResources"))
+	from(project.layout.settingsDirectory.dir("../tweed5-minecraft/mod-template/resources")) {
+		expand(mapOf(
+			"id" to project.name.replace('-', '_'),
+			"version" to project.version,
+			"name" to properties["module.name"].toString(),
+			"description" to properties["module.description"],
+			"repoUrl" to properties["git.url"],
+		))
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named<Copy>("processTestmodResources") {
@@ -151,4 +183,16 @@ tasks.named<Copy>("processTestmodResources") {
 
 fun getMcCatalogVersion(name: String): String {
 	return mcCatalog.findVersion(name).get().requiredVersion
+}
+
+publishing {
+	publications {
+		create<MavenPublication>("minecraftMod") {
+			groupId = "${project.group}.${project.name}"
+			artifactId = "${project.name}-${minecraftVersionDescriptor}"
+			version = shortVersion
+
+			from(components["java"])
+		}
+	}
 }

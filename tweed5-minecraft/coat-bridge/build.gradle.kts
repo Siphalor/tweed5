@@ -14,8 +14,8 @@ dependencies {
 		modTestmodImplementation(fabricApi.module(it, mcLibs.versions.fabric.api.get()))
 	}
 	testmodImplementation(project(":tweed5-bundle", configuration = "minecraftModElements"))
+	testmodImplementation(project(":tweed5-fabric-helper", configuration = "namedElements"))
 	modTestmodImplementation(mcLibs.coat)
 	modTestmodImplementation(mcLibs.amecs.api)
-	testmodImplementation(project(":tweed5-fabric-helper"))
 	testmodImplementation("de.siphalor.tweed5:tweed5-serde-hjson")
 }

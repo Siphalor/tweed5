@@ -16,6 +16,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.literalComponent;
+
 @CommonsLog
 public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements ConfigEntryHandler<T> {
 	protected final ConfigEntry<T> configEntry;
@@ -43,7 +45,7 @@ public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements C
 				.flatMap(entryIssues -> entryIssues.issues().stream())
 				.map(issue -> new Message(
 						mapLevel(issue.level()),
-						Component.literal(issue.message())
+						literalComponent(issue.message())
 				))
 				.collect(Collectors.toList());
 	}
@@ -68,7 +70,7 @@ public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements C
 
 	@Override
 	public Component asText(T value) {
-		return Component.literal(Objects.toString(value));
+		return literalComponent(Objects.toString(value));
 	}
 
 	protected T processSaveValue(T value) {

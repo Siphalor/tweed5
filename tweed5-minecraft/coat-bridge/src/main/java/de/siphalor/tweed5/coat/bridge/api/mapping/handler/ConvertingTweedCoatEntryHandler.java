@@ -12,6 +12,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.literalComponent;
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
+
 @RequiredArgsConstructor
 @CommonsLog
 public class ConvertingTweedCoatEntryHandler<T extends @Nullable Object, C> implements ConfigEntryHandler<C> {
@@ -34,7 +37,7 @@ public class ConvertingTweedCoatEntryHandler<T extends @Nullable Object, C> impl
 		} catch (Exception e) {
 			return Collections.singletonList(new Message(
 					Message.Level.ERROR,
-					Component.translatable(CONVERSION_EXCEPTION_TEXT_KEY, e.getMessage())
+					translatableComponent(CONVERSION_EXCEPTION_TEXT_KEY, e.getMessage())
 			));
 		}
 	}
@@ -60,6 +63,6 @@ public class ConvertingTweedCoatEntryHandler<T extends @Nullable Object, C> impl
 
 	@Override
 	public Component asText(C value) {
-		return Component.literal(Objects.toString(value));
+		return literalComponent(Objects.toString(value));
 	}
 }
