@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
+import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validation.api.validators.SimpleValidatorMiddleware;
 import de.siphalor.tweed5.defaultextensions.validation.impl.ValidationExtensionImpl;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
@@ -59,4 +60,6 @@ public interface ValidationExtension extends TweedExtension {
 	ValidationIssues captureValidationIssues(Patchwork readContextExtensionsData);
 
 	<T extends @Nullable Object> ValidationIssues validate(ConfigEntry<T> entry, T value);
+
+	<T extends @Nullable Object> ValidationResult<T> validateValueFlat(ConfigEntry<T> entry, T value);
 }

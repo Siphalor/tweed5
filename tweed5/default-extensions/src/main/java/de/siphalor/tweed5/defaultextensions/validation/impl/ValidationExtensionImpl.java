@@ -184,6 +184,16 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		return validatingVisitor.validationIssues();
 	}
 
+	@Override
+	public <T> ValidationResult<T> validateValueFlat(ConfigEntry<T> entry, T value) {
+		ConfigEntryValidator entryValidator = entry.extensionsData()
+				.get(customEntryDataAccess)
+				.completeValidator();
+		assert entryValidator != null;
+
+		return entryValidator.validate(entry, value);
+	}
+
 	@Data
 	private static class CustomEntryData {
 		@Setter(AccessLevel.NONE)
