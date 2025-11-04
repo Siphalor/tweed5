@@ -18,7 +18,7 @@
 				"id": "tweed5",
 				"name": "Tweed 5",
 				"description": "Configuration focused libraries",
-				"icon": "assets/tweed4_base/icon.png",
+				"icon": "assets/tweed5/logo-48.png",
 				"badges": [
 					"library"
 				]
@@ -26,7 +26,7 @@
 		},
 		"modmenu:api": true
 	},
-	"icon": "assets/tweed5/icon.png",
+	"icon": "assets/tweed5/logo-48.png",
 	"id": "${id}",
 	"name": "${name}",
 	"description": "${description}",

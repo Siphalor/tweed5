@@ -140,40 +140,16 @@ afterEvaluate {
 }
 
 tasks.named<Copy>("processResources") {
-	inputs.property("id", project.name)
-	inputs.property("version", project.version)
-	inputs.property("name", properties["module.name"])
-	inputs.property("description", properties["module.description"])
-	inputs.property("repoUrl", properties["git.url"])
-
-	from(project.layout.settingsDirectory.dir("../tweed5-minecraft/mod-template/resources")) {
-		expand(mapOf(
-			"id" to project.name.replace('-', '_'),
-			"version" to project.version,
-			"name" to properties["module.name"].toString(),
-			"description" to properties["module.description"],
-			"repoUrl" to properties["git.url"],
-		))
-	}
+	val processMinecraftModResources = tasks.named<Sync>("processMinecraftModResources")
+	dependsOn(processMinecraftModResources)
+	from(processMinecraftModResources.get().destinationDir)
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named<Copy>("processTestmodResources") {
-	inputs.property("id", project.name)
-	inputs.property("version", project.version)
-	inputs.property("name", properties["module.name"])
-	inputs.property("description", properties["module.description"])
-	inputs.property("repoUrl", properties["git.url"])
-
-	from(project.layout.settingsDirectory.dir("../tweed5-minecraft/mod-template/resources")) {
-		expand(mapOf(
-			"id" to project.name.replace('-', '_') + "_testmod",
-			"version" to project.version,
-			"name" to properties["module.name"].toString() + " (test mod)",
-			"description" to properties["module.description"],
-			"repoUrl" to properties["git.url"],
-		))
-	}
+	val processMinecraftTestmodResources = tasks.named<Sync>("processMinecraftTestmodResources")
+	dependsOn(processMinecraftTestmodResources)
+	from(processMinecraftTestmodResources.get().destinationDir)
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
