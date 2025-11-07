@@ -52,8 +52,10 @@ dependencyResolutionManagement {
 includeBuild("../tweed5")
 
 includeNormalModule("bundle")
+includeNormalModule("bundle-pojo-weaving")
 includeNormalModule("coat-bridge")
 includeNormalModule("fabric-helper")
+includeNormalModule("logging")
 
 fun includeNormalModule(name: String) {
 	includeAs("tweed5-$name", name)

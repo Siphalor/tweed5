@@ -34,7 +34,7 @@ abstract class MinecraftModComponentPlugin : Plugin<Project> {
 				attribute(MinecraftModded.MINECRAFT_MODDED_ATTRIBUTE, objectFactory.named(MinecraftModded.MODDED))
 				attribute(Category.CATEGORY_ATTRIBUTE, objectFactory.named(Category.LIBRARY))
 				attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objectFactory.named(LibraryElements.JAR))
-				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.SHADOWED))
+				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.EMBEDDED))
 				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_RUNTIME))
 
 				project.afterEvaluate {
@@ -48,8 +48,8 @@ abstract class MinecraftModComponentPlugin : Plugin<Project> {
 				attribute(MinecraftModded.MINECRAFT_MODDED_ATTRIBUTE, objectFactory.named(MinecraftModded.MODDED))
 				attribute(Category.CATEGORY_ATTRIBUTE, objectFactory.named(Category.LIBRARY))
 				attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objectFactory.named(LibraryElements.JAR))
-				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.SHADOWED))
-				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_API))
+				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.EXTERNAL))
+				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_RUNTIME))
 
 				project.afterEvaluate {
 					attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, targetJvmVersion.get().toInt())

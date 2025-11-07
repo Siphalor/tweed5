@@ -8,7 +8,3 @@ dependencies {
 
 	testImplementation(project(":serde-json-test-utils"))
 }
-
-tasks.shadowJar {
-	configurations = setOf()
-}

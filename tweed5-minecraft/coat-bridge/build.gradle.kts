@@ -13,7 +13,9 @@ dependencies {
 	listOf("fabric-key-binding-api-v1", "fabric-resource-loader-v0").forEach {
 		modTestmodImplementation(fabricApi.module(it, mcLibs.versions.fabric.api.get()))
 	}
-	testmodImplementation(project(":tweed5-bundle", configuration = "minecraftModElements"))
+	testmodImplementation(project(":tweed5-logging", configuration = "minecraftModApiElements"))
+	testmodImplementation(project(":tweed5-bundle", configuration = "runtimeElements"))
+	testmodImplementation(project(":tweed5-bundle-pojo-weaving", configuration = "runtimeElements"))
 	testmodImplementation(project(":tweed5-fabric-helper", configuration = "namedElements"))
 	modTestmodImplementation(mcLibs.coat)
 	modTestmodImplementation(mcLibs.amecs.api)

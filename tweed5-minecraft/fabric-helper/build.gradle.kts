@@ -19,7 +19,7 @@ dependencies {
 	listOf("fabric-networking-api-v1", "fabric-lifecycle-events-v1").forEach {
 		modTestmodImplementation(fabricApi.module(it, mcLibs.versions.fabric.api.get()))
 	}
-	testmodImplementation(project(":tweed5-bundle", configuration = "minecraftModElements"))
+	testmodImplementation(project(":tweed5-bundle"))
 	testmodImplementation("de.siphalor.tweed5:tweed5-comment-loader-extension")
 	testmodImplementation("de.siphalor.tweed5:tweed5-serde-hjson")
 	testmodImplementation("de.siphalor.tweed5:tweed5-serde-gson")

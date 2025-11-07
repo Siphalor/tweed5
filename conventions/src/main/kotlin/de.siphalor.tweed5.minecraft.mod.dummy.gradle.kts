@@ -4,6 +4,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.base")
 }
 
+configurations.minecraftModApiElements {
+	extendsFrom(configurations.implementation.get())
+	exclude("commons-logging", "commons-logging")
+}
+
 val minecraftModJar = tasks.register<Jar>("minecraftModJar") {
 	group = LifecycleBasePlugin.BUILD_GROUP
 
@@ -25,13 +30,10 @@ val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 	dependsOn(tasks.named("sourcesJar"))
 	dependsOn(tasks.named("processMinecraftModResources"))
 
-	from(tasks.named<Jar>("sourcesJar").get().archiveFile.map {
-		if (it.asFile.exists()) {
-			zipTree(it)
-		} else {
-			files()
-		}
-	})
+	val sourcesJar = objects.fileCollection().from(tasks.named<Jar>("sourcesJar").map { it.archiveFile })
+	inputs.files(sourcesJar)
+
+	from(sourcesJar.map { zipTree(it) })
 	from(project.layout.buildDirectory.dir("minecraftModResources"))
 
 	archiveClassifier = "sources"

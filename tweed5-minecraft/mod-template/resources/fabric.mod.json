@@ -33,5 +33,6 @@
 	"authors": [
 		"Siphalor"
 	],
-	"version": "${version}"
+	"version": "${version}",
+	"jars": [${jars}]
 }
