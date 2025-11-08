@@ -39,7 +39,11 @@ val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 
 artifacts.add("minecraftModElements", minecraftModJar)
 artifacts.add("minecraftModApiElements", minecraftModJar)
-artifacts.add("minecraftModSourcesElements", minecraftModSourcesJar)
+afterEvaluate {
+	if (tasks.findByName("sourcesJar") != null) {
+		artifacts.add("minecraftModSourcesElements", minecraftModSourcesJar)
+	}
+}
 
 publishing {
 	publications {
