@@ -35,6 +35,7 @@ public class FabricConfigCommentLoader {
 
 		InputStream langInputStream = getClass().getClassLoader().getResourceAsStream(langFilePath);
 		if (langInputStream == null) {
+			log.warn("Failed to find language file " + langFilePath + " for loading config comments");
 			return;
 		}
 
