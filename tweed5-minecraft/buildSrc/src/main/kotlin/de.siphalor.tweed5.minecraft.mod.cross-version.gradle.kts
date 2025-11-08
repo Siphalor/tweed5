@@ -162,7 +162,7 @@ publishing {
 	publications {
 		create<MavenPublication>("minecraftMod") {
 			groupId = "${project.group}.${project.name}"
-			artifactId = "${project.name}-${minecraftVersionDescriptor}"
+			artifactId = "${project.name}-mc${minecraftVersionDescriptor}"
 			version = shortVersion
 
 			from(components["java"])
