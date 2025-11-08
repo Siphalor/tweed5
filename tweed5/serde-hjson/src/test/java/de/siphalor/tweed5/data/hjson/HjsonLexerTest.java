@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.data.hjson;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -126,6 +127,28 @@ class HjsonLexerTest {
 		), assertDoesNotThrow(lexer::nextGeneralToken));
 
 		assertGeneralEof(lexer, new HjsonReadPosition(1, input.length() + 1));
+	}
+
+	@ParameterizedTest
+	@CsvSource(textBlock = """
+		'// 123
+		true', TRUE
+		'# hash comments are cool
+		false', FALSE
+		'/*
+		multiline
+		comment
+		*/456', NUMBER
+		'/* multiline comment
+		  * with/slashes
+		  */456', NUMBER
+		""")
+	@SneakyThrows
+	void chompComment(String input, HjsonLexerToken.Type tokenType) {
+		HjsonLexer lexer = createLexer(input);
+
+		HjsonLexerToken token = lexer.nextGeneralToken();
+		assertEquals(tokenType, token.type());
 	}
 
 	private HjsonLexer createLexer(String input) {

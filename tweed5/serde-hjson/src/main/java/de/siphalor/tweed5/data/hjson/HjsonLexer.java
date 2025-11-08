@@ -423,6 +423,8 @@ public class HjsonLexer implements AutoCloseable {
 				lastWasAsterisk = true;
 			} else if (lastWasAsterisk && codePoint == '/') {
 				break;
+			} else {
+				lastWasAsterisk = false;
 			}
 		}
 	}
