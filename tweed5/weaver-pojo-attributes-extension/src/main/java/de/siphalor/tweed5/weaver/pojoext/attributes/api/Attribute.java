@@ -11,5 +11,5 @@ import java.lang.annotation.*;
 @Repeatable(Attributes.class)
 public @interface Attribute {
 	String key();
-	String[] values();
+	String[] value();
 }

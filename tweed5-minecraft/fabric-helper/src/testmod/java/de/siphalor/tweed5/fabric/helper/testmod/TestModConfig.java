@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class TestModConfig {
 	private String helloStart = "Minecraft";
-	@Attribute(key = "scope", values = "game")
+	@Attribute(key = "scope", value = "game")
 	private String helloInGame = "Game";
 	private String helloEnd = "!";
 }

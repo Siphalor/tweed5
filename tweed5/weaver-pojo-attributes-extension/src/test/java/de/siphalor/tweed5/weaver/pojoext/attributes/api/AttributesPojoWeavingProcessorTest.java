@@ -72,19 +72,19 @@ class AttributesPojoWeavingProcessorTest {
 	@PojoWeavingExtension(AttributesPojoWeavingProcessor.class)
 	@CompoundWeaving
 	public static class Config {
-		@Attribute(key = "scope", values = "game")
+		@Attribute(key = "scope", value = "game")
 		public String string;
-		@Attribute(key = "color", values = "green")
+		@Attribute(key = "color", value = "green")
 		public SubConfig sub1;
 		@AttributeDefault(key = "color", defaultValue = "green")
 		@AttributeDefault(key = "scope", defaultValue = "game")
-		@Attribute(key = "scope", values = "world")
+		@Attribute(key = "scope", value = "world")
 		public SubConfig sub2;
 	}
 
 	@CompoundWeaving
 	public static class SubConfig {
-		@Attribute(key = "color", values = "red")
+		@Attribute(key = "color", value = "red")
 		public String a;
 		public String b;
 	}

@@ -20,9 +20,9 @@ public class TweedCoatBridgeTestModConfig {
 	@Validator(value = WeavableNumberRangeValidator.class, config = "-10=..=10")
 	private int integerInRange = -5;
 
-	@Attribute(key = TweedCoatAttributes.BACKGROUND_TEXTURE, values = "textures/block/green_terracotta.png")
+	@Attribute(key = TweedCoatAttributes.BACKGROUND_TEXTURE, value = "textures/block/green_terracotta.png")
 	private Greeting serverGreeting = new Greeting("Hello server!", "Server");
-	@Attribute(key = TweedCoatAttributes.BACKGROUND_TEXTURE, values = "textures/block/red_terracotta.png")
+	@Attribute(key = TweedCoatAttributes.BACKGROUND_TEXTURE, value = "textures/block/red_terracotta.png")
 	private Greeting clientGreeting = new Greeting("Hello client!", "Client");
 
 	@CompoundWeaving

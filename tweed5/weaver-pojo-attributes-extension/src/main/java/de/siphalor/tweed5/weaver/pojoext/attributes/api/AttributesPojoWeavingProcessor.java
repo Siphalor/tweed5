@@ -32,7 +32,7 @@ public class AttributesPojoWeavingProcessor implements TweedPojoWeavingExtension
 	@Override
 	public <T> void afterWeaveEntry(ActualType<T> valueType, ConfigEntry<T> configEntry, WeavingContext context) {
 		val attributeAnnotations = context.annotations().getAnnotationsByType(Attribute.class);
-		val attributes = collectAttributesFromAnnotations(attributeAnnotations, Attribute::key, Attribute::values);
+		val attributes = collectAttributesFromAnnotations(attributeAnnotations, Attribute::key, Attribute::value);
 		attributes.forEach((key, values) -> attributesExtension.setAttribute(configEntry, key, values));
 
 		val attributeDefaultAnnotations = context.annotations().getAnnotationsByType(AttributeDefault.class);
