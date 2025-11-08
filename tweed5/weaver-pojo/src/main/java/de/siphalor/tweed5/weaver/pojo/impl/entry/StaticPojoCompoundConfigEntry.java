@@ -86,7 +86,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 					try {
 						Object subValue = entry.getter().invoke(value);
 						//noinspection unchecked
-						visitor.visitEntry((ConfigEntry<Object>) entry.configEntry(), subValue);
+						((ConfigEntry<Object>) entry.configEntry()).visitInOrder(visitor, subValue);
 					} catch (Throwable e) {
 						throw new RuntimeException("Failed to get compound sub entry value \"" + key + "\"");
 					}
