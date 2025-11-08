@@ -83,6 +83,7 @@ dependencies {
 		parchment("org.parchmentmc.data:parchment-$minecraftVersion:${getMcCatalogVersion("parchment")}@zip")
 	})
 	modImplementation(mcCommonLibs.fabric.loader)
+	"modTestmodImplementation"(mcCommonLibs.fabric.loader)
 
 	compileOnly(libs.jspecify.annotations)
 
