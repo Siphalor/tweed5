@@ -7,6 +7,7 @@ import de.siphalor.coat.input.CycleButtonConfigInput;
 import de.siphalor.coat.input.TextConfigInput;
 import de.siphalor.coat.list.complex.ConfigCategoryWidget;
 import de.siphalor.coat.list.entry.ConfigCategoryConfigEntry;
+import de.siphalor.coat.list.entry.ConfigListTextEntry;
 import de.siphalor.coat.screen.ConfigContentWidget;
 import de.siphalor.coat.util.EnumeratedMaterial;
 import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
@@ -22,7 +23,9 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.apachecommons.CommonsLog;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -31,6 +34,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
 import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponentWithFallback;
 
 @CommonsLog
@@ -313,6 +317,14 @@ public class TweedCoatMappersImpl {
 							Collections.emptyList(),
 							backgroundTexture
 					);
+
+					String descriptionKey = translationKey + ".description";
+					if (I18n.exists(descriptionKey)) {
+						categoryWidget.addEntry(new ConfigListTextEntry(
+								translatableComponent(descriptionKey).withStyle(ChatFormatting.GRAY)
+						));
+					}
+
 					for (MappedEntry<Object> mappedEntry : mappedEntries) {
 						TweedCoatEntryMappingResult<Object, ?> mappingResult = mappedEntry.mappingResult();
 						if (!mappingResult.isApplicable()) {
