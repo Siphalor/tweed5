@@ -1,12 +1,9 @@
+import org.gradle.api.publish.internal.PublicationInternal
+
 plugins {
 	`maven-publish`
 	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.minecraft.mod.base")
-}
-
-configurations.minecraftModApiElements {
-	extendsFrom(configurations.implementation.get())
-	exclude("commons-logging", "commons-logging")
 }
 
 val minecraftModJar = tasks.register<Jar>("minecraftModJar") {
@@ -57,3 +54,13 @@ publishing {
 	}
 }
 
+// Required because the maven publish plugin only supports one publication per project dependency
+// to be able to resolve the dependency's coordinates.
+// Luckily, this is fine in our case, as the Minecraft mod jars should publish each other as dependencies
+// anyway. With proper dependencies in place, missing dependencies tend to become an unexpected runtime
+// error in Minecraft modding.
+afterEvaluate {
+	if (publishing.publications.names.size > 1) {
+		(publishing.publications.findByName("minecraftMod") as? PublicationInternal<*>)?.isAlias = true
+	}
+}
