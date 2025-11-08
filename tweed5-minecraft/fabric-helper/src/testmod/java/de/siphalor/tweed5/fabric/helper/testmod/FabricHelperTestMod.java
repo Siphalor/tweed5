@@ -23,11 +23,9 @@ public class FabricHelperTestMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		configContainer = TweedPojoWeaverBootstrapper.create(TestModConfig.class).weave();
-		configContainer.extension(AttributesReadWriteFilterExtension.class)
-				.orElseThrow(() -> new IllegalStateException("AttributesReadWriteFilterExtension not found"))
-				.markAttributeForFiltering("reload");
 		configFilterExtension = configContainer.extension(AttributesReadWriteFilterExtension.class)
 				.orElseThrow(() -> new IllegalStateException("AttributesReadWriteFilterExtension not found"));
+		configFilterExtension.markAttributeForFiltering("reload");
 
 		configContainer.initialize();
 
