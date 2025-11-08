@@ -11,6 +11,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,12 +21,14 @@ import java.util.stream.Collectors;
 
 public class ValidationFallbackExtensionImpl implements ValidationFallbackExtension, ValidationProvidingExtension {
 	private final ConfigContainer<?> configContainer;
+	private final PatchworkPartAccess<Boolean> hasToStringAccess;
 	private @Nullable PresetsExtension presetsExtension;
 
 	private String fallbackPresetName = PresetsExtension.DEFAULT_PRESET_NAME;
 
 	public ValidationFallbackExtensionImpl(TweedExtensionSetupContext context, ConfigContainer<?> configContainer) {
 		this.configContainer = configContainer;
+		this.hasToStringAccess = context.registerEntryExtensionData(Boolean.class);
 		context.registerExtension(PresetsExtension.class);
 	}
 
@@ -35,6 +38,22 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 					.orElseThrow(() -> new IllegalStateException("No presets extension registered"));
 		}
 		return presetsExtension;
+	}
+
+	@Override
+	public void initEntry(ConfigEntry<?> configEntry) {
+		configEntry.extensionsData().set(hasToStringAccess, hasCustomToString(configEntry.valueClass()));
+	}
+
+	private boolean hasCustomToString(Class<?> clazz) {
+		if (clazz.isPrimitive()) {
+			return true;
+		}
+		try {
+			return clazz.getMethod("toString").getDeclaringClass() != Object.class;
+		} catch (Exception ignored) {
+			return false;
+		}
 	}
 
 	@Override
@@ -104,8 +123,11 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 
 				@Override
 				public <T> String description(ConfigEntry<T> configEntry) {
-					T fallbackValue = getOrResolvePresetsExtension().presetValue(configEntry, fallbackPresetName);
-					return inner.description(configEntry) + "\n\nDefault/Fallback value: " + fallbackValue;
+					if (Boolean.TRUE.equals(configEntry.extensionsData().get(hasToStringAccess))) {
+						T fallbackValue = getOrResolvePresetsExtension().presetValue(configEntry, fallbackPresetName);
+						return inner.description(configEntry) + "\n\nDefault/Fallback value: " + fallbackValue;
+					}
+					return inner.description(configEntry);
 				}
 			};
 		}
