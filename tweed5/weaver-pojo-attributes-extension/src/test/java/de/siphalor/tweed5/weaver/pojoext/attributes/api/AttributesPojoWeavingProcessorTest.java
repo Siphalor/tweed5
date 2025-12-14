@@ -4,8 +4,8 @@ import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 class AttributesPojoWeavingProcessorTest {
 	@Test
 	void test() {
-		ConfigContainer<Config> configContainer = TweedPojoWeaverBootstrapper.create(Config.class).weave();
+		ConfigContainer<Config> configContainer = TweedPojoWeaver.forClass(Config.class).weave();
 		configContainer.initialize();
 
 		AttributesExtension attributesExtension = configContainer.extension(AttributesExtension.class).orElseThrow();

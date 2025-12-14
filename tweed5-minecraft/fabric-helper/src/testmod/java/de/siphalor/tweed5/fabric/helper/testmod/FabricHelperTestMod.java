@@ -6,7 +6,7 @@ import de.siphalor.tweed5.data.hjson.HjsonSerde;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigCommentLoader;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigContainerHelper;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import lombok.CustomLog;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -22,7 +22,7 @@ public class FabricHelperTestMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		configContainer = TweedPojoWeaverBootstrapper.create(TestModConfig.class).weave();
+		configContainer = TweedPojoWeaver.forClass(TestModConfig.class).weave();
 		configFilterExtension = configContainer.extension(AttributesReadWriteFilterExtension.class)
 				.orElseThrow(() -> new IllegalStateException("AttributesReadWriteFilterExtension not found"));
 		configFilterExtension.markAttributeForFiltering("reload");

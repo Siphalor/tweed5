@@ -4,8 +4,8 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ class PresetsWeavingProcessorTest {
 
 	@Test
 	void test() {
-		ConfigContainer<Config> configContainer = TweedPojoWeaverBootstrapper.create(Config.class).weave();
+		ConfigContainer<Config> configContainer = TweedPojoWeaver.forClass(Config.class).weave();
 		configContainer.initialize();
 		PresetsExtension presetsExtension = configContainer.extension(PresetsExtension.class).orElseThrow();
 

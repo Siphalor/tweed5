@@ -3,8 +3,9 @@ package de.siphalor.tweed5.weaver.pojoext.validation.api;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverImpl;
 import de.siphalor.tweed5.weaver.pojoext.validation.api.validators.WeavableNumberRangeValidator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +20,7 @@ class ValidatorsPojoWeavingProcessorTest {
 	@ParameterizedTest
 	@CsvSource({"-1,true", "0,false", "50,false", "99,false", "100,true", "101,true"})
 	void test(int value, boolean issuesExpected) {
-		var bootstrapper = TweedPojoWeaverBootstrapper.create(Config.class);
-		ConfigContainer<Config> configContainer = bootstrapper.weave();
+		ConfigContainer<Config> configContainer = TweedPojoWeaver.forClass(Config.class).weave();
 		configContainer.initialize();
 
 		var validationExtension = configContainer.extension(ValidationExtension.class).orElseThrow();

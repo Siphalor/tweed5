@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.weaver.pojo.impl.weaving;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.CollectionPojoWeaver;
 import lombok.Data;
@@ -12,11 +13,10 @@ import static de.siphalor.tweed5.weaver.pojo.test.ConfigEntryAssertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("unused")
-class TweedPojoWeaverBootstrapperTest {
+class TweedPojoWeaverImplTest {
 	@Test
 	void defaultWeaving() {
-		TweedPojoWeaverBootstrapper<MainCompound> bootstrapper = TweedPojoWeaverBootstrapper.create(MainCompound.class);
-		ConfigContainer<MainCompound> configContainer = bootstrapper.weave();
+		ConfigContainer<MainCompound> configContainer = TweedPojoWeaver.forClass(MainCompound.class).weave();
 
 		assertThat(configContainer.rootEntry()).satisfies(isCompoundEntryForClassWith(MainCompound.class, rootCompound ->
 				assertThat(rootCompound.subEntries())
@@ -39,8 +39,7 @@ class TweedPojoWeaverBootstrapperTest {
 
 	@Test
 	void weavingWithList() {
-		TweedPojoWeaverBootstrapper<CompoundWithList> bootstrapper = TweedPojoWeaverBootstrapper.create(CompoundWithList.class);
-		ConfigContainer<CompoundWithList> configContainer = bootstrapper.weave();
+		ConfigContainer<CompoundWithList> configContainer = TweedPojoWeaver.forClass(CompoundWithList.class).weave();
 
 		assertThat(configContainer.rootEntry()).satisfies(isCompoundEntryForClassWith(CompoundWithList.class, rootCompound ->
 				assertThat(rootCompound.subEntries())

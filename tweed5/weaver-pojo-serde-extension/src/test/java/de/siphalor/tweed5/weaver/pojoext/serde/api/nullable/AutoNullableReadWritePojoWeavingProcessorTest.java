@@ -8,8 +8,9 @@ import de.siphalor.tweed5.data.extension.api.TweedEntryWriteException;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverImpl;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.DefaultReadWriteMappings;
@@ -34,9 +35,7 @@ class AutoNullableReadWritePojoWeavingProcessorTest {
 
 	@BeforeEach
 	void setUp() {
-		var bootstrapper = TweedPojoWeaverBootstrapper.create(AnnotatedConfig.class);
-
-		container = bootstrapper.weave();
+		container = TweedPojoWeaver.forClass(AnnotatedConfig.class).weave();
 		container.initialize();
 
 		readWriteExtension = container.extension(ReadWriteExtension.class).orElseThrow();

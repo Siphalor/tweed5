@@ -9,9 +9,10 @@ import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.data.hjson.HjsonWriter;
+import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.NullablePojoWeaver;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverBootstrapper;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverImpl;
 import lombok.Data;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -33,9 +34,7 @@ class AutoReadWritePojoWeavingProcessorTest {
 
 	@BeforeEach
 	void setUp() {
-		var bootstrapper = TweedPojoWeaverBootstrapper.create(AnnotatedConfig.class);
-
-		container = bootstrapper.weave();
+		container = TweedPojoWeaver.forClass(AnnotatedConfig.class).weave();
 		container.initialize();
 
 		readWriteExtension = container.extension(ReadWriteExtension.class).orElseThrow();
@@ -77,9 +76,7 @@ class AutoReadWritePojoWeavingProcessorTest {
 
 	@Test
 	void testUsage() {
-		var bootstrapper = TweedPojoWeaverBootstrapper.create(AnnotatedConfig.class);
-
-		var container = bootstrapper.weave();
+		var container = TweedPojoWeaver.forClass(AnnotatedConfig.class).weave();
 		container.initialize();
 
 		AnnotatedConfig config = new AnnotatedConfig()
