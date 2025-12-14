@@ -41,13 +41,17 @@ public class TweedConstructFactoryImpl<T> implements TweedConstructFactory<T> {
 	}
 
 	private <C extends T> ConstructTarget<C> getConstructTarget(Class<C> type) {
-		ConstructTarget<C> cachedConstructTarget = readConstructTargetFromCache(type);
-		if (cachedConstructTarget != null) {
-			return cachedConstructTarget;
+		try {
+			ConstructTarget<C> cachedConstructTarget = readConstructTargetFromCache(type);
+			if (cachedConstructTarget != null) {
+				return cachedConstructTarget;
+			}
+			ConstructTarget<C> constructTarget = locateConstructTarget(type);
+			cacheConstructTarget(type, constructTarget);
+			return constructTarget;
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to locate construct target for " + type.getName(), e);
 		}
-		ConstructTarget<C> constructTarget = locateConstructTarget(type);
-		cacheConstructTarget(type, constructTarget);
-		return constructTarget;
 	}
 
 	@Locked.Read("cachedConstructTargetsLock")
