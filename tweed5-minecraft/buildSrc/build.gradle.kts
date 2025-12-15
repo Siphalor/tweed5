@@ -10,4 +10,5 @@ dependencies {
 	implementation(pluginMarker(mcCommonLibs.plugins.fabric.loom))
 	implementation(pluginMarker(mcCommonLibs.plugins.jcyo))
 	implementation(pluginMarker(libs.plugins.lombok))
+	implementation(pluginMarker(libs.plugins.shadow))
 }

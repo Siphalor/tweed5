@@ -11,6 +11,7 @@ plugins {
 	id("de.siphalor.tweed5.expanded-sources-jar")
 	id("de.siphalor.jcyo")
 	id("io.freefair.lombok")
+	id("com.gradleup.shadow")
 	id("de.siphalor.tweed5.shadow.explicit")
 	id("de.siphalor.tweed5.minecraft.mod.base")
 }
@@ -152,6 +153,15 @@ tasks.named<Copy>("processTestmodResources") {
 	dependsOn(processMinecraftTestmodResources)
 	from(processMinecraftTestmodResources.get().destinationDir)
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+shadow {
+	addShadowVariantIntoJavaComponent = false
+}
+
+tasks.remapJar {
+	dependsOn(tasks.shadowJar)
+	inputFile = tasks.shadowJar.get().archiveFile
 }
 
 fun getMcCatalogVersion(name: String): String {
