@@ -112,7 +112,8 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 			throw new IllegalStateException("Middleware container has not been sealed");
 		}
 		M combined = inner;
-		for (Middleware<M> middleware : middlewares) {
+		for (int i = middlewares.size() - 1; i >= 0; i--) {
+			Middleware<M> middleware = middlewares.get(i);
 			combined = middleware.process(combined);
 		}
 		return combined;

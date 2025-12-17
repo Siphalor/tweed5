@@ -74,12 +74,12 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 
 		@Override
 		public Set<String> mustComeBefore() {
-			return Collections.emptySet();
+			return Collections.singleton(Middleware.DEFAULT_START);
 		}
 
 		@Override
 		public Set<String> mustComeAfter() {
-			return Collections.singleton("$default.end");
+			return Collections.emptySet();
 		}
 
 		@Override

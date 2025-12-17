@@ -19,7 +19,7 @@ public class SimpleValidatorMiddleware implements Middleware<ConfigEntryValidato
 		return new ConfigEntryValidator() {
 			@Override
 			public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {
-				return inner.validate(configEntry, value).andThen(v -> validator.validate(configEntry, v));
+				return validator.validate(configEntry, value).andThen(v -> inner.validate(configEntry, v));
 			}
 
 			@Override
@@ -28,7 +28,11 @@ public class SimpleValidatorMiddleware implements Middleware<ConfigEntryValidato
 				if (description.isEmpty()) {
 					return inner.description(configEntry);
 				}
-				return inner.description(configEntry) + "\n" + description;
+				String innerDescription = inner.description(configEntry);
+				if (innerDescription.isEmpty()) {
+					return description;
+				}
+				return description + "\n" + innerDescription;
 			}
 		};
 	}

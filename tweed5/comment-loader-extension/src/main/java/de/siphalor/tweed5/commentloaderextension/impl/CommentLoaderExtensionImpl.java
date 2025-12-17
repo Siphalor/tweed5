@@ -53,12 +53,12 @@ public class CommentLoaderExtensionImpl implements CommentLoaderExtension, Comme
 
 			@Override
 			public Set<String> mustComeBefore() {
-				return Collections.singleton(Middleware.DEFAULT_START);
+				return Collections.emptySet();
 			}
 
 			@Override
 			public Set<String> mustComeAfter() {
-				return Collections.emptySet();
+				return Collections.singleton(Middleware.DEFAULT_END);
 			}
 
 			@Override
