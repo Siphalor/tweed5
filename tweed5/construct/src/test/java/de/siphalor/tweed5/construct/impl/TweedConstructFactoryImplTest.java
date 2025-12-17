@@ -77,19 +77,22 @@ class TweedConstructFactoryImplTest {
 		//noinspection unchecked,RedundantCast
 		assertThatThrownBy(() ->
 				factory.construct((Class<? extends DummyBase>) (Class<?>) MissingInheritance.class)
-		).isInstanceOf(IllegalArgumentException.class).hasMessageContaining(DummyBase.class.getName());
+		).rootCause().isInstanceOf(IllegalArgumentException.class).hasMessageContaining(DummyBase.class.getName());
 	}
 
 	@Test
 	void constructPrivateConstructor() {
 		val factory = TweedConstructFactoryImpl.builder(DummyBase.class).typedArg(Integer.class).build();
-		assertThatThrownBy(() -> factory.construct(PrivateConstructor.class)).isInstanceOf(IllegalStateException.class);
+		assertThatThrownBy(() -> factory.construct(PrivateConstructor.class))
+				.rootCause()
+				.isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test
 	void constructConflictingConstructors() {
 		val factory = TweedConstructFactoryImpl.builder(DummyBase.class).typedArg(Integer.class).build();
 		assertThatThrownBy(() -> factory.construct(ConstructorConflict.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class);
 	}
 
@@ -97,6 +100,7 @@ class TweedConstructFactoryImplTest {
 	void constructConflictingStatics() {
 		val factory = TweedConstructFactoryImpl.builder(DummyBase.class).typedArg(Integer.class).build();
 		assertThatThrownBy(() -> factory.construct(StaticConflict.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class);
 	}
 
@@ -104,6 +108,7 @@ class TweedConstructFactoryImplTest {
 	void constructConflictingMixed() {
 		val factory = TweedConstructFactoryImpl.builder(DummyBase.class).typedArg(Integer.class).build();
 		assertThatThrownBy(() -> factory.construct(MixedConflict.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class);
 	}
 
@@ -214,6 +219,7 @@ class TweedConstructFactoryImplTest {
 				.namedArg("number", int.class)
 				.build();
 		assertThatThrownBy(() -> factory.construct(DuplicateParams.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class)
 				.message()
 				.contains("java.lang.String", "number")
@@ -229,6 +235,7 @@ class TweedConstructFactoryImplTest {
 				.namedArg("user", String.class)
 				.build();
 		assertThatThrownBy(() -> factory.construct(Static.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class)
 				.message()
 				.contains("java.lang.Integer")
@@ -243,6 +250,7 @@ class TweedConstructFactoryImplTest {
 				.namedArg("other", String.class)
 				.build();
 		assertThatThrownBy(() -> factory.construct(Static.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class)
 				.message()
 				.contains("user", "java.lang.String")
@@ -257,6 +265,7 @@ class TweedConstructFactoryImplTest {
 				.namedArg("user", Long.class)
 				.build();
 		assertThatThrownBy(() -> factory.construct(Static.class))
+				.rootCause()
 				.isInstanceOf(IllegalStateException.class)
 				.message()
 				.contains("user", "java.lang.String", "java.lang.Long")
