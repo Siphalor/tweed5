@@ -22,10 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,11 +37,11 @@ public class TweedPojoWeaverImpl<T> implements TweedPojoWeaver<T> {
 	private final AnnotatedElement pojoAnnotations;
 	private final PojoWeaving rootWeavingConfig;
 
-	private final Set<Class<? extends TweedPojoWeavingExtension>> weavingExtensionClasses = new HashSet<>();
+	private final Set<Class<? extends TweedPojoWeavingExtension>> weavingExtensionClasses = new LinkedHashSet<>();
 	private @Nullable Collection<TweedPojoWeavingExtension> weavingExtensions;
 
 	private @Nullable ConfigContainer<T> configContainer;
-	private final Set<Class<? extends de.siphalor.tweed5.core.api.extension.TweedExtension>> extensionClasses = new HashSet<>();
+	private final Set<Class<? extends de.siphalor.tweed5.core.api.extension.TweedExtension>> extensionClasses = new LinkedHashSet<>();
 
 	private final WeavingContext.WeavingFn weavingContextFn = new WeavingContext.WeavingFn() {
 		@Override
