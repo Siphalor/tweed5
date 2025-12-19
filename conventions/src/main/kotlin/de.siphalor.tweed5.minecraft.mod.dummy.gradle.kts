@@ -24,13 +24,7 @@ tasks.assemble {
 val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 	group = LifecycleBasePlugin.BUILD_GROUP
 
-	dependsOn(tasks.named("sourcesJar"))
 	dependsOn(tasks.named("processMinecraftModResources"))
-
-	val sourcesJar = objects.fileCollection().from(tasks.named<Jar>("sourcesJar").map { it.archiveFile })
-	inputs.files(sourcesJar)
-
-	from(sourcesJar.map { zipTree(it) })
 	from(project.layout.buildDirectory.dir("minecraftModResources"))
 
 	archiveClassifier = "sources"
@@ -40,8 +34,16 @@ val minecraftModSourcesJar = tasks.register<Jar>("minecraftModSourcesJar") {
 artifacts.add("minecraftModElements", minecraftModJar)
 artifacts.add("minecraftModApiElements", minecraftModJar)
 afterEvaluate {
-	if (tasks.findByName("sourcesJar") != null) {
+	tasks.findByName("sourcesJar")?.let { sourcesJar ->
 		artifacts.add("minecraftModSourcesElements", minecraftModSourcesJar)
+
+		minecraftModSourcesJar.configure {
+			val sourcesJar = sourcesJar as Jar
+			dependsOn(sourcesJar)
+			val sourcesJarArtifact = objects.fileCollection().from(sourcesJar.archiveFile)
+			inputs.files(sourcesJarArtifact)
+			from(files(sourcesJarArtifact).map { zipTree(it) })
+		}
 	}
 }
 
