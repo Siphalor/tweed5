@@ -219,7 +219,7 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public Set<String> mustComeAfter() {
+		public Set<String> mustComeBefore() {
 			return Collections.singleton(PatherExtension.EXTENSION_ID);
 		}
 
