@@ -20,6 +20,13 @@ import de.siphalor.tweed5.coat.bridge.api.mapping.handler.BasicTweedCoatEntryHan
 import de.siphalor.tweed5.coat.bridge.api.mapping.handler.ConvertingTweedCoatEntryHandler;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.data.extension.api.TweedEntryReadException;
+import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.data.extension.api.TweedReadContext;
+import de.siphalor.tweed5.dataapi.api.*;
+import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.apachecommons.CommonsLog;
@@ -82,12 +89,186 @@ public class TweedCoatMappersImpl {
 
 	public static TweedCoatMapper<Object> COMPOUND_CATEGORY_MAPPER = new CompoundCategoryMapper<>();
 
+	public static <T> TweedCoatMapper<T> serdeTextMapper(Class<T>[] valueClasses) {
+		return new SerdeTextMapper<>(valueClasses);
+	}
+
 	public static <T> TweedCoatMapper<T> convertingTextMapper(
 			Class<T>[] valueClasses,
 			Function<T, String> textMapper,
 			Function<String, T> textParser
 	) {
 		return new ConvertingTextMapper<>(valueClasses, textMapper, textParser);
+	}
+
+	@RequiredArgsConstructor
+	public static class SerdeTextMapper<T> implements TweedCoatMapper<T> {
+		private final Class<T>[] valueClasses;
+
+		@Override
+		public TweedCoatEntryMappingResult<T, ?> mapEntry(ConfigEntry<T> entry, TweedCoatEntryMappingContext context) {
+			if (!anyClassMatches(entry.valueClass(), valueClasses)) {
+				return TweedCoatEntryMappingResult.notApplicable();
+			}
+
+			ReadWriteExtension readWriteExtension = entry.container().extension(ReadWriteExtension.class)
+					.orElseThrow(() -> new IllegalArgumentException("No ReadWriteExtension registered"));
+
+			return new TweedCoatEntryMappingResult<T, String>() {
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+
+				@Override
+				public ConfigInput<String> createInput(TweedCoatEntryCreationContext<T> context) {
+					return new TextConfigInput(convertToString(context.currentValue()));
+				}
+
+				@Override
+				public ConfigEntryHandler<String> createHandler(TweedCoatEntryCreationContext<T> context) {
+					if (context.parentSaveHandler() == null) {
+						throw new IllegalArgumentException("No parent save handler provided");
+					}
+					return new ConvertingTweedCoatEntryHandler<>(
+							new BasicTweedCoatEntryHandler<>(entry, context.defaultValue(), context.parentSaveHandler()),
+							this::convertToString,
+							input -> {
+								try {
+									TweedEntryReader<T, ConfigEntry<T>> reader =
+											readWriteExtension.getDefinedEntryReader(entry);
+									Patchwork readExtData = readWriteExtension.createReadWriteContextExtensionsData();
+									//noinspection DataFlowIssue
+									return reader.read(
+											new TweedDataReader() {
+												private boolean consumed = false;
+
+												@Override
+												public TweedDataToken peekToken() throws TweedDataReadException {
+													if (consumed) {
+														throw new IllegalStateException("Already consumed");
+													}
+													return new TweedDataToken() {
+														@Override
+														public boolean canReadAsString() {
+															return true;
+														}
+
+														@Override
+														public String readAsString() {
+															return input;
+														}
+													};
+												}
+
+												@Override
+												public TweedDataToken readToken() throws TweedDataReadException {
+													TweedDataToken token = peekToken();
+													consumed = true;
+													return token;
+												}
+
+												@Override
+												public void close() {
+												}
+											}, entry, new TweedReadContext() {
+												@Override
+												public ReadWriteExtension readWriteExtension() {
+													return readWriteExtension;
+												}
+
+												@Override
+												public Patchwork extensionsData() {
+													return readExtData;
+												}
+											}
+									);
+								} catch (TweedEntryReadException e) {
+									throw new RuntimeException(e.getMessage(), e);
+								}
+							}
+					);
+				}
+
+				@Override
+				public @Nullable ConfigContentWidget createContentWidget(TweedCoatEntryCreationContext<T> context) {
+					return null;
+				}
+
+				private String convertToString(T value) {
+					String[] wrapper = new String[]{""};
+					try {
+						readWriteExtension.write(
+								new TweedDataVisitor() {
+									@Override
+									public void visitNull() {
+									}
+
+									@Override
+									public void visitBoolean(boolean value) {
+									}
+
+									@Override
+									public void visitByte(byte value) {
+									}
+
+									@Override
+									public void visitShort(short value) {
+									}
+
+									@Override
+									public void visitInt(int value) {
+									}
+
+									@Override
+									public void visitLong(long value) {
+									}
+
+									@Override
+									public void visitFloat(float value) {
+									}
+
+									@Override
+									public void visitDouble(double value) {
+									}
+
+									@Override
+									public void visitString(String value) {
+										wrapper[0] = value;
+									}
+
+									@Override
+									public void visitListStart() {
+									}
+
+									@Override
+									public void visitListEnd() {
+									}
+
+									@Override
+									public void visitMapStart() {
+									}
+
+									@Override
+									public void visitMapEntryKey(String key) {
+									}
+
+									@Override
+									public void visitMapEnd() {
+									}
+
+									@Override
+									public void visitDecoration(TweedDataDecoration decoration) {
+									}
+								}, value, entry, readWriteExtension.createReadWriteContextExtensionsData()
+						);
+					} catch (Exception e) {
+						log.warn("Failed to serialize value " + value + " to string", e);
+					}
+					return wrapper[0];
+				}
+			};
+		}
 	}
 
 	@RequiredArgsConstructor

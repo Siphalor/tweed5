@@ -5,6 +5,7 @@ import de.siphalor.tweed5.coat.bridge.api.mapping.TweedCoatMapper;
 import de.siphalor.tweed5.coat.bridge.impl.TweedCoatMappersImpl;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Function;
 
@@ -65,5 +66,11 @@ public class TweedCoatMappers {
 	) {
 		//noinspection unchecked
 		return TweedCoatMappersImpl.convertingTextMapper(new Class[]{valueClass}, textMapper, textParser);
+	}
+
+	@ApiStatus.Experimental
+	public static <T> TweedCoatMapper<T> serdeTextMapper(Class<T> valueClass) {
+		//noinspection unchecked
+		return TweedCoatMappersImpl.serdeTextMapper(new Class[]{valueClass});
 	}
 }

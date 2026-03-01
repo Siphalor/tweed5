@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `networking`: Added module for Minecraft networking.
+- `coat-bridge`: Added experimental text mapper based on Tweed Serde.
 
 ### Changed
 - `weaver-pojo-serde-extension`: Slightly changed the `SerdePojoReaderWriterSpec`

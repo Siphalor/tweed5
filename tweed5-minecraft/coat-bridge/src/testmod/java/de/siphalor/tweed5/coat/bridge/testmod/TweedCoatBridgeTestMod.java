@@ -58,9 +58,9 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 				MOD_ID + ".config",
 				GLFW.GLFW_KEY_T,
 				//# if MC_VERSION_NUMBER >= 12109
-				KeyMapping.Category.MISC
+				//- KeyMapping.Category.MISC
 				//# else
-				//- "key.categories.misc"
+				"key.categories.misc"
 				//# end
 		));
 
@@ -69,9 +69,9 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 
 	private class ScreenKeyBinding extends KeyMapping implements PriorityKeyBinding {
 		//# if MC_VERSION_NUMBER >= 12109
-		public ScreenKeyBinding(String name, int key, Category category) {
+		//- public ScreenKeyBinding(String name, int key, Category category) {
 		//# else
-		//- public ScreenKeyBinding(String name, int key, String category) {
+		public ScreenKeyBinding(String name, int key, String category) {
 		//# end
 			super(name, key, category);
 		}
