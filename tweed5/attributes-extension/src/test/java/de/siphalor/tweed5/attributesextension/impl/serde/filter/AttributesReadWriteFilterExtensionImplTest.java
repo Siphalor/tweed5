@@ -171,12 +171,12 @@ class AttributesReadWriteFilterExtensionImplTest {
 
 		assertThat(readValue)
 				.containsEntry("first", "1st")
-				.containsEntry("second", null)
+				.doesNotContainKey("second")
 				.hasEntrySatisfying(
 						"nested", nested -> assertThat(nested)
 								.asInstanceOf(map(String.class, Object.class))
 								.containsEntry("first", "n 1st")
-								.containsEntry("second", null)
+								.doesNotContainKey("second")
 				);
 	}
 }

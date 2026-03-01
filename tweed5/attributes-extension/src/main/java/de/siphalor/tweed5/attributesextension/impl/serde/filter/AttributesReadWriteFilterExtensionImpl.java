@@ -5,6 +5,7 @@ import de.siphalor.tweed5.attributesextension.api.AttributesRelatedExtension;
 import de.siphalor.tweed5.attributesextension.api.serde.filter.AttributesReadWriteFilterExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
+import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
@@ -37,6 +38,8 @@ public class AttributesReadWriteFilterExtensionImpl
 	));
 	private static final Set<String> MIDDLEWARES_MUST_COME_AFTER = Collections.emptySet();
 	private static final UniqueSymbol TWEED_DATA_NOTHING_VALUE = new UniqueSymbol("nothing (skip value)");
+
+	public static final Object NOOP_MARKER = new Object();
 
 	private final ConfigContainer<?> configContainer;
 	private @Nullable AttributesExtension attributesExtension;
@@ -186,12 +189,24 @@ public class AttributesReadWriteFilterExtensionImpl
 						TweedReadContext context
 				) throws TweedEntryReadException {
 					ReadWriteContextCustomData contextData = context.extensionsData().get(readWriteContextDataAccess);
-					if (contextData == null || doFiltersMatch(entry, contextData)) {
-						return innerCasted.read(reader, entry, context);
+					if (contextData == null) {
+						contextData = new ReadWriteContextCustomData();
+						context.extensionsData().set(readWriteContextDataAccess, contextData);
 					}
-					TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, context);
-					// TODO: this should result in a noop instead of a null value
-					return null;
+					if (!doFiltersMatch(entry, contextData)) {
+						TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, context);
+						return contextData.noopHandlerInstalled() ? NOOP_MARKER : null;
+					}
+					if (entry instanceof CompoundConfigEntry) {
+						CompoundConfigEntry<Object> delegated =
+								new AttributesFilteredCompoundEntry<>(((CompoundConfigEntry<Object>) entry));
+						boolean oldNoopHandlerInstalled = contextData.noopHandlerInstalled();
+						contextData.noopHandlerInstalled(true);
+						Object value = innerCasted.read(reader, delegated, context);
+						contextData.noopHandlerInstalled(oldNoopHandlerInstalled);
+						return value;
+					}
+					return innerCasted.read(reader, entry, context);
 				}
 			};
 		}
@@ -380,5 +395,6 @@ public class AttributesReadWriteFilterExtensionImpl
 	private static class ReadWriteContextCustomData {
 		private final Map<String, Set<String>> attributeFilters = new HashMap<>();
 		private boolean writerInstalled;
+		private boolean noopHandlerInstalled;
 	}
 }
