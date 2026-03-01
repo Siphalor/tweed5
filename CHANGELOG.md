@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `networking`: Added module for Minecraft networking.
+
 ### Changed
 - `weaver-pojo-serde-extension`: Slightly changed the `SerdePojoReaderWriterSpec`
   to be more closely aligned with Java's identifier rules.
+- `attributes-extension`: The `AttributesReadWriteFilterExtension` now correctly skips non-matching compound entries
+  instead of returning `null` for them.
 
 ## [0.7.0] - 2025-12-19
 
