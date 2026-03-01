@@ -31,7 +31,7 @@ public class ByteBufReaderWriterTest {
 			writer.visitMapStart();
 			writer.visitMapEntryKey("first");
 			writer.visitNull();
-			writer.visitMapEntryKey("bytes");
+			writer.visitMapEntryKey("kind-of a_weird/key!");
 			writer.visitListStart();
 			writer.visitByte((byte) 12);
 			writer.visitByte((byte) -12);
@@ -58,7 +58,7 @@ public class ByteBufReaderWriterTest {
 			assertThat(reader.readToken()).extracting(TweedDataToken::isMapStart).isEqualTo(true);
 			assertNextMapKey(reader.readToken(), "first");
 			assertThat(reader.readToken()).extracting(TweedDataToken::isNull).isEqualTo(true);
-			assertNextMapKey(reader.readToken(), "bytes");
+			assertNextMapKey(reader.readToken(), "kind-of a_weird/key!");
 			assertThat(reader.readToken()).extracting(TweedDataToken::isListStart).isEqualTo(true);
 			assertByteToken(reader.readToken(), (byte) 12);
 			assertByteToken(reader.readToken(), (byte) -12);

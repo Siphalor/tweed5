@@ -132,7 +132,7 @@ public class ByteBufReader implements TweedDataReader {
 				if (specialEmbedType == ByteBufSerdeConstants.UINT6_TYPE) {
 					return wrapTokenForContext(new ByteToken((byte) (b & ByteBufSerdeConstants.SPECIAL_EMBED_VALUE_MASK)));
 				} else if (specialEmbedType == ByteBufSerdeConstants.SMALL_STRING_TYPE) {
-					int length = (b & ByteBufSerdeConstants.VALUE_MASK) + 1;
+					int length = (b & ByteBufSerdeConstants.SPECIAL_EMBED_VALUE_MASK) + 1;
 					ByteBuf byteBuf = buf.readBytes(length);
 					return wrapTokenForContext(new StringToken(byteBuf.toString(StandardCharsets.UTF_8)));
 				}
