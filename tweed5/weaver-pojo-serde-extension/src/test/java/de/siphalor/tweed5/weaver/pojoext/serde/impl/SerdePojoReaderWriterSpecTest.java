@@ -20,7 +20,8 @@ class SerdePojoReaderWriterSpecTest {
 			"  abc()  ,abc",
 			"  abc.123  ,abc.123",
 			"abc.123  (  )  ,abc.123",
-			"123.abc,123.abc",
+			"_123._123,_123._123",
+			"ab_cd,ab_cd",
 	})
 	@SneakyThrows
 	void parseSimpleIdentifier(String input, String identifier) {
@@ -32,9 +33,9 @@ class SerdePojoReaderWriterSpecTest {
 	@Test
 	@SneakyThrows
 	void parseNested() {
-		SerdePojoReaderWriterSpec spec = SerdePojoReaderWriterSpec.parse("abc.def ( 12 ( def, ghi ( ) ), jkl ) ");
+		SerdePojoReaderWriterSpec spec = SerdePojoReaderWriterSpec.parse("abc.def ( _12 ( def, ghi ( ) ), jkl ) ");
 		assertThat(spec).isEqualTo(new SerdePojoReaderWriterSpec("abc.def", Arrays.asList(
-				new SerdePojoReaderWriterSpec("12", Arrays.asList(
+				new SerdePojoReaderWriterSpec("_12", Arrays.asList(
 						new SerdePojoReaderWriterSpec("def", Collections.emptyList()),
 						new SerdePojoReaderWriterSpec("ghi", Collections.emptyList())
 				)),
@@ -51,6 +52,7 @@ class SerdePojoReaderWriterSpecTest {
 			",;1;,",
 			"abc(,);5;,",
 			"abc..def;5;.",
+			"123.abc;1;1",
 	})
 	@SneakyThrows
 	void parseError(String input, int index, @Nullable String codePoint) {

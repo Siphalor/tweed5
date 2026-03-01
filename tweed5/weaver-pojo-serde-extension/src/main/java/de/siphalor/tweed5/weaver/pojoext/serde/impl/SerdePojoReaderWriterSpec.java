@@ -7,6 +7,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PrimitiveIterator;
 
+/**
+ * Specification describing how to construct a reader or writer.
+ * <p>
+ * The formal syntax is:
+ * <code><pre>
+ * &lt;spec&gt; ::= &lt;identifier&gt; [ '(' &lt;spec-list&gt; ')' ]
+ * &lt;spec-list&gt; ::= &lt;spec&gt; [ ',' &lt;spec-list&gt; ]
+ * &lt;identifier&gt; ::= &lt;identifier-part&gt; [ '.' &lt;identifier&gt; ]
+ * &lt;identifier-part&gt; ::= ( &lt;alpha&gt; | '_' ) [ &lt;alphanumeric-identifier-part&gt; ]
+ * &lt;alphanumeric-identifier-part&gt; ::= ( &lt;alphanumeric&gt; | '_' ) [ &lt;alphanumeric-identifier-part&gt; ]
+ * </pre></code>
+ */
 @Value
 public class SerdePojoReaderWriterSpec {
 	String identifier;
@@ -71,14 +83,14 @@ public class SerdePojoReaderWriterSpec {
 			int codePoint = nextCodePoint();
 			if (codePoint == -1) {
 				throw createException("Expected identifier, got end of input", codePoint);
-			} else if (!isIdentifierChar(codePoint)) {
+			} else if (!isIdentifierStart(codePoint)) {
 				throw createException("Expected identifier (alphanumeric character)", codePoint);
 			}
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.appendCodePoint(codePoint);
 			boolean dot = false;
 			while ((codePoint = peekCodePoint()) >= 0) {
-				if (isIdentifierChar(codePoint)) {
+				if (isIdentifierPart(codePoint)) {
 					stringBuilder.appendCodePoint(nextCodePoint());
 					dot = false;
 				} else if (codePoint == '.') {
@@ -98,9 +110,20 @@ public class SerdePojoReaderWriterSpec {
 			return stringBuilder.toString();
 		}
 
-		private boolean isIdentifierChar(int codePoint) {
-			return (codePoint >= '0' && codePoint <= '9')
-					|| (codePoint >= 'a' && codePoint <= 'z')
+		private boolean isIdentifierStart(int codePoint) {
+			return isAlpha(codePoint) || codePoint == '_';
+		}
+
+		private boolean isIdentifierPart(int codePoint) {
+			return isAlphanumeric(codePoint) || codePoint == '_';
+		}
+
+		private boolean isAlphanumeric(int codePoint) {
+			return (codePoint >= '0' && codePoint <= '9') || isAlpha(codePoint);
+		}
+
+		private boolean isAlpha(int codePoint) {
+			return (codePoint >= 'a' && codePoint <= 'z')
 					|| (codePoint >= 'A' && codePoint <= 'Z');
 		}
 
