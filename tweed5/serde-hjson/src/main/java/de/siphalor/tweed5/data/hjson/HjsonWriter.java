@@ -604,11 +604,12 @@ public class HjsonWriter implements TweedDataWriter {
 		private HjsonCommentType multilineCommentType = HjsonCommentType.BLOCK;
 		private HjsonStringType preferredInlineStringType = HjsonStringType.INLINE_QUOTELESS;
 
-		public void inlineCommentType(HjsonCommentType commentType) {
+		public Options inlineCommentType(HjsonCommentType commentType) {
 			if (commentType.block()) {
 				throw new IllegalArgumentException("Inline comment type must not be a block comment type: " + commentType);
 			}
 			this.inlineCommentType = commentType;
+			return this;
 		}
 	}
 }
