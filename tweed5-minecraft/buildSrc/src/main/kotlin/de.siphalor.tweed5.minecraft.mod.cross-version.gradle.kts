@@ -7,6 +7,7 @@ import java.util.Properties
 plugins {
 	java
 	id("fabric-loom")
+	id("de.siphalor.tweed5.unit-tests")
 	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.expanded-sources-jar")
 	id("de.siphalor.jcyo")

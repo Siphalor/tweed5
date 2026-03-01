@@ -56,6 +56,7 @@ includeNormalModule("bundle-pojo-weaving")
 includeNormalModule("coat-bridge")
 includeNormalModule("fabric-helper")
 includeNormalModule("logging")
+includeNormalModule("networking")
 
 fun includeNormalModule(name: String) {
 	includeAs("tweed5-$name", name)

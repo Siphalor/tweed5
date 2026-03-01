@@ -1,8 +1,8 @@
 plugins {
     java
     `java-library`
-	jacoco
     id("io.freefair.lombok")
+    id("de.siphalor.tweed5.unit-tests")
 	id("de.siphalor.tweed5.publishing")
     id("de.siphalor.tweed5.local-runtime-only")
     id("de.siphalor.tweed5.expanded-sources-jar")
@@ -11,12 +11,6 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-val testAgent = configurations.dependencyScope("mockitoAgent")
-val testAgentClasspath = configurations.resolvable("testAgentClasspath") {
-    isTransitive = false
-    extendsFrom(testAgent.get())
 }
 
 lombok {
@@ -39,38 +33,7 @@ dependencies {
 	testImplementation(libs.acl)
     testImplementation(libs.slf4j.rt)
 
-    testImplementation(platform(libs.junit.platform))
-    testImplementation(libs.junit.core)
-    testRuntimeOnly(libs.junit.launcher)
-    testImplementation(libs.mockito)
-    testAgent(libs.mockito)
-    testImplementation(libs.assertj)
     testImplementation(project(":generic-test-utils"))
-}
-
-tasks.compileTestJava {
-    sourceCompatibility = libs.versions.java.test.get()
-    targetCompatibility = libs.versions.java.test.get()
-}
-
-tasks.test {
-    val testAgentFiles = testAgentClasspath.map { it.files }
-    doFirst {
-        jvmArgs(testAgentFiles.get().map { file -> "-javaagent:${file.absolutePath}" })
-    }
-    dependsOn(testAgentClasspath)
-	finalizedBy(tasks.jacocoTestReport)
-
-    useJUnitPlatform()
-    systemProperties(
-        "junit.jupiter.execution.timeout.mode" to "disabled_on_debug",
-        "junit.jupiter.execution.timeout.testable.method.default" to "10s",
-        "junit.jupiter.execution.timeout.thread.mode.default" to "SEPARATE_THREAD",
-    )
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
 }
 
 publishing {
