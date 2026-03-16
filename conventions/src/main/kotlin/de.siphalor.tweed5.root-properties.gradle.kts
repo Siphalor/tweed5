@@ -1,5 +1,8 @@
 import java.util.Properties
 
-val rootProperties = Properties()
-project.layout.settingsDirectory.file("../gradle.properties").asFile.inputStream().use { rootProperties.load(it) }
-rootProperties.forEach { (key, value) -> project.ext.set(key.toString(), value.toString()) }
+val rootPropertiesFile = project.layout.settingsDirectory.file("../gradle.properties").asFile
+if (rootPropertiesFile.exists()) {
+	Properties()
+		.apply { rootPropertiesFile.inputStream().use { load(it) } }
+		.forEach { (key, value) -> project.ext.set(key.toString(), value.toString()) }
+}

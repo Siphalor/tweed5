@@ -5,6 +5,11 @@ build/
 !**/src/test/**/build/
 .kotlin/
 
+### Gradle in Subprojects ###
+*/gradlew
+*/gradlew.bat
+*/gradle/wrapper
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
