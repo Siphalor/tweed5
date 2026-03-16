@@ -7,6 +7,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ public class AttributesFilteredCompoundEntry<T extends @Nullable Object> impleme
 	private final CompoundConfigEntry<T> delegate;
 
 	@Override
-	public <V> void set(T compoundValue, String key, V value) {
+	public void set(T compoundValue, String key, Object value) {
 		if (value == AttributesReadWriteFilterExtensionImpl.NOOP_MARKER) {
 			return;
 		}
@@ -24,13 +25,13 @@ public class AttributesFilteredCompoundEntry<T extends @Nullable Object> impleme
 	}
 
 	@Override
-	public <V> V get(T compoundValue, String key) {
+	public Object get(T compoundValue, String key) {
 		return delegate.get(compoundValue, key);
 	}
 
 	@Override
-	public T instantiateCompoundValue() {
-		return delegate.instantiateCompoundValue();
+	public @NonNull T instantiateValue() {
+		return delegate.instantiateValue();
 	}
 
 	@Override

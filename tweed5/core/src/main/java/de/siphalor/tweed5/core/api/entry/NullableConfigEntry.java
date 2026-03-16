@@ -5,12 +5,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public interface NullableConfigEntry<T extends @Nullable Object> extends StructuredConfigEntry<T> {
+public interface NullableConfigEntry<T extends @Nullable Object> extends AddressableStructuredConfigEntry<T> {
 	String NON_NULL_KEY = ":nonNull";
 
 	@Override
 	default NullableConfigEntry<T> apply(Consumer<ConfigEntry<T>> function) {
-		StructuredConfigEntry.super.apply(function);
+		AddressableStructuredConfigEntry.super.apply(function);
 		return this;
 	}
 

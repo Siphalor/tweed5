@@ -234,7 +234,7 @@ public class TweedEntryReaderWriterImpls {
 			}
 
 			Map<String, ConfigEntry<?>> compoundEntries = entry.subEntries();
-			T compoundValue = entry.instantiateCompoundValue();
+			T compoundValue = entry.instantiateValue();
 			while (true) {
 				try {
 					TweedDataToken token = reader.readToken();

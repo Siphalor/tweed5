@@ -62,7 +62,7 @@ public class PatchExtensionImpl implements PatchExtension, ReadWriteRelatedExten
 			if (targetValue != null) {
 				targetCompoundValue = targetValue;
 			} else {
-				targetCompoundValue = compoundEntry.instantiateCompoundValue();
+				targetCompoundValue = compoundEntry.instantiateValue();
 			}
 			compoundEntry.subEntries().forEach((key, subEntry) -> {
 				if (!patchInfo.containsEntry(subEntry)) {
@@ -70,7 +70,7 @@ public class PatchExtensionImpl implements PatchExtension, ReadWriteRelatedExten
 				}
 				compoundEntry.set(
 						targetCompoundValue, key, patch(
-								subEntry,
+								(ConfigEntry<Object>) subEntry,
 								compoundEntry.get(targetCompoundValue, key),
 								compoundEntry.get(patchValue, key),
 								patchInfo

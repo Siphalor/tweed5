@@ -2,6 +2,7 @@ package de.siphalor.tweed5.defaultextensions.pather.api;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
+import de.siphalor.tweed5.core.api.entry.StructuredConfigEntry;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
@@ -16,8 +17,17 @@ public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisi
 	}
 
 	@Override
-	public <T> boolean enterStructuredEntry(ConfigEntry<T> entry, T value) {
+	public <T> boolean enterStructuredEntry(StructuredConfigEntry<T> entry, T value) {
 		return delegate.enterStructuredEntry(entry, value);
+	}
+
+	@Override
+	public boolean enterAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
+		boolean enter = delegate.enterAddressableStructuredSubEntry(entryKey, valueKey, dataKey);
+		if (enter) {
+			pathTracking.pushPathPart(entryKey, valueKey);
+		}
+		return enter;
 	}
 
 	@Override
@@ -30,13 +40,19 @@ public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisi
 	}
 
 	@Override
+	public void leaveAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
+		delegate.leaveAddressableStructuredSubEntry(entryKey, valueKey, dataKey);
+		pathTracking.popPathPart();
+	}
+
+	@Override
 	public void leaveStructuredSubEntry(String entryKey, String valueKey) {
 		delegate.leaveStructuredSubEntry(entryKey, valueKey);
 		pathTracking.popPathPart();
 	}
 
 	@Override
-	public <T> void leaveStructuredEntry(ConfigEntry<T> entry, T value) {
+	public <T> void leaveStructuredEntry(StructuredConfigEntry<T> entry, T value) {
 		delegate.leaveStructuredEntry(entry, value);
 	}
 }

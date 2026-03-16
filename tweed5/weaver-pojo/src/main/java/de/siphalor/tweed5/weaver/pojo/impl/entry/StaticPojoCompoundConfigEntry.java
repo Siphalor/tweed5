@@ -6,7 +6,6 @@ import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -41,7 +40,7 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public <V> void set(T compoundValue, String key, V value) {
+	public void set(T compoundValue, String key, Object value) {
 		SubEntry subEntry = subEntries.get(key);
 		if (subEntry == null) {
 			throw new IllegalArgumentException("Unknown config entry: " + key);
@@ -55,22 +54,21 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public <V> V get(T compoundValue, String key) {
+	public Object get(T compoundValue, String key) {
 		SubEntry subEntry = subEntries.get(key);
 		if (subEntry == null) {
 			throw new IllegalArgumentException("Unknown config entry: " + key);
 		}
 
 		try {
-			//noinspection unchecked
-			return (V) subEntry.getter().invoke(compoundValue);
+			return subEntry.getter().invoke(compoundValue);
 		} catch (Throwable e) {
 			throw new IllegalStateException("Failed to get value for config entry \"" + key + "\"", e);
 		}
 	}
 
 	@Override
-	public T instantiateCompoundValue() {
+	public T instantiateValue() {
 		try {
 			return noArgsConstructor.get();
 		} catch (Throwable e) {
@@ -82,22 +80,24 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
 			subEntries.forEach((key, entry) -> {
-				if (visitor.enterStructuredSubEntry(key, key)) {
+				if (visitor.enterAddressableStructuredSubEntry(key, key, key)) {
 					try {
 						Object subValue = entry.getter().invoke(value);
 						//noinspection unchecked
 						((ConfigEntry<Object>) entry.configEntry()).visitInOrder(visitor, subValue);
+						visitor.leaveAddressableStructuredSubEntry(key, key, key);
 					} catch (Throwable e) {
 						throw new RuntimeException("Failed to get compound sub entry value \"" + key + "\"");
 					}
 				}
 			});
+			visitor.leaveStructuredEntry(this, value);
 		}
 	}
 
 	@Override
 	public T deepCopy(T value) {
-		T copy = instantiateCompoundValue();
+		T copy = instantiateValue();
 		for (SubEntry subEntry : subEntries.values()) {
 			try {
 				Object subValue = subEntry.getter().invoke(value);

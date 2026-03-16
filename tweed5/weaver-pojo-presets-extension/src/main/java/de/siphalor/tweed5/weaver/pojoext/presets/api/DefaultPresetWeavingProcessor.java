@@ -37,7 +37,7 @@ public class DefaultPresetWeavingProcessor<T> implements TweedPojoWeavingExtensi
 
 	private T instantiateEntry(ConfigEntry<T> entry) {
 		if (entry instanceof CompoundConfigEntry) {
-			return ((CompoundConfigEntry<T>) entry).instantiateCompoundValue();
+			return ((CompoundConfigEntry<T>) entry).instantiateValue();
 		} else {
 			throw new IllegalArgumentException(
 					"Can only determine default preset from instantiation for POJOs. "

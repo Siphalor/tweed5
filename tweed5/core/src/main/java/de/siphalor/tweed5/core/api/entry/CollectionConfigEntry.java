@@ -38,9 +38,9 @@ public interface CollectionConfigEntry<E, T extends Collection<E>> extends Struc
 			int index = 0;
 			for (E item : value) {
 				String indexString = Integer.toString(index);
-				if (visitor.enterStructuredSubEntry("element", indexString)) {
+				if (visitor.enterAddressableStructuredSubEntry("element", indexString, null)) {
 					elementEntry().visitInOrder(visitor, item);
-					visitor.leaveStructuredSubEntry("element", indexString);
+					visitor.leaveAddressableStructuredSubEntry("element", indexString, null);
 				}
 				index++;
 			}

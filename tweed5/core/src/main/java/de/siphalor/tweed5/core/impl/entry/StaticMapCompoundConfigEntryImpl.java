@@ -2,12 +2,13 @@ package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.*;
+import org.jspecify.annotations.NonNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
 
-public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> extends BaseConfigEntry<T> implements CompoundConfigEntry<T> {
+public class StaticMapCompoundConfigEntryImpl<T extends @NonNull Map<String, Object>> extends BaseConfigEntry<T> implements CompoundConfigEntry<T> {
 	private final IntFunction<T> mapConstructor;
 	private final Map<String, ConfigEntry<?>> compoundEntries;
 
@@ -28,16 +29,15 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 	}
 
 	@Override
-	public <V> void set(T compoundValue, String key, V value) {
+	public void set(T compoundValue, String key, Object value) {
 		requireKey(key);
 		compoundValue.put(key, value);
 	}
 
 	@Override
-	public <V> V get(T compoundValue, String key) {
+	public Object get(T compoundValue, String key) {
 		requireKey(key);
-		//noinspection unchecked
-		return (V) compoundValue.get(key);
+		return compoundValue.get(key);
 	}
 
 	private void requireKey(String key) {
@@ -47,29 +47,27 @@ public class StaticMapCompoundConfigEntryImpl<T extends Map<String, Object>> ext
 	}
 
 	@Override
-	public T instantiateCompoundValue() {
+	public T instantiateValue() {
 		return mapConstructor.apply(compoundEntries.size());
 	}
 
 	@Override
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
-			if (value != null) {
-				compoundEntries.forEach((key, entry) -> {
-					if (visitor.enterStructuredSubEntry(key, key)) {
-						//noinspection unchecked
-						((ConfigEntry<Object>) entry).visitInOrder(visitor, value.get(key));
-						visitor.leaveStructuredSubEntry(key, key);
-					}
-				});
-			}
+			compoundEntries.forEach((key, entry) -> {
+				if (visitor.enterAddressableStructuredSubEntry(key, key, key)) {
+					//noinspection unchecked
+					((ConfigEntry<Object>) entry).visitInOrder(visitor, value.get(key));
+					visitor.leaveAddressableStructuredSubEntry(key, key, key);
+				}
+			});
 			visitor.leaveStructuredEntry(this, value);
 		}
 	}
 
 	@Override
 	public T deepCopy(T value) {
-		T copy = instantiateCompoundValue();
+		T copy = instantiateValue();
 		value.forEach((String key, Object element) -> {
 			//noinspection unchecked
 			ConfigEntry<Object> elementEntry = (ConfigEntry<Object>) compoundEntries.get(key);

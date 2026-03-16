@@ -3,6 +3,7 @@ package de.siphalor.tweed5.defaultextensions.validation.impl;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
+import de.siphalor.tweed5.core.api.entry.StructuredConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
@@ -290,12 +291,12 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public <T> boolean enterStructuredEntry(ConfigEntry<T> entry, T value) {
+		public <T> boolean enterStructuredEntry(StructuredConfigEntry<T> entry, T value) {
 			return true;
 		}
 
 		@Override
-		public <T> void leaveStructuredEntry(ConfigEntry<T> entry, T value) {
+		public <T> void leaveStructuredEntry(StructuredConfigEntry<T> entry, T value) {
 			visitEntry(entry, value);
 		}
 	}

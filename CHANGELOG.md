@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `coat-bridge`: Added experimental text mapper based on Tweed Serde.
 
 ### Changed
+- **Breaking**@`core`: Refactored type hierarchy and methods of `StructuredConfigEntry`.
 - `weaver-pojo-serde-extension`: Slightly changed the `SerdePojoReaderWriterSpec`
   to be more closely aligned with Java's identifier rules.
 - `attributes-extension`: The `AttributesReadWriteFilterExtension` now correctly skips non-matching compound entries

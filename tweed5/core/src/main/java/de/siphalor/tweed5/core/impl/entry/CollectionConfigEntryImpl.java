@@ -2,11 +2,12 @@ package de.siphalor.tweed5.core.impl.entry;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.*;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.function.IntFunction;
 
-public class CollectionConfigEntryImpl<E, T extends Collection<E>> extends BaseConfigEntry<T> implements CollectionConfigEntry<E, T> {
+public class CollectionConfigEntryImpl<E, T extends @NonNull Collection<E>> extends BaseConfigEntry<T> implements CollectionConfigEntry<E, T> {
 	private final IntFunction<T> collectionConstructor;
 	private final ConfigEntry<E> elementEntry;
 

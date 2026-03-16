@@ -6,6 +6,7 @@ plugins {
 dependencies {
 	implementation(project(":tweed5-core"))
 	compileOnly(project(":tweed5-serde-extension"))
+	testImplementation(project(":tweed5-default-extensions"))
 	testImplementation(project(":tweed5-serde-extension"))
 	testImplementation(project(":tweed5-serde-hjson"))
 }
