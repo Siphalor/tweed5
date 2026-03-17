@@ -1,8 +1,8 @@
 package de.siphalor.tweed5.minecraft.network.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
-import de.siphalor.tweed5.dataapi.api.TweedDataToken;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
+import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
+import de.siphalor.tweed5.serde_api.api.TweedDataToken;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
 import de.siphalor.tweed5.minecraft.networking.api.ByteBufReader;
 import de.siphalor.tweed5.minecraft.networking.api.RawByteBufWriter;
 import de.siphalor.tweed5.minecraft.networking.api.SlightlyCompressedByteBufWriter;

@@ -2,8 +2,8 @@ package de.siphalor.tweed5.fabric.helper.testmod;
 
 import de.siphalor.tweed5.attributesextension.api.serde.filter.AttributesReadWriteFilterExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
-import de.siphalor.tweed5.data.hjson.HjsonSerde;
-import de.siphalor.tweed5.data.hjson.HjsonWriter;
+import de.siphalor.tweed5.serde.hjson.HjsonSerde;
+import de.siphalor.tweed5.serde.hjson.HjsonWriter;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigCommentLoader;
 import de.siphalor.tweed5.fabric.helper.api.FabricConfigContainerHelper;
 import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;

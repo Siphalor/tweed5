@@ -1,9 +1,9 @@
 package de.siphalor.tweed5.minecraft.networking.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataToken;
-import de.siphalor.tweed5.dataapi.api.TweedDataTokens;
+import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataToken;
+import de.siphalor.tweed5.serde_api.api.TweedDataTokens;
 import de.siphalor.tweed5.minecraft.networking.impl.ByteBufSerdeConstants;
 import io.netty.buffer.ByteBuf;
 import lombok.RequiredArgsConstructor;

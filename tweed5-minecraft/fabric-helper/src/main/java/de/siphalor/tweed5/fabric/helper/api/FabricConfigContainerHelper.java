@@ -2,10 +2,10 @@ package de.siphalor.tweed5.fabric.helper.api;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
-import de.siphalor.tweed5.dataapi.api.TweedSerde;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
+import de.siphalor.tweed5.serde_api.api.TweedSerde;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;

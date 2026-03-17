@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.minecraft.networking.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
-import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
+import de.siphalor.tweed5.serde_api.api.decoration.TweedDataDecoration;
 import de.siphalor.tweed5.minecraft.networking.impl.ByteBufSerdeConstants;
 import io.netty.buffer.ByteBuf;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.testutils.serde.json;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataWriter;
-import de.siphalor.tweed5.dataapi.api.decoration.TweedDataCommentDecoration;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
+import de.siphalor.tweed5.serde_api.api.decoration.TweedDataCommentDecoration;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

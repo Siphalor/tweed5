@@ -1,8 +1,8 @@
 package de.siphalor.tweed5.defaultextensions.pather.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataReadException;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataToken;
+import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataToken;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayDeque;

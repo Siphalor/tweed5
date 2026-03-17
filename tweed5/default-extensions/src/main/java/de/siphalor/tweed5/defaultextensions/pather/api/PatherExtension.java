@@ -1,8 +1,8 @@
 package de.siphalor.tweed5.defaultextensions.pather.api;
 
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
-import de.siphalor.tweed5.data.extension.api.TweedReadContext;
-import de.siphalor.tweed5.data.extension.api.TweedWriteContext;
+import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
+import de.siphalor.tweed5.serde.extension.api.TweedWriteContext;
 import de.siphalor.tweed5.defaultextensions.pather.impl.PatherExtensionImpl;
 
 public interface PatherExtension extends TweedExtension {

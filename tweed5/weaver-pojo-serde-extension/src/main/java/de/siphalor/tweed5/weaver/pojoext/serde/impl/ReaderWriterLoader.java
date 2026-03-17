@@ -1,9 +1,9 @@
 package de.siphalor.tweed5.weaver.pojoext.serde.impl;
 
-import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
-import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.serde.extension.api.TweedReaderWriterProvider;
+import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
 import lombok.Getter;
 import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.Nullable;
@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @CommonsLog
 public class ReaderWriterLoader {

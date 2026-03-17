@@ -5,14 +5,13 @@ import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriter;
-import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
-import de.siphalor.tweed5.data.hjson.HjsonWriter;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.readwrite.TweedEntryReaderWriter;
+import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
+import de.siphalor.tweed5.serde.hjson.HjsonWriter;
 import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.NullablePojoWeaver;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverImpl;
 import lombok.Data;
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -23,7 +22,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.write;
+import static de.siphalor.tweed5.serde.extension.api.ReadWriteExtension.write;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 

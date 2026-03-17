@@ -3,7 +3,7 @@ package de.siphalor.tweed5.fabric.helper.api;
 import de.siphalor.tweed5.annotationinheritance.api.AnnotationInheritance;
 import de.siphalor.tweed5.attributesextension.api.AttributesExtension;
 import de.siphalor.tweed5.attributesextension.api.serde.filter.AttributesReadWriteFilterExtension;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validationfallback.api.ValidationFallbackExtension;

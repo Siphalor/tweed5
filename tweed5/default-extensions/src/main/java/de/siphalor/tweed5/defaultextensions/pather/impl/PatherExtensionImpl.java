@@ -2,11 +2,11 @@ package de.siphalor.tweed5.defaultextensions.pather.impl;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.data.extension.api.*;
-import de.siphalor.tweed5.data.extension.api.extension.ReadWriteExtensionSetupContext;
-import de.siphalor.tweed5.data.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
+import de.siphalor.tweed5.serde.extension.api.*;
+import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
+import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataReader;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingDataVisitor;

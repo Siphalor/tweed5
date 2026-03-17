@@ -1,8 +1,8 @@
 package de.siphalor.tweed5.defaultextensions.pather.api;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataUnsupportedValueException;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import de.siphalor.tweed5.dataapi.api.decoration.TweedDataDecoration;
+import de.siphalor.tweed5.serde_api.api.TweedDataUnsupportedValueException;
+import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
+import de.siphalor.tweed5.serde_api.api.decoration.TweedDataDecoration;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 

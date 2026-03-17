@@ -4,11 +4,11 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.data.hjson.HjsonCommentType;
-import de.siphalor.tweed5.data.hjson.HjsonLexer;
-import de.siphalor.tweed5.data.hjson.HjsonReader;
-import de.siphalor.tweed5.data.hjson.HjsonWriter;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.hjson.HjsonCommentType;
+import de.siphalor.tweed5.serde.hjson.HjsonLexer;
+import de.siphalor.tweed5.serde.hjson.HjsonReader;
+import de.siphalor.tweed5.serde.hjson.HjsonWriter;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
@@ -26,10 +26,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.*;
-import static de.siphalor.tweed5.data.extension.api.readwrite.TweedEntryReaderWriters.*;
 import static de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension.presetValue;
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
+import static de.siphalor.tweed5.serde.extension.api.ReadWriteExtension.*;
+import static de.siphalor.tweed5.serde.extension.api.readwrite.TweedEntryReaderWriters.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ValidationFallbackExtensionImplTest {

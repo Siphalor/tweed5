@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.testutils.serde.json;
 
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
-import de.siphalor.tweed5.dataapi.api.TweedDataToken;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataToken;
 import lombok.SneakyThrows;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;

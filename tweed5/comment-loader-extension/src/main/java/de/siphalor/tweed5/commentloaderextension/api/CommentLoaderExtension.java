@@ -2,7 +2,7 @@ package de.siphalor.tweed5.commentloaderextension.api;
 
 import de.siphalor.tweed5.commentloaderextension.impl.CommentLoaderExtensionImpl;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
-import de.siphalor.tweed5.dataapi.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 
 public interface CommentLoaderExtension extends TweedExtension {
 	Class<? extends CommentLoaderExtension> DEFAULT = CommentLoaderExtensionImpl.class;

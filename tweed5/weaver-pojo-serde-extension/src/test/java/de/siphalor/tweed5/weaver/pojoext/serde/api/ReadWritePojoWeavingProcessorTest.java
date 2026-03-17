@@ -3,18 +3,17 @@ package de.siphalor.tweed5.weaver.pojoext.serde.api;
 import com.google.auto.service.AutoService;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
-import de.siphalor.tweed5.data.extension.api.TweedWriteContext;
-import de.siphalor.tweed5.data.hjson.HjsonLexer;
-import de.siphalor.tweed5.data.hjson.HjsonReader;
-import de.siphalor.tweed5.data.hjson.HjsonWriter;
-import de.siphalor.tweed5.dataapi.api.TweedDataVisitor;
-import de.siphalor.tweed5.dataapi.api.TweedDataWriteException;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.serde.extension.api.TweedReaderWriterProvider;
+import de.siphalor.tweed5.serde.extension.api.TweedWriteContext;
+import de.siphalor.tweed5.serde.hjson.HjsonLexer;
+import de.siphalor.tweed5.serde.hjson.HjsonReader;
+import de.siphalor.tweed5.serde.hjson.HjsonWriter;
+import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriteException;
 import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.TweedPojoWeaverImpl;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -22,8 +21,8 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.read;
-import static de.siphalor.tweed5.data.extension.api.ReadWriteExtension.write;
+import static de.siphalor.tweed5.serde.extension.api.ReadWriteExtension.read;
+import static de.siphalor.tweed5.serde.extension.api.ReadWriteExtension.write;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ReadWritePojoWeavingProcessorTest {

@@ -2,11 +2,11 @@ package de.siphalor.tweed5.weaver.pojoext.serde.api;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.data.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.data.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.data.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.data.extension.api.TweedReaderWriterProvider;
-import de.siphalor.tweed5.data.extension.impl.TweedEntryReaderWriterImpls;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.serde.extension.api.TweedReaderWriterProvider;
+import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.typeutils.api.type.ActualType;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.TweedPojoWeavingExtension;
 import de.siphalor.tweed5.weaver.pojo.api.weaving.WeavingContext;
