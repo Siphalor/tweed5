@@ -1,6 +1,6 @@
 package de.siphalor.tweed5.coat.bridge.testmod;
 
-import de.siphalor.amecs.api.PriorityKeyBinding;
+import de.siphalor.amecs.priority_key_mappings.api.AmecsPriorityKeyMapping;
 import de.siphalor.coat.screen.ConfigScreen;
 import de.siphalor.tweed5.coat.bridge.api.ConfigScreenCreateParams;
 import de.siphalor.tweed5.coat.bridge.api.TweedCoatBridgeExtension;
@@ -12,7 +12,8 @@ import de.siphalor.tweed5.fabric.helper.api.FabricConfigContainerHelper;
 import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
 import lombok.CustomLog;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//- import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -54,7 +55,11 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 
 		config = configContainerHelper.loadAndUpdateInConfigDirectory(() -> DEFAULT_CONFIG_VALUE);
 
-		KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(
+		//# if MC_VERSION_NUMBER >= 260100
+		KeyMappingHelper.registerKeyMapping(new ScreenKeyBinding(
+		//# else
+		//- KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(
+		//# end
 				MOD_ID + ".config",
 				GLFW.GLFW_KEY_T,
 				//# if MC_VERSION_NUMBER >= 12109
@@ -67,7 +72,7 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 		log.info("Current config: " + config);
 	}
 
-	private class ScreenKeyBinding extends KeyMapping implements PriorityKeyBinding {
+	private class ScreenKeyBinding extends KeyMapping implements AmecsPriorityKeyMapping {
 		//# if MC_VERSION_NUMBER >= 12109
 		public ScreenKeyBinding(String name, int key, Category category) {
 		//# else

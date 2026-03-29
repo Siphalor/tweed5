@@ -2,8 +2,8 @@ package de.siphalor.tweed5.coat.bridge.api.mapping.handler;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.apachecommons.CommonsLog;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -16,7 +16,7 @@ import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.literalCo
 import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
 
 @RequiredArgsConstructor
-@CommonsLog
+@CustomLog
 public class ConvertingTweedCoatEntryHandler<T extends @Nullable Object, C> implements ConfigEntryHandler<C> {
 	private static final String CONVERSION_EXCEPTION_TEXT_KEY = "tweed5_coat_bridge.handler.conversion.exception";
 

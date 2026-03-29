@@ -49,7 +49,7 @@ abstract class MinecraftModComponentPlugin : Plugin<Project> {
 				attribute(Category.CATEGORY_ATTRIBUTE, objectFactory.named(Category.LIBRARY))
 				attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objectFactory.named(LibraryElements.JAR))
 				attribute(Bundling.BUNDLING_ATTRIBUTE, objectFactory.named(Bundling.EXTERNAL))
-				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_RUNTIME))
+				attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.JAVA_API))
 
 				project.afterEvaluate {
 					attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, targetJvmVersion.get().toInt())

@@ -44,7 +44,7 @@ dependencyResolutionManagement {
 		}
 		create("mcLibs") {
 			val mcVersionDescriptor = providers.gradleProperty("minecraft.version.descriptor").get()
-			from(files("gradle/mc-$mcVersionDescriptor/mcLibs.versions.toml"))
+			from(files("gradle/mc-$mcVersionDescriptor/mc.versions.toml"))
 		}
 	}
 }

@@ -12,8 +12,8 @@ import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
 import de.siphalor.tweed5.serde_api.api.TweedSerde;
+import lombok.CustomLog;
 import lombok.Getter;
-import lombok.extern.apachecommons.CommonsLog;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jspecify.annotations.Nullable;
 
@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@CommonsLog
+@CustomLog
 public class FabricConfigContainerHelper<T extends @Nullable Object> {
 	@Getter
 	private final ConfigContainer<T> configContainer;
