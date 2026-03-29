@@ -1,12 +1,15 @@
 import de.siphalor.jcyo.gradle.JcyoTask
 import de.siphalor.tweed5.gradle.plugin.minecraft.mod.MinecraftModded
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.util.Constants
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.Properties
 
 plugins {
 	java
-	id("fabric-loom")
+	id("de.siphalor.minecraft-modding-toolkit.project-plugin")
 	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.expanded-sources-jar")
 	id("de.siphalor.jcyo")
@@ -16,13 +19,20 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.base")
 }
 
+val mcCatalog = versionCatalogs.named("mcLibs")
+val loomPluginId = mcCatalog.findPlugin("fabric.loom").get().get().pluginId
+if (!loomPluginId.endsWith("-remap")) {
+	project.extensions.extraProperties.set(Constants.Properties.DISABLE_OBFUSCATION, "true")
+	project.extensions.extraProperties.set(Constants.Properties.DONT_REMAP, "true")
+}
+
+apply(plugin = loomPluginId)
+
 val minecraftVersionDescriptor = project.property("minecraft.version.descriptor") as String
 val mcProps = Properties().apply {
 	val propFile = project.layout.settingsDirectory.file("gradle/mc-$minecraftVersionDescriptor/gradle.properties").asFile
 	propFile.inputStream().use { load(it) }
 }
-
-val mcCatalog = versionCatalogs.named("mcLibs")
 
 group = "de.siphalor.tweed5.minecraft"
 val archivesBaseName = "${project.name}-mc$minecraftVersionDescriptor"
@@ -38,7 +48,12 @@ val testmod by sourceSets.creating {
 	runtimeClasspath += sourceSets.main.get().runtimeClasspath
 }
 
-loom {
+smcmtk {
+	useMojangMappings()
+	createModConfigurations(listOf(sourceSets.main.get(), testmod))
+}
+
+extensions.configure<LoomGradleExtensionAPI>() {
 	runs {
 		create("testmodClient") {
 			client()
@@ -46,7 +61,6 @@ loom {
 			source(testmod)
 		}
 	}
-	createRemapConfigurations(testmod)
 }
 
 // For some reason dependencyResolutionManagement from the settings.gradle doesn't seem to be passed through correctly,
@@ -78,17 +92,18 @@ configurations {
 }
 
 dependencies {
-	minecraft(mcCatalog.findLibrary("minecraft").get())
-	mappings(loom.layered {
-		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-$minecraftVersion:${getMcCatalogVersion("parchment")}@zip")
-	})
-	modImplementation(mcCommonLibs.fabric.loader)
+	"minecraft"(mcCatalog.findLibrary("minecraft").get())
+	"modImplementation"(mcCommonLibs.fabric.loader)
 	"modTestmodImplementation"(mcCommonLibs.fabric.loader)
 
 	compileOnly(libs.jspecify.annotations)
 
 	"testmodImplementation"(sourceSets.main.map { it.output })
+}
+
+java {
+	sourceCompatibility = JavaVersion.toVersion(mcCatalog.findVersion("java").get())
+	targetCompatibility = JavaVersion.toVersion(mcCatalog.findVersion("java").get())
 }
 
 val jcyoVars = mcProps.stringPropertyNames()
@@ -116,31 +131,6 @@ lombok {
 	version = libs.versions.lombok.get()
 }
 
-val testmodLombokConfigSource = project.layout.settingsDirectory.file("lombok.testmod.config").asFile
-val testmodLombokConfigTarget = file("src/testmod/lombok.config")
-val copyTestmodLombokConfig by tasks.register("copyTestmodLombokConfig") {
-	val source = testmodLombokConfigSource
-	val target = testmodLombokConfigTarget
-	inputs.file(source)
-	outputs.file(target)
-
-	doFirst {
-		target.parentFile.mkdirs()
-		Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
-	}
-}
-
-tasks.named("compileTestmodJava") {
-	inputs.file(testmodLombokConfigSource)
-	dependsOn(copyTestmodLombokConfig)
-}
-afterEvaluate {
-	tasks.named("generateTestmodEffectiveLombokConfig") {
-		inputs.file(testmodLombokConfigSource)
-		dependsOn(copyTestmodLombokConfig)
-	}
-}
-
 tasks.named<Copy>("processResources") {
 	val processMinecraftModResources = tasks.named<Sync>("processMinecraftModResources")
 	dependsOn(processMinecraftModResources)
@@ -159,7 +149,8 @@ shadow {
 	addShadowVariantIntoJavaComponent = false
 }
 
-tasks.remapJar {
+tasks.findByName("remapJar")?.apply {
+	this as RemapJarTask
 	dependsOn(tasks.shadowJar)
 	inputFile = tasks.shadowJar.get().archiveFile
 }

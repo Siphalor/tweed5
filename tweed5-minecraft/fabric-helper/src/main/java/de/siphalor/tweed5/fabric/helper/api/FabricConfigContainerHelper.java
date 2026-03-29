@@ -10,8 +10,8 @@ import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
+import lombok.CustomLog;
 import lombok.Getter;
-import lombok.extern.apachecommons.CommonsLog;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jspecify.annotations.Nullable;
 
@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@CommonsLog
+@CustomLog
 public class FabricConfigContainerHelper<T extends @Nullable Object> {
 	@Getter
 	private final ConfigContainer<T> configContainer;

@@ -7,13 +7,13 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.dataapi.api.TweedDataReader;
 import de.siphalor.tweed5.data.gson.GsonReader;
 import lombok.Builder;
-import lombok.extern.apachecommons.CommonsLog;
+import lombok.CustomLog;
 import org.jspecify.annotations.Nullable;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-@CommonsLog
+@CustomLog
 @Builder
 public class FabricConfigCommentLoader {
 	private final ConfigContainer<?> configContainer;

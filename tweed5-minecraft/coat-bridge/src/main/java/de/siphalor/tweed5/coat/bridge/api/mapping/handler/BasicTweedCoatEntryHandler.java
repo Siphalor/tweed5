@@ -7,7 +7,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
-import lombok.extern.apachecommons.CommonsLog;
+import lombok.CustomLog;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.literalComponent;
 
-@CommonsLog
+@CustomLog
 public class BasicTweedCoatEntryHandler<T extends @Nullable Object> implements ConfigEntryHandler<T> {
 	protected final ConfigEntry<T> configEntry;
 	protected final T defaultValue;

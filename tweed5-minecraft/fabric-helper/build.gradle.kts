@@ -15,11 +15,12 @@ dependencies {
 	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-serde-extension")
 	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-validation-extension")
 	compileOnly("de.siphalor.tweed5:tweed5-weaver-pojo-presets-extension")
+	compileOnly(project(":tweed5-logging", configuration = "minecraftModApiElements"))
 
 	listOf("fabric-networking-api-v1", "fabric-lifecycle-events-v1").forEach {
 		modTestmodImplementation(fabricApi.module(it, mcLibs.versions.fabric.api.get()))
 	}
-	testmodImplementation(project(":tweed5-logging", configuration = "minecraftModApiElements"))
+	testmodImplementation(project(":tweed5-logging", configuration = "minecraftModElements"))
 	testmodImplementation(project(":tweed5-bundle", configuration = "runtimeElements"))
 	testmodImplementation(project(":tweed5-bundle-pojo-weaving", configuration = "runtimeElements"))
 	testmodImplementation("de.siphalor.tweed5:tweed5-comment-loader-extension")

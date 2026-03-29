@@ -20,13 +20,14 @@ import de.siphalor.tweed5.coat.bridge.api.mapping.handler.BasicTweedCoatEntryHan
 import de.siphalor.tweed5.coat.bridge.api.mapping.handler.ConvertingTweedCoatEntryHandler;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.extern.apachecommons.CommonsLog;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+//- import net.minecraft.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
 import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponentWithFallback;
 
-@CommonsLog
+@CustomLog
 @SuppressWarnings("unchecked")
 public class TweedCoatMappersImpl {
 	public static TweedCoatMapper<Byte> BYTE_TEXT_MAPPER = convertingTextMapper(
@@ -255,12 +256,20 @@ public class TweedCoatMappersImpl {
 			CompoundConfigEntry<T> compoundEntry = (CompoundConfigEntry<T>) entry;
 
 			Optional<AttributesExtension> attributesExtension = entry.container().extension(AttributesExtension.class);
-			ResourceLocation backgroundTexture = attributesExtension
+			//# if MC_VERSION_NUMBER >= 260100
+			Identifier backgroundTexture = attributesExtension
+			//# else
+			//- ResourceLocation backgroundTexture = attributesExtension
+			//# end
 					.map(extension -> extension.getAttributeValue(
 							entry,
 							TweedCoatAttributes.BACKGROUND_TEXTURE
 					))
-					.map(ResourceLocation::tryParse)
+					//# if MC_VERSION_NUMBER >= 260100
+					.map(Identifier::tryParse)
+					//# else
+					//- .map(ResourceLocation::tryParse)
+					//# end
 					.orElse(null);
 			String translationKey = attributesExtension
 					.map(extension -> extension.getAttributeValue(
