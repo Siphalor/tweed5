@@ -9,6 +9,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
 import de.siphalor.tweed5.serde.hjson.HjsonWriter;
@@ -164,12 +165,14 @@ class AttributesReadWriteFilterExtensionImplTest {
 				}
 				}
 				""")));
-		Map<String, Object> readValue = configContainer.rootEntry().call(read(
+		TweedReadResult<Map<String, Object>> readResult = configContainer.rootEntry().call(read(
 				reader,
 				patchwork -> attributesReadWriteFilterExtension.addFilter(patchwork, "type", "a")
 		));
 
-		assertThat(readValue)
+		assertThat(readResult)
+				.extracting(TweedReadResult::value)
+				.asInstanceOf(map(String.class, Object.class))
 				.containsEntry("first", "1st")
 				.doesNotContainKey("second")
 				.hasEntrySatisfying(

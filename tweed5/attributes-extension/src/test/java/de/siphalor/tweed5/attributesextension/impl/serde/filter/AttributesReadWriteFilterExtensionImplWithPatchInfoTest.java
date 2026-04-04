@@ -7,6 +7,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
@@ -25,6 +26,7 @@ import static de.siphalor.tweed5.serde.extension.api.readwrite.TweedEntryReaderW
 import static de.siphalor.tweed5.testutils.generic.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
 
 public class AttributesReadWriteFilterExtensionImplWithPatchInfoTest {
 	@Test
@@ -65,7 +67,7 @@ public class AttributesReadWriteFilterExtensionImplWithPatchInfoTest {
 		var patchInfo = patchExtension.collectPatchInfo(readExtData);
 		filterExtension.addFilter(readExtData, "type", "a");
 
-		var value = readWriteExtension.read(
+		var readResult = readWriteExtension.read(
 				new HjsonReader(new HjsonLexer(new StringReader("""
 						{
 							"first": "FIRST",
@@ -76,8 +78,10 @@ public class AttributesReadWriteFilterExtensionImplWithPatchInfoTest {
 				readExtData
 		);
 
-		assertThat(value).extracting(v -> v.get("first")).isEqualTo("FIRST");
-		assertThat(value).extracting(v -> v.get("second")).isNull();
+		assertThat(readResult)
+				.extracting(TweedReadResult::value)
+				.asInstanceOf(map(String.class, Object.class))
+				.isEqualTo(Map.of("first", "FIRST"));
 		assertThat(patchInfo.containsEntry(firstEntry)).isTrue();
 		assertThat(patchInfo.containsEntry(secondEntry)).isFalse();
 	}

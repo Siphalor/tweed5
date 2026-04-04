@@ -9,12 +9,6 @@ import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.core.api.middleware.MiddlewareContainer;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReadException;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
-import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
-import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
@@ -30,6 +24,13 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssu
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
+import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
+import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
+import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
+import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadIssue;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
 
@@ -233,33 +234,45 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
 				ValidationIssues validationIssues = getOrCreateValidationIssues(context.extensionsData());
 
-				Object value = castedInner.read(reader, entry, context);
+				return castedInner.read(reader, entry, context).andThen(value -> {
+					ConfigEntryValidator entryValidator = entry.extensionsData()
+							.get(customEntryDataAccess)
+							.completeValidator();
+					assert entryValidator != null;
 
-				ConfigEntryValidator entryValidator = entry.extensionsData()
-						.get(customEntryDataAccess)
-						.completeValidator();
-				assert entryValidator != null;
+					ValidationResult<Object> validationResult = entryValidator.validate(entry, value);
 
-				ValidationResult<Object> validationResult = entryValidator.validate(entry, value);
+					if (validationResult.issues().isEmpty()) {
+						return TweedReadResult.ok(validationResult.value());
+					}
 
-				if (!validationResult.issues().isEmpty()) {
 					String path = patherExtension.getPath(context);
 					validationIssues.issuesByPath().put(path, new ValidationIssues.EntryIssues(
 							entry,
 							validationResult.issues()
 					));
-				}
-
-				if (validationResult.hasError()) {
-					throw new TweedEntryReadException(
-							"Failed to validate entry: " + validationResult.issues(),
-							context
-					);
-				}
-
-				return validationResult.value();
+					if (validationResult.hasError()) {
+						return TweedReadResult.failed(
+								mapValidationIssuesToReadIssues(validationResult.issues(), context)
+						);
+					} else {
+						return TweedReadResult.withIssues(
+								validationResult.value(),
+								mapValidationIssuesToReadIssues(validationResult.issues(), context)
+						);
+					}
+				}, context);
 			};
 		}
+	}
+
+	private static TweedReadIssue[] mapValidationIssuesToReadIssues(
+			Collection<ValidationIssue> issues,
+			TweedReadContext context
+	) {
+		return issues.stream().map(
+				validationIssue -> TweedReadIssue.error(validationIssue.message(), context)
+		).toArray(TweedReadIssue[]::new);
 	}
 
 	private ValidationIssues getOrCreateValidationIssues(Patchwork readContextExtensionsData) {

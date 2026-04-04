@@ -28,7 +28,6 @@ import static de.siphalor.tweed5.testutils.generic.MapTestUtils.sequencedMap;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReadWriteExtensionImplTest {
 	private final StringWriter stringWriter = new StringWriter();
@@ -97,7 +96,7 @@ class ReadWriteExtensionImplTest {
 	@Test
 	void read() {
 		ReadWriteExtension readWriteExtension = configContainer.extension(ReadWriteExtension.class).orElseThrow();
-		Map<String, Object> result = assertDoesNotThrow(() -> readWriteExtension.read(
+		var result = assertDoesNotThrow(() -> readWriteExtension.read(
 				new HjsonReader(new HjsonLexer(new StringReader("""
 						{
 						\tint: 123
@@ -112,9 +111,12 @@ class ReadWriteExtensionImplTest {
 				readWriteExtension.createReadWriteContextExtensionsData()
 		));
 
-		assertEquals(2, result.size());
-		assertEquals(123, result.get("int"));
-		assertEquals(Arrays.asList(true, false, true), result.get("list"));
+		assertThat(result.isFailed()).isFalse();
+		assertThat(result.hasValue()).isTrue();
+		assertThat(result.value()).isEqualTo(Map.of(
+				"int", 123,
+				"list", Arrays.asList(true, false, true)
+		));
 	}
 
 	private TweedDataVisitor setupWriter(Function<Writer, TweedDataVisitor> writerFactory) {

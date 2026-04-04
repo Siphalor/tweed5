@@ -2,6 +2,7 @@ package de.siphalor.tweed5.serde.extension.api;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.extension.api.readwrite.TweedEntryReaderWriter;
 import de.siphalor.tweed5.serde.extension.impl.ReadWriteExtensionImpl;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
@@ -55,11 +56,11 @@ public interface ReadWriteExtension extends TweedExtension {
 		};
 	}
 
-	static <T extends @Nullable Object> Function<ConfigEntry<T>, T> read(TweedDataReader reader) {
+	static <T extends @Nullable Object> Function<ConfigEntry<T>, TweedReadResult<T>> read(TweedDataReader reader) {
 		return read(reader, null);
 	}
 
-	static <T extends @Nullable Object> Function<ConfigEntry<T>, T> read(
+	static <T extends @Nullable Object> Function<ConfigEntry<T>, TweedReadResult<T>> read(
 			TweedDataReader reader,
 			@Nullable Consumer<Patchwork> contextExtensionsDataCustomizer
 	) {
@@ -115,7 +116,7 @@ public interface ReadWriteExtension extends TweedExtension {
 
 	Patchwork createReadWriteContextExtensionsData();
 
-	<T extends @Nullable Object> T read(TweedDataReader reader, ConfigEntry<T> entry, Patchwork contextExtensionsData)
+	<T extends @Nullable Object> TweedReadResult<T> read(TweedDataReader reader, ConfigEntry<T> entry, Patchwork contextExtensionsData)
 			throws TweedEntryReadException;
 
 	<T extends @Nullable Object> void write(

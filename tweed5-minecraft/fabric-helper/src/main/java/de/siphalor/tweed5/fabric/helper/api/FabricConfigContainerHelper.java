@@ -2,22 +2,22 @@ package de.siphalor.tweed5.fabric.helper.api;
 
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
-import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.serde_api.api.TweedDataReader;
-import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
-import de.siphalor.tweed5.serde_api.api.TweedSerde;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadIssue;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriter;
+import de.siphalor.tweed5.serde_api.api.TweedSerde;
 import lombok.Getter;
 import lombok.extern.apachecommons.CommonsLog;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jspecify.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,14 +84,24 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 			return;
 		}
 
-		try (TweedDataReader reader = serde.createReader(new FileInputStream(configFile))) {
+		try (TweedDataReader reader = serde.createReader(Files.newInputStream(configFile.toPath()))) {
 			Patchwork contextExtensionsData = readWriteExtension.createReadWriteContextExtensionsData();
 			readContextCustomizer.accept(contextExtensionsData);
 			PatchInfo patchInfo = patchExtension.collectPatchInfo(contextExtensionsData);
 
-			T readValue = readWriteExtension.read(reader, configContainer().rootEntry(), contextExtensionsData);
+			TweedReadResult<T> readResult = readWriteExtension.read(reader, configContainer().rootEntry(), contextExtensionsData);
+			if (readResult.hasValue()) {
+				patchExtension.patch(configContainer.rootEntry(), value, readResult.value(), patchInfo);
 
-			patchExtension.patch(configContainer.rootEntry(), value, readValue, patchInfo);
+				if (readResult.hasIssues()) {
+					log.warn(formatIssuesLogMessage(configFile, "issues", readResult.issues()));
+				}
+			} else if (readResult.hasIssues()) {
+				log.error(formatIssuesLogMessage(configFile, "errors", readResult.issues()));
+			} else {
+				log.debug("Reading config file " + configFile.getAbsolutePath() + " yielded empty result");
+			}
+
 		} catch (Exception e) {
 			log.error("Failed loading config file " + configFile.getAbsolutePath(), e);
 		}
@@ -108,20 +118,54 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 			return defaultValueSupplier.get();
 		}
 
-		try (TweedDataReader reader = serde.createReader(new FileInputStream(configFile))) {
+		try (TweedDataReader reader = serde.createReader(Files.newInputStream(configFile.toPath()))) {
 			Patchwork contextExtensionsData = readWriteExtension.createReadWriteContextExtensionsData();
-			return readWriteExtension.read(reader, configContainer.rootEntry(), contextExtensionsData);
+			TweedReadResult<T> readResult = readWriteExtension.read(
+					reader,
+					configContainer.rootEntry(),
+					contextExtensionsData
+			);
+			if (readResult.hasValue()) {
+				if (readResult.hasIssues()) {
+					log.warn(formatIssuesLogMessage(configFile, "issues", readResult.issues()));
+				}
+				return readResult.value();
+			} else if (readResult.hasIssues()) {
+				log.error(formatIssuesLogMessage(configFile, "errors", readResult.issues()));
+			} else {
+				log.info(
+						"Reading config file "
+								+ configFile.getAbsolutePath()
+								+ " yielded empty result, using default value"
+				);
+			}
+			return defaultValueSupplier.get();
 		} catch (Exception e) {
 			log.error("Failed loading config file " + configFile.getAbsolutePath(), e);
 			return defaultValueSupplier.get();
 		}
 	}
 
+	private String formatIssuesLogMessage(File file, String type, TweedReadIssue[] issues) {
+		String filePath = file.getAbsolutePath();
+
+		StringBuilder stringBuilder = new StringBuilder(20 + filePath.length() + type.length() + issues.length * 50);
+		stringBuilder.append("Encountered ");
+		stringBuilder.append(type);
+		stringBuilder.append(" while reading ");
+		stringBuilder.append(filePath);
+		stringBuilder.append(": ");
+		for (TweedReadIssue issue : issues) {
+			stringBuilder.append("  - ").append(issue).append("\n");
+		}
+		return stringBuilder.toString();
+	}
+
 	public void writeConfigInConfigDirectory(T configValue) {
 		File configFile = getConfigFile();
 		Path tempConfigDirectory = getOrCreateTempConfigDirectory();
 		File tempConfigFile = tempConfigDirectory.resolve(getConfigFileName()).toFile();
-		try (TweedDataWriter writer = serde.createWriter(new FileOutputStream(tempConfigFile))) {
+		try (TweedDataWriter writer = serde.createWriter(Files.newOutputStream(tempConfigFile.toPath()))) {
 			Patchwork contextExtensionsData = readWriteExtension.createReadWriteContextExtensionsData();
 
 			readWriteExtension.write(

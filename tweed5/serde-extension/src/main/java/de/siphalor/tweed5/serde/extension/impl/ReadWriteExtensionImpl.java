@@ -9,6 +9,7 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.serde.extension.api.*;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.serde_api.api.TweedDataWriteException;
@@ -136,7 +137,7 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 		return readWriteContextPatchworkFactory.create();
 	}
 
-	public <T extends @Nullable Object> T read(
+	public <T extends @Nullable Object> TweedReadResult<T> read(
 			TweedDataReader reader,
 			ConfigEntry<T> entry,
 			Patchwork contextExtensionsData

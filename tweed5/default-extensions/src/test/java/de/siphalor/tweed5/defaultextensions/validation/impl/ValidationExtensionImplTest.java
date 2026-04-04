@@ -7,6 +7,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonCommentType;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
@@ -156,12 +157,14 @@ class ValidationExtensionImplTest {
 				}
 				""")));
 		var validationIssues = new AtomicReference<@Nullable ValidationIssues>();
-		Map<String, Object> value = configContainer.rootEntry().call(read(
+		TweedReadResult<Map<String, Object>> value = configContainer.rootEntry().call(read(
 				reader,
 				extensionsData -> validationIssues.set(validationExtension.captureValidationIssues(extensionsData))
 		));
 
-		assertThat(value).isEqualTo(Map.of("byte", (byte) 11, "int", 123, "double", 0.5));
+		assertThat(value)
+				.extracting(TweedReadResult::value)
+				.isEqualTo(Map.of("byte", (byte) 11, "int", 123, "double", 0.5));
 		//noinspection DataFlowIssue
 		assertThat(validationIssues.get()).isNotNull().satisfies(
 				vi -> assertValidationIssue(

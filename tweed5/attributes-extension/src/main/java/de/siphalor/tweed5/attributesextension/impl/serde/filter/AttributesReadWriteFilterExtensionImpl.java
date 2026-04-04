@@ -5,25 +5,22 @@ import de.siphalor.tweed5.attributesextension.api.AttributesRelatedExtension;
 import de.siphalor.tweed5.attributesextension.api.serde.filter.AttributesReadWriteFilterExtension;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
-import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryVisitor;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReadException;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
-import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.serde_api.api.DelegatingTweedDataWriter;
-import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataUnsupportedValueException;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.serde_api.api.decoration.TweedDataDecoration;
-import de.siphalor.tweed5.patchwork.api.Patchwork;
-import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.utils.api.UniqueSymbol;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -184,33 +181,17 @@ public class AttributesReadWriteFilterExtensionImpl
 			TweedEntryReader<Object, ConfigEntry<Object>> innerCasted
 					= (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
-			return new TweedEntryReader<@Nullable Object, ConfigEntry<Object>>() {
-				@Override
-				public @Nullable Object read(
-						TweedDataReader reader,
-						ConfigEntry<Object> entry,
-						TweedReadContext context
-				) throws TweedEntryReadException {
-					ReadWriteContextCustomData contextData = context.extensionsData().get(readWriteContextDataAccess);
-					if (contextData == null) {
-						contextData = new ReadWriteContextCustomData();
-						context.extensionsData().set(readWriteContextDataAccess, contextData);
-					}
-					if (!doFiltersMatch(entry, contextData)) {
-						TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, context);
-						return contextData.noopHandlerInstalled() ? NOOP_MARKER : null;
-					}
-					if (entry instanceof CompoundConfigEntry) {
-						CompoundConfigEntry<Object> delegated =
-								new AttributesFilteredCompoundEntry<>(((CompoundConfigEntry<Object>) entry));
-						boolean oldNoopHandlerInstalled = contextData.noopHandlerInstalled();
-						contextData.noopHandlerInstalled(true);
-						Object value = innerCasted.read(reader, delegated, context);
-						contextData.noopHandlerInstalled(oldNoopHandlerInstalled);
-						return value;
-					}
-					return innerCasted.read(reader, entry, context);
+			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, context) -> {
+				ReadWriteContextCustomData contextData = context.extensionsData().get(readWriteContextDataAccess);
+				if (contextData == null) {
+					contextData = new ReadWriteContextCustomData();
+					context.extensionsData().set(readWriteContextDataAccess, contextData);
 				}
+				if (!doFiltersMatch(entry, contextData)) {
+					TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, context);
+					return TweedReadResult.empty();
+				}
+				return innerCasted.read(reader, entry, context);
 			};
 		}
 	}

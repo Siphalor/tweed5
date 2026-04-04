@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.coat.bridge.impl;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
+import de.siphalor.coat.handler.Message;
 import de.siphalor.coat.input.CheckBoxConfigInput;
 import de.siphalor.coat.input.ConfigInput;
 import de.siphalor.coat.input.CycleButtonConfigInput;
@@ -20,22 +21,23 @@ import de.siphalor.tweed5.coat.bridge.api.mapping.handler.BasicTweedCoatEntryHan
 import de.siphalor.tweed5.coat.bridge.api.mapping.handler.ConvertingTweedCoatEntryHandler;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReadException;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataToken;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.serde_api.api.decoration.TweedDataDecoration;
-import de.siphalor.tweed5.patchwork.api.Patchwork;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.apachecommons.CommonsLog;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -44,8 +46,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponent;
-import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.translatableComponentWithFallback;
+import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.*;
 
 @CommonsLog
 @SuppressWarnings("unchecked")
@@ -133,64 +134,69 @@ public class TweedCoatMappersImpl {
 					if (context.parentSaveHandler() == null) {
 						throw new IllegalArgumentException("No parent save handler provided");
 					}
-					return new ConvertingTweedCoatEntryHandler<>(
-							new BasicTweedCoatEntryHandler<>(entry, context.defaultValue(), context.parentSaveHandler()),
-							this::convertToString,
-							input -> {
-								try {
-									TweedEntryReader<T, ConfigEntry<T>> reader =
-											readWriteExtension.getDefinedEntryReader(entry);
-									Patchwork readExtData = readWriteExtension.createReadWriteContextExtensionsData();
-									//noinspection DataFlowIssue
-									return reader.read(
-											new TweedDataReader() {
-												private boolean consumed = false;
+					return new ConfigEntryHandler<String>() {
+						@Override
+						public String getDefault() {
+							return convertToString(context.defaultValue());
+						}
 
-												@Override
-												public TweedDataToken peekToken() throws TweedDataReadException {
-													if (consumed) {
-														throw new IllegalStateException("Already consumed");
-													}
-													return new TweedDataToken() {
-														@Override
-														public boolean canReadAsString() {
-															return true;
-														}
-
-														@Override
-														public String readAsString() {
-															return input;
-														}
-													};
-												}
-
-												@Override
-												public TweedDataToken readToken() throws TweedDataReadException {
-													TweedDataToken token = peekToken();
-													consumed = true;
-													return token;
-												}
-
-												@Override
-												public void close() {
-												}
-											}, entry, new TweedReadContext() {
-												@Override
-												public ReadWriteExtension readWriteExtension() {
-													return readWriteExtension;
-												}
-
-												@Override
-												public Patchwork extensionsData() {
-													return readExtData;
-												}
-											}
-									);
-								} catch (TweedEntryReadException e) {
-									throw new RuntimeException(e.getMessage(), e);
+						@Override
+						public Collection<Message> getMessages(String text) {
+							try {
+								TweedReadResult<T> readResult = convertFromString(text);
+								if (readResult.hasValue() && !readResult.hasIssues()) {
+									return Collections.emptyList();
+								} else if (readResult.hasIssues()) {
+									Message.Level messageLevel = readResult.hasValue()
+											? Message.Level.WARNING
+											: Message.Level.ERROR;
+									return Arrays.stream(readResult.issues()).map(issue ->
+											new Message(messageLevel, literalComponent(issue.exception().getMessage()))
+									).collect(Collectors.toList());
+								} else {
+									return Collections.emptyList();
 								}
+							} catch (Exception e) {
+								return Collections.singletonList(
+										new Message(Message.Level.ERROR, literalComponent(e.getMessage()))
+								);
 							}
-					);
+						}
+
+						@Override
+						public void save(String s) {
+							try {
+								TweedReadResult<T> readResult = convertFromString(s);
+								if (readResult.hasValue()) {
+									if (readResult.hasIssues()) {
+										log.warn(
+												"There were issues understanding value \"" + s + "\":\n  - "
+														+ Arrays.stream(readResult.issues())
+														.map(issue -> issue.exception().getMessage())
+														.collect(Collectors.joining("\n  - "))
+										);
+									}
+									context.parentSaveHandler().accept(readResult.value());
+								} else {
+									log.error(
+											"Failed to understand value \"" + s + "\":\n  - "
+													+ Arrays.stream(readResult.issues())
+													.map(issue -> issue.exception().getMessage())
+													.collect(Collectors.joining("\n  - "))
+									);
+									context.parentSaveHandler().accept(context.defaultValue());
+								}
+							} catch (Exception e) {
+								log.error("Failed to save value \"" + s + "\"", e);
+								context.parentSaveHandler().accept(context.defaultValue());
+							}
+						}
+
+						@Override
+						public Component asText(String text) {
+							return literalComponent(text);
+						}
+					};
 				}
 
 				@Override
@@ -269,6 +275,57 @@ public class TweedCoatMappersImpl {
 						log.warn("Failed to serialize value " + value + " to string", e);
 					}
 					return wrapper[0];
+				}
+
+				private TweedReadResult<T> convertFromString(String text) {
+					TweedEntryReader<T, ConfigEntry<T>> reader =
+							readWriteExtension.getDefinedEntryReader(entry);
+					Patchwork readExtData = readWriteExtension.createReadWriteContextExtensionsData();
+					//noinspection DataFlowIssue
+					return reader.read(
+							new TweedDataReader() {
+								private boolean consumed = false;
+
+								@Override
+								public TweedDataToken peekToken() throws TweedDataReadException {
+									if (consumed) {
+										throw new IllegalStateException("Already consumed");
+									}
+									return new TweedDataToken() {
+										@Override
+										public boolean canReadAsString() {
+											return true;
+										}
+
+										@Override
+										public String readAsString() {
+											return text;
+										}
+									};
+								}
+
+								@Override
+								public TweedDataToken readToken() throws TweedDataReadException {
+									TweedDataToken token = peekToken();
+									consumed = true;
+									return token;
+								}
+
+								@Override
+								public void close() {
+								}
+							}, entry, new TweedReadContext() {
+								@Override
+								public ReadWriteExtension readWriteExtension() {
+									return readWriteExtension;
+								}
+
+								@Override
+								public Patchwork extensionsData() {
+									return readExtData;
+								}
+							}
+					);
 				}
 			};
 		}

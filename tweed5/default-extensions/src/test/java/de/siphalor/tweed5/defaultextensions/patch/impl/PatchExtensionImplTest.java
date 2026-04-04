@@ -9,6 +9,7 @@ import de.siphalor.tweed5.core.impl.entry.NullableConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
@@ -150,7 +151,7 @@ class PatchExtensionImplTest {
 		PatchExtension patchExtension = configContainer.extension(PatchExtension.class).orElseThrow();
 
 		var patchInfo = new AtomicReference<@Nullable PatchInfo>();
-		Map<String, Object> patchValue = rootEntry.call(read(
+		TweedReadResult<Map<String, Object>> patchResult = rootEntry.call(read(
 				reader, extensionsData ->
 						patchInfo.set(patchExtension.collectPatchInfo(extensionsData))
 		));
@@ -158,7 +159,7 @@ class PatchExtensionImplTest {
 		Map<String, Object> resultValue = patchExtension.patch(
 				rootEntry,
 				baseValue,
-				patchValue,
+				patchResult.value(),
 				Objects.requireNonNull(patchInfo.get())
 		);
 

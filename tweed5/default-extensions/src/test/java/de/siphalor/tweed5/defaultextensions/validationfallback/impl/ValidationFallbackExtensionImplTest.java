@@ -5,6 +5,7 @@ import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonCommentType;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
@@ -30,6 +31,7 @@ import static de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension.
 import static de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension.validators;
 import static de.siphalor.tweed5.serde.extension.api.ReadWriteExtension.*;
 import static de.siphalor.tweed5.serde.extension.api.readwrite.TweedEntryReaderWriters.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ValidationFallbackExtensionImplTest {
@@ -114,8 +116,9 @@ class ValidationFallbackExtensionImplTest {
 	@ParameterizedTest
 	@ValueSource(strings = {"0", "7", "123", "null"})
 	void fallbackTriggers(String input) {
-		Integer result = intEntry.call(read(new HjsonReader(new HjsonLexer(new StringReader(input)))));
-		assertEquals(3, result);
+		TweedReadResult<Integer> result = intEntry.call(read(new HjsonReader(new HjsonLexer(new StringReader(input)))));
+		assertThat(result).extracting(TweedReadResult::value).isEqualTo(3);
+		assertThat(result.issues()).hasSize(1);
 	}
 
 	@Test

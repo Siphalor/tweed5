@@ -7,6 +7,7 @@ import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.serde.extension.api.TweedReaderWriterProvider;
 import de.siphalor.tweed5.serde.extension.api.TweedWriteContext;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
 import de.siphalor.tweed5.serde.hjson.HjsonWriter;
@@ -55,7 +56,7 @@ class ReadWritePojoWeavingProcessorTest {
 						}"""
 		)));
 		assertThat(configContainer.rootEntry().call(read(reader)))
-				.isEqualTo(new AnnotatedConfig(987, "abdef", new TestClass(29)));
+				.isEqualTo(TweedReadResult.ok(new AnnotatedConfig(987, "abdef", new TestClass(29))));
 	}
 
 	@AutoService(TweedReaderWriterProvider.class)

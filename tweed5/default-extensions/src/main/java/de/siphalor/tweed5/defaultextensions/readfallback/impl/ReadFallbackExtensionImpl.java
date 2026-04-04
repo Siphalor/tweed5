@@ -3,7 +3,6 @@ package de.siphalor.tweed5.defaultextensions.readfallback.impl;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReadException;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
@@ -11,6 +10,7 @@ import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.readfallback.api.ReadFallbackExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.NonNull;
 
@@ -30,8 +30,6 @@ public class ReadFallbackExtensionImpl implements ReadFallbackExtension, ReadWri
 		PresetsExtension presetsExtension = configContainer.extension(PresetsExtension.class)
 				.orElseThrow(() -> new IllegalStateException(getClass().getSimpleName()
 						+ " requires " + ReadFallbackExtension.class.getSimpleName()));
-		PatherExtension patherExtension = configContainer.extension(PatherExtension.class).orElse(null);
-
 		context.registerReaderMiddleware(new Middleware<TweedEntryReader<?, ?>>() {
 			@Override
 			public String id() {
@@ -53,22 +51,15 @@ public class ReadFallbackExtensionImpl implements ReadFallbackExtension, ReadWri
 				//noinspection unchecked
 				TweedEntryReader<Object, ConfigEntry<Object>> castedInner =
 						(TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
-				return (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) (reader, entry, context) -> {
-					try {
-						return castedInner.read(reader, entry, context);
-					} catch (TweedEntryReadException e) {
-						if (patherExtension == null) {
-							log.error("Failed to read entry: " + e.getMessage(), e);
-						} else {
-							log.error(
-									"Failed to read entry: " + e.getMessage()
-											+ " at " + patherExtension.getPath(context),
-									e
-							);
-						}
-						return presetsExtension.presetValue(entry, PresetsExtension.DEFAULT_PRESET_NAME);
-					}
-				};
+				return (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) (reader, entry, context) ->
+						castedInner.read(reader, entry, context).catchError(
+								issues -> {
+									Object fallback =
+											presetsExtension.presetValue(entry, PresetsExtension.DEFAULT_PRESET_NAME);
+									return TweedReadResult.withIssues(fallback, issues);
+								},
+								context
+						);
 			}
 		});
 	}

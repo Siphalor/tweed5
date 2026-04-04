@@ -3,12 +3,10 @@ package de.siphalor.tweed5.defaultextensions.patch.impl;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
-import de.siphalor.tweed5.serde.extension.api.TweedEntryReadException;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
-import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
-import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
@@ -96,20 +94,13 @@ public class PatchExtensionImpl implements PatchExtension, ReadWriteRelatedExten
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> innerCasted =
 					(TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
-			return new TweedEntryReader<@Nullable Object, ConfigEntry<Object>>() {
-				@Override
-				public @Nullable Object read(
-						TweedDataReader reader,
-						ConfigEntry<Object> entry,
-						TweedReadContext context
-				) throws TweedEntryReadException {
-					Object readValue = innerCasted.read(reader, entry, context);
-					ReadWriteContextCustomData customData = context.extensionsData().get(readWriteContextDataAccess);
-					if (customData != null && customData.patchInfo() != null) {
-						customData.patchInfo().addEntry(entry);
-					}
-					return readValue;
+			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, context) -> {
+				TweedReadResult<Object> readResult = innerCasted.read(reader, entry, context);
+				ReadWriteContextCustomData customData = context.extensionsData().get(readWriteContextDataAccess);
+				if (customData != null && customData.patchInfo() != null) {
+					customData.patchInfo().addEntry(entry);
 				}
+				return readResult;
 			};
 		}
 	}

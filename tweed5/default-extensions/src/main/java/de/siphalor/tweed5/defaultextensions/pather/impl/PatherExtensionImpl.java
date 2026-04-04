@@ -70,21 +70,7 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 
 					pathTracking = PathTracking.create();
 					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
-					try {
-						return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
-					} catch (TweedEntryReadException e) {
-						val exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
-						if (exceptionPathTracking != null) {
-							throw new TweedEntryReadException(
-									"Exception while reading entry at "
-											+ exceptionPathTracking.currentPath()
-											+ ": " + e.getMessage(),
-									e
-							);
-						} else {
-							throw e;
-						}
-					}
+					return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
 				};
 			}
 		};
@@ -116,7 +102,8 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 					try {
 						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
 					} catch (TweedEntryWriteException e) {
-						val exceptionPathTracking = e.context().extensionsData().get(rwContextPathTrackingAccess);
+						PathTracking exceptionPathTracking =
+								e.context().extensionsData().get(rwContextPathTrackingAccess);
 						if (exceptionPathTracking != null) {
 							throw new TweedEntryWriteException(
 									"Exception while writing entry at "
