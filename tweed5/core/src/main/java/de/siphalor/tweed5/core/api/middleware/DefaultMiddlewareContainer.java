@@ -8,11 +8,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
+public class DefaultMiddlewareContainer<M, C> implements MiddlewareContainer<M, C> {
 	private static final String CONTAINER_ID = "";
 
 	@Getter
-	private List<Middleware<M>> middlewares = new ArrayList<>();
+	private List<Middleware<M, C>> middlewares = new ArrayList<>();
 	private final Set<String> middlewareIds = new HashSet<>();
 	private boolean sealed = false;
 
@@ -22,10 +22,10 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 	}
 
 	@Override
-	public void registerAll(Collection<Middleware<M>> middlewares) {
+	public void registerAll(Collection<Middleware<M, C>> middlewares) {
 		requireUnsealed();
 
-		for (Middleware<M> middleware : middlewares) {
+		for (Middleware<M, C> middleware : middlewares) {
 			if (middleware.id().isEmpty()) {
 				throw new IllegalArgumentException("Middleware id cannot be empty");
 			}
@@ -37,7 +37,7 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 	}
 
 	@Override
-	public void register(Middleware<M> middleware) {
+	public void register(Middleware<M, C> middleware) {
 		requireUnsealed();
 
 		if (middleware.id().isEmpty()) {
@@ -76,7 +76,7 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 
 		AcyclicGraphSorter sorter = new AcyclicGraphSorter(allMentionedMiddlewareIds.length);
 
-		for (Middleware<M> middleware : middlewares) {
+		for (Middleware<M, C> middleware : middlewares) {
 			Integer currentIndex = indecesByMiddlewareId.get(middleware.id());
 
 			middleware.mustComeAfter().stream()
@@ -87,7 +87,8 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 					.forEach(afterIndex -> sorter.addEdge(currentIndex, afterIndex));
 		}
 
-		Map<String, Middleware<M>> middlewaresById = middlewares.stream().collect(Collectors.toMap(Middleware::id, Function.identity()));
+		Map<String, Middleware<M, C>> middlewaresById = middlewares.stream()
+				.collect(Collectors.toMap(Middleware::id, Function.identity()));
 
 		try {
 			int[] sortedIndeces = sorter.sort();
@@ -107,13 +108,27 @@ public class DefaultMiddlewareContainer<M> implements MiddlewareContainer<M> {
 	}
 
 	@Override
+	public M process(M inner, C context) {
+		if (!sealed) {
+			throw new IllegalStateException("Middleware container has not been sealed");
+		}
+		M combined = inner;
+		for (int i = middlewares.size() - 1; i >= 0; i--) {
+			Middleware<M, C> middleware = middlewares.get(i);
+			combined = middleware.process(combined, context);
+		}
+		return combined;
+	}
+
+	@Override
+	@Deprecated
 	public M process(M inner) {
 		if (!sealed) {
 			throw new IllegalStateException("Middleware container has not been sealed");
 		}
 		M combined = inner;
 		for (int i = middlewares.size() - 1; i >= 0; i--) {
-			Middleware<M> middleware = middlewares.get(i);
+			Middleware<M, C> middleware = middlewares.get(i);
 			combined = middleware.process(combined);
 		}
 		return combined;

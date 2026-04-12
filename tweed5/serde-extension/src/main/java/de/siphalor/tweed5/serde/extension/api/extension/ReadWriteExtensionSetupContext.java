@@ -7,6 +7,6 @@ import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 
 public interface ReadWriteExtensionSetupContext {
 	<E> PatchworkPartAccess<E> registerReadWriteContextExtensionData(Class<E> extensionDataClass);
-	void registerReaderMiddleware(Middleware<TweedEntryReader<?, ?>> middleware);
-	void registerWriterMiddleware(Middleware<TweedEntryWriter<?, ?>> middleware);
+	void registerReaderMiddleware(Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> middleware);
+	void registerWriterMiddleware(Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext> middleware);
 }

@@ -6,16 +6,18 @@ import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
+import de.siphalor.tweed5.patchwork.api.Patchwork;
+import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
+import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import de.siphalor.tweed5.serde.extension.api.*;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
+import de.siphalor.tweed5.serde.extension.api.extension.WriterMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.serde_api.api.TweedDataWriteException;
-import de.siphalor.tweed5.patchwork.api.Patchwork;
-import de.siphalor.tweed5.patchwork.api.PatchworkFactory;
-import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import lombok.Data;
 import org.jspecify.annotations.Nullable;
 
@@ -24,12 +26,10 @@ import java.util.Collection;
 public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	private final ConfigContainer<?> configContainer;
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
-	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>>
-			entryReaderMiddlewareContainer
-			= new DefaultMiddlewareContainer<>();
-	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>>
-			entryWriterMiddlewareContainer
-			= new DefaultMiddlewareContainer<>();
+	private DefaultMiddlewareContainer<TweedEntryReader<?, ?>, ReaderMiddlewareContext>
+			entryReaderMiddlewareContainer = new DefaultMiddlewareContainer<>();
+	private DefaultMiddlewareContainer<TweedEntryWriter<?, ?>, WriterMiddlewareContext>
+			entryWriterMiddlewareContainer = new DefaultMiddlewareContainer<>();
 	private @Nullable PatchworkFactory readWriteContextPatchworkFactory;
 
 	public ReadWriteExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
@@ -52,12 +52,16 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 			}
 
 			@Override
-			public void registerReaderMiddleware(Middleware<TweedEntryReader<?, ?>> middleware) {
+			public void registerReaderMiddleware(
+					Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> middleware
+			) {
 				entryReaderMiddlewareContainer.register(middleware);
 			}
 
 			@Override
-			public void registerWriterMiddleware(Middleware<TweedEntryWriter<?, ?>> middleware) {
+			public void registerWriterMiddleware(
+					Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext> middleware
+			) {
 				entryWriterMiddlewareContainer.register(middleware);
 			}
 		};
@@ -118,8 +122,14 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 	@Override
 	public void initEntry(ConfigEntry<?> configEntry) {
 		CustomEntryData customEntryData = getOrCreateCustomEntryData(configEntry);
-		customEntryData.readerChain(entryReaderMiddlewareContainer.process(customEntryData.readerDefinition()));
-		customEntryData.writerChain(entryWriterMiddlewareContainer.process(customEntryData.writerDefinition()));
+		customEntryData.readerChain(entryReaderMiddlewareContainer.process(
+				customEntryData.readerDefinition(),
+				ReaderMiddlewareContext.builder().entry(configEntry).build()
+		));
+		customEntryData.writerChain(entryWriterMiddlewareContainer.process(
+				customEntryData.writerDefinition(),
+				WriterMiddlewareContext.builder().entry(configEntry).build()
+		));
 	}
 
 	private CustomEntryData getOrCreateCustomEntryData(ConfigEntry<?> entry) {

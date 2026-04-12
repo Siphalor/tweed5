@@ -5,6 +5,8 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.serde.extension.api.*;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
+import de.siphalor.tweed5.serde.extension.api.extension.WriterMiddlewareContext;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
@@ -48,59 +50,59 @@ public class PatherExtensionImpl implements PatherExtension, ReadWriteRelatedExt
 		return pathTracking.currentPath();
 	}
 
-	private Middleware<TweedEntryReader<?, ?>> createEntryReaderMiddleware() {
-		return new Middleware<TweedEntryReader<?, ?>>() {
+	private Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> createEntryReaderMiddleware() {
+		return new Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext>() {
 			@Override
 			public String id() {
 				return EXTENSION_ID;
 			}
 
 			@Override
-			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
 				assert rwContextPathTrackingAccess != null;
 
 				//noinspection unchecked
 				val castedInner = (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
-				return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-					PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+				return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext readContext) -> {
+					PathTracking pathTracking = readContext.extensionsData().get(rwContextPathTrackingAccess);
 					if (pathTracking != null) {
-						return castedInner.read(reader, entry, context);
+						return castedInner.read(reader, entry, readContext);
 					}
 
 					pathTracking = PathTracking.create();
-					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
-					return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, context);
+					readContext.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
+					return castedInner.read(new PathTrackingDataReader(reader, pathTracking), entry, readContext);
 				};
 			}
 		};
 	}
 
-	private Middleware<TweedEntryWriter<?, ?>> createEntryWriterMiddleware() {
-		return new Middleware<TweedEntryWriter<?, ?>>() {
+	private Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext> createEntryWriterMiddleware() {
+		return new Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext>() {
 			@Override
 			public String id() {
 				return EXTENSION_ID;
 			}
 
 			@Override
-			public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
+			public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner, WriterMiddlewareContext context) {
 				assert rwContextPathTrackingAccess != null;
 
 				//noinspection unchecked
 				val castedInner = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 
-				return (TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext context) -> {
-					PathTracking pathTracking = context.extensionsData().get(rwContextPathTrackingAccess);
+				return (TweedDataVisitor writer, Object value, ConfigEntry<Object> entry, TweedWriteContext writeContext) -> {
+					PathTracking pathTracking = writeContext.extensionsData().get(rwContextPathTrackingAccess);
 					if (pathTracking != null) {
-						castedInner.write(writer, value, entry, context);
+						castedInner.write(writer, value, entry, writeContext);
 						return;
 					}
 
 					pathTracking = PathTracking.create();
-					context.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
+					writeContext.extensionsData().set(rwContextPathTrackingAccess, pathTracking);
 					try {
-						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, context);
+						castedInner.write(new PathTrackingDataVisitor(writer, pathTracking), value, entry, writeContext);
 					} catch (TweedEntryWriteException e) {
 						PathTracking exceptionPathTracking =
 								e.context().extensionsData().get(rwContextPathTrackingAccess);

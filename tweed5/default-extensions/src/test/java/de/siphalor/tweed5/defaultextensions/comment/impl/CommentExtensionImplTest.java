@@ -9,6 +9,7 @@ import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.NullableConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducerMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.serde.hjson.HjsonCommentType;
 import de.siphalor.tweed5.serde.hjson.HjsonWriter;
@@ -144,7 +145,7 @@ class CommentExtensionImplTest {
 		}
 
 		@Override
-		public Middleware<CommentProducer> commentMiddleware() {
+		public Middleware<CommentProducer, CommentProducerMiddlewareContext> commentMiddleware() {
 			return new Middleware<>() {
 				@Override
 				public String id() {
@@ -152,7 +153,7 @@ class CommentExtensionImplTest {
 				}
 
 				@Override
-				public CommentProducer process(CommentProducer inner) {
+				public CommentProducer process(CommentProducer inner, CommentProducerMiddlewareContext context) {
 					return entry -> "The comment is:\n" + inner.createComment(entry) + "\nEND";
 				}
 			};

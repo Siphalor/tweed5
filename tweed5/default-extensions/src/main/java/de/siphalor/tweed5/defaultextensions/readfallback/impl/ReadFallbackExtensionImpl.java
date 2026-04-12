@@ -10,6 +10,7 @@ import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.readfallback.api.ReadFallbackExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import lombok.extern.apachecommons.CommonsLog;
 import org.jspecify.annotations.NonNull;
@@ -30,7 +31,7 @@ public class ReadFallbackExtensionImpl implements ReadFallbackExtension, ReadWri
 		PresetsExtension presetsExtension = configContainer.extension(PresetsExtension.class)
 				.orElseThrow(() -> new IllegalStateException(getClass().getSimpleName()
 						+ " requires " + ReadFallbackExtension.class.getSimpleName()));
-		context.registerReaderMiddleware(new Middleware<TweedEntryReader<?, ?>>() {
+		context.registerReaderMiddleware(new Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext>() {
 			@Override
 			public String id() {
 				return EXTENSION_ID;
@@ -47,18 +48,18 @@ public class ReadFallbackExtensionImpl implements ReadFallbackExtension, ReadWri
 			}
 
 			@Override
-			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+			public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
 				//noinspection unchecked
 				TweedEntryReader<Object, ConfigEntry<Object>> castedInner =
 						(TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
-				return (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) (reader, entry, context) ->
-						castedInner.read(reader, entry, context).catchError(
+				return (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) (reader, entry, readContext) ->
+						castedInner.read(reader, entry, readContext).catchError(
 								issues -> {
 									Object fallback =
 											presetsExtension.presetValue(entry, PresetsExtension.DEFAULT_PRESET_NAME);
 									return TweedReadResult.withIssues(fallback, issues);
 								},
-								context
+								readContext
 						);
 			}
 		});

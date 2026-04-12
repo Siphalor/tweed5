@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.container.ConfigContainerSetupPhase;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducerMiddlewareContext;
 import de.siphalor.tweed5.serde_api.api.IntuitiveVisitingTweedDataReader;
 import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
@@ -44,8 +45,8 @@ public class CommentLoaderExtensionImpl implements CommentLoaderExtension, Comme
 	}
 
 	@Override
-	public Middleware<CommentProducer> commentMiddleware() {
-		return new Middleware<CommentProducer>() {
+	public Middleware<CommentProducer, CommentProducerMiddlewareContext> commentMiddleware() {
+		return new Middleware<CommentProducer, CommentProducerMiddlewareContext>() {
 			@Override
 			public String id() {
 				return EXTENSION_ID;
@@ -62,7 +63,10 @@ public class CommentLoaderExtensionImpl implements CommentLoaderExtension, Comme
 			}
 
 			@Override
-			public CommentProducer process(CommentProducer inner) {
+			public CommentProducer process(CommentProducer inner, CommentProducerMiddlewareContext context) {
+				if (context.entry().extensionsData().get(loadedCommentAccess) == null) {
+					return inner;
+				}
 				return entry -> {
 					String loadedComment = entry.extensionsData().get(loadedCommentAccess);
 					String innerComment = inner.createComment(entry);

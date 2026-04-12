@@ -3,6 +3,7 @@ package de.siphalor.tweed5.defaultextensions.comment.impl;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
+import de.siphalor.tweed5.serde.extension.api.extension.WriterMiddlewareContext;
 import de.siphalor.tweed5.serde_api.api.DelegatingTweedDataWriter;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
 import de.siphalor.tweed5.serde_api.api.decoration.TweedDataCommentDecoration;
@@ -17,7 +18,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 @RequiredArgsConstructor
-class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
+class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext> {
 	private final CommentExtensionImpl commentExtension;
 
 	@Override
@@ -26,15 +27,15 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 	}
 
 	@Override
-	public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
+	public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner, WriterMiddlewareContext context) {
 		PatchworkPartAccess<Boolean> writerInstalledAccess = commentExtension.writerInstalledReadWriteContextAccess();
 		assert writerInstalledAccess != null;
 
 		//noinspection unchecked
 		TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted = (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
-		return (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) (writer, value, entry, context) -> {
-			if (!Boolean.TRUE.equals(context.extensionsData().get(writerInstalledAccess))) {
-				context.extensionsData().set(writerInstalledAccess, Boolean.TRUE);
+		return (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) (writer, value, entry, writeContext) -> {
+			if (!Boolean.TRUE.equals(writeContext.extensionsData().get(writerInstalledAccess))) {
+				writeContext.extensionsData().set(writerInstalledAccess, Boolean.TRUE);
 
 				writer = new MapEntryKeyDeferringWriter(writer);
 			}
@@ -44,7 +45,7 @@ class TweedEntryWriterCommentMiddleware implements Middleware<TweedEntryWriter<?
 				writer.visitDecoration(new PiercingCommentDecoration(() -> comment));
 			}
 
-			innerCasted.write(writer, value, entry, context);
+			innerCasted.write(writer, value, entry, writeContext);
 		};
 	}
 

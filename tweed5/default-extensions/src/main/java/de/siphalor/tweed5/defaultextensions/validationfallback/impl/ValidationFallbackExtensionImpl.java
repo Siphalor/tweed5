@@ -7,6 +7,7 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
+import de.siphalor.tweed5.defaultextensions.validation.api.ValidatorMiddlewareContext;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResult;
@@ -62,11 +63,11 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 	}
 
 	@Override
-	public Middleware<ConfigEntryValidator> validationMiddleware() {
+	public Middleware<ConfigEntryValidator, ValidatorMiddlewareContext> validationMiddleware() {
 		return new ValidationFallbackMiddleware();
 	}
 
-	private class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator> {
+	private class ValidationFallbackMiddleware implements Middleware<ConfigEntryValidator, ValidatorMiddlewareContext> {
 		@Override
 		public String id() {
 			return EXTENSION_ID;
@@ -83,7 +84,7 @@ public class ValidationFallbackExtensionImpl implements ValidationFallbackExtens
 		}
 
 		@Override
-		public ConfigEntryValidator process(ConfigEntryValidator inner) {
+		public ConfigEntryValidator process(ConfigEntryValidator inner, ValidatorMiddlewareContext context) {
 			return new ConfigEntryValidator() {
 				@Override
 				public <T extends @Nullable Object> ValidationResult<T> validate(ConfigEntry<T> configEntry, T value) {

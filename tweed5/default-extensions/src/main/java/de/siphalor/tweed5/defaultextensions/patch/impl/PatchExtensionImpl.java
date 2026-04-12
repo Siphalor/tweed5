@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchExtension;
 import de.siphalor.tweed5.defaultextensions.patch.api.PatchInfo;
@@ -81,22 +82,22 @@ public class PatchExtensionImpl implements PatchExtension, ReadWriteRelatedExten
 		}
 	}
 
-	private class ReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
+	private class ReaderMiddleware implements Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> {
 		@Override
 		public String id() {
 			return "patch-info-collector";
 		}
 
 		@Override
-		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
 			assert readWriteContextDataAccess != null;
 
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> innerCasted =
 					(TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
-			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, context) -> {
-				TweedReadResult<Object> readResult = innerCasted.read(reader, entry, context);
-				ReadWriteContextCustomData customData = context.extensionsData().get(readWriteContextDataAccess);
+			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, readContext) -> {
+				TweedReadResult<Object> readResult = innerCasted.read(reader, entry, readContext);
+				ReadWriteContextCustomData customData = readContext.extensionsData().get(readWriteContextDataAccess);
 				if (customData != null && customData.patchInfo() != null) {
 					customData.patchInfo().addEntry(entry);
 				}

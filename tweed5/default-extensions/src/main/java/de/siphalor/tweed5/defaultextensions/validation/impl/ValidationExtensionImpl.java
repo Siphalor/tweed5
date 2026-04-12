@@ -11,6 +11,7 @@ import de.siphalor.tweed5.core.api.middleware.Middleware;
 import de.siphalor.tweed5.core.api.middleware.MiddlewareContainer;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentModifyingExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducerMiddlewareContext;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
 import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
@@ -18,6 +19,7 @@ import de.siphalor.tweed5.defaultextensions.pather.api.ValuePathTracking;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationProvidingExtension;
+import de.siphalor.tweed5.defaultextensions.validation.api.ValidatorMiddlewareContext;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssue;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssueLevel;
 import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationIssues;
@@ -28,10 +30,12 @@ import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadIssue;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import lombok.*;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -70,8 +74,8 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 
 	private final ConfigContainer<?> configContainer;
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
-	private final MiddlewareContainer<ConfigEntryValidator> entryValidatorMiddlewareContainer
-			= new DefaultMiddlewareContainer<>();
+	private final MiddlewareContainer<ConfigEntryValidator, ValidatorMiddlewareContext>
+			entryValidatorMiddlewareContainer = new DefaultMiddlewareContainer<>();
 	private @Nullable PatchworkPartAccess<ValidationIssues> readContextValidationIssuesAccess;
 	private @Nullable PatherExtension patherExtension;
 
@@ -97,15 +101,15 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public Middleware<CommentProducer> commentMiddleware() {
-		return new Middleware<CommentProducer>() {
+	public Middleware<CommentProducer, CommentProducerMiddlewareContext> commentMiddleware() {
+		return new Middleware<CommentProducer, CommentProducerMiddlewareContext>() {
 			@Override
 			public String id() {
 				return EXTENSION_ID;
 			}
 
 			@Override
-			public CommentProducer process(CommentProducer inner) {
+			public CommentProducer process(CommentProducer inner, CommentProducerMiddlewareContext context) {
 				return entry -> {
 					String baseComment = inner.createComment(entry);
 					CustomEntryData entryData = entry.extensionsData().get(customEntryDataAccess);
@@ -135,7 +139,10 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	}
 
 	@Override
-	public <T> void addValidatorMiddleware(ConfigEntry<T> entry, Middleware<ConfigEntryValidator> validator) {
+	public <T> void addValidatorMiddleware(
+			ConfigEntry<T> entry,
+			Middleware<ConfigEntryValidator, ValidatorMiddlewareContext> validator
+	) {
 		CustomEntryData entryData = getOrCreateCustomEntryData(entry);
 		entryData.addValidator(validator);
 	}
@@ -152,13 +159,20 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		CustomEntryData entryData = getOrCreateCustomEntryData(configEntry);
 
 		if (entryData.validators().isEmpty()) {
-			entryData.completeValidator(entryValidatorMiddlewareContainer.process(baseValidator));
+			entryData.completeValidator(entryValidatorMiddlewareContainer.process(
+					baseValidator,
+					ValidatorMiddlewareContext.builder().entry(configEntry).build()
+			));
 		} else {
-			DefaultMiddlewareContainer<ConfigEntryValidator> entrySpecificValidatorContainer = new DefaultMiddlewareContainer<>();
+			DefaultMiddlewareContainer<ConfigEntryValidator, ValidatorMiddlewareContext> entrySpecificValidatorContainer
+					= new DefaultMiddlewareContainer<>();
 			entrySpecificValidatorContainer.registerAll(entryValidatorMiddlewareContainer.middlewares());
 			entrySpecificValidatorContainer.registerAll(entryData.validators());
 			entrySpecificValidatorContainer.seal();
-			entryData.completeValidator(entrySpecificValidatorContainer.process(baseValidator));
+			entryData.completeValidator(entrySpecificValidatorContainer.process(
+					baseValidator,
+					ValidatorMiddlewareContext.builder().entry(configEntry).build()
+			));
 		}
 	}
 
@@ -199,14 +213,14 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	@Data
 	private static class CustomEntryData {
 		@Setter(AccessLevel.NONE)
-		private @Nullable List<Middleware<ConfigEntryValidator>> validators;
+		private @Nullable List<Middleware<ConfigEntryValidator, ValidatorMiddlewareContext>> validators;
 		private @Nullable ConfigEntryValidator completeValidator;
 
-		public List<Middleware<ConfigEntryValidator>> validators() {
+		public List<Middleware<ConfigEntryValidator, ValidatorMiddlewareContext>> validators() {
 			return validators == null ? Collections.emptyList() : validators;
 		}
 
-		public void addValidator(Middleware<ConfigEntryValidator> validator) {
+		public void addValidator(Middleware<ConfigEntryValidator, ValidatorMiddlewareContext> validator) {
 			if (validators == null) {
 				validators = new ArrayList<>();
 			}
@@ -214,7 +228,8 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 	}
 
-	private class EntryValidationReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
+	private class EntryValidationReaderMiddleware
+			implements Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> {
 		@Override
 		public String id() {
 			return EXTENSION_ID;
@@ -226,15 +241,15 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
 			assert readContextValidationIssuesAccess != null && patherExtension != null;
 
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> castedInner = (TweedEntryReader<Object, ConfigEntry<Object>>) inner;
-			return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) -> {
-				ValidationIssues validationIssues = getOrCreateValidationIssues(context.extensionsData());
+			return (TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext readContext) -> {
+				ValidationIssues validationIssues = getOrCreateValidationIssues(readContext.extensionsData());
 
-				return castedInner.read(reader, entry, context).andThen(value -> {
+				return castedInner.read(reader, entry, readContext).andThen(value -> {
 					ConfigEntryValidator entryValidator = entry.extensionsData()
 							.get(customEntryDataAccess)
 							.completeValidator();
@@ -246,22 +261,22 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 						return TweedReadResult.ok(validationResult.value());
 					}
 
-					String path = patherExtension.getPath(context);
+					String path = patherExtension.getPath(readContext);
 					validationIssues.issuesByPath().put(path, new ValidationIssues.EntryIssues(
 							entry,
 							validationResult.issues()
 					));
 					if (validationResult.hasError()) {
 						return TweedReadResult.failed(
-								mapValidationIssuesToReadIssues(validationResult.issues(), context)
+								mapValidationIssuesToReadIssues(validationResult.issues(), readContext)
 						);
 					} else {
 						return TweedReadResult.withIssues(
 								validationResult.value(),
-								mapValidationIssuesToReadIssues(validationResult.issues(), context)
+								mapValidationIssuesToReadIssues(validationResult.issues(), readContext)
 						);
 					}
-				}, context);
+				}, readContext);
 			};
 		}
 	}

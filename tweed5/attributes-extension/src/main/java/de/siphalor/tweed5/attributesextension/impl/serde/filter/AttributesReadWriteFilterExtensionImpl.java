@@ -15,6 +15,8 @@ import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
+import de.siphalor.tweed5.serde.extension.api.extension.ReaderMiddlewareContext;
+import de.siphalor.tweed5.serde.extension.api.extension.WriterMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.serde_api.api.DelegatingTweedDataWriter;
@@ -158,7 +160,7 @@ public class AttributesReadWriteFilterExtensionImpl
 		}
 	}
 
-	private class ReaderMiddleware implements Middleware<TweedEntryReader<?, ?>> {
+	private class ReaderMiddleware implements Middleware<TweedEntryReader<?, ?>, ReaderMiddlewareContext> {
 		@Override
 		public String id() {
 			return EXTENSION_ID;
@@ -175,28 +177,28 @@ public class AttributesReadWriteFilterExtensionImpl
 		}
 
 		@Override
-		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner) {
+		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
 			assert readWriteContextDataAccess != null;
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> innerCasted
 					= (TweedEntryReader<Object, @NonNull ConfigEntry<Object>>) inner;
 
-			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, context) -> {
-				ReadWriteContextCustomData contextData = context.extensionsData().get(readWriteContextDataAccess);
+			return (TweedEntryReader<Object, ConfigEntry<Object>>) (reader, entry, readContext) -> {
+				ReadWriteContextCustomData contextData = readContext.extensionsData().get(readWriteContextDataAccess);
 				if (contextData == null) {
 					contextData = new ReadWriteContextCustomData();
-					context.extensionsData().set(readWriteContextDataAccess, contextData);
+					readContext.extensionsData().set(readWriteContextDataAccess, contextData);
 				}
 				if (!doFiltersMatch(entry, contextData)) {
-					TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, context);
+					TweedEntryReaderWriterImpls.NOOP_READER_WRITER.read(reader, entry, readContext);
 					return TweedReadResult.empty();
 				}
-				return innerCasted.read(reader, entry, context);
+				return innerCasted.read(reader, entry, readContext);
 			};
 		}
 	}
 
-	private class WriterMiddleware implements Middleware<TweedEntryWriter<?, ?>> {
+	private class WriterMiddleware implements Middleware<TweedEntryWriter<?, ?>, WriterMiddlewareContext> {
 		@Override
 		public String id() {
 			return EXTENSION_ID;
@@ -213,18 +215,18 @@ public class AttributesReadWriteFilterExtensionImpl
 		}
 
 		@Override
-		public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner) {
+		public TweedEntryWriter<?, ?> process(TweedEntryWriter<?, ?> inner, WriterMiddlewareContext context) {
 			assert readWriteContextDataAccess != null;
 			//noinspection unchecked
 			TweedEntryWriter<Object, ConfigEntry<Object>> innerCasted
 					= (TweedEntryWriter<Object, @NonNull ConfigEntry<Object>>) inner;
 
 			return (TweedEntryWriter<@Nullable Object, @NonNull ConfigEntry<@Nullable Object>>)
-					(writer, value, entry, context) -> {
-						ReadWriteContextCustomData contextData = context.extensionsData()
+					(writer, value, entry, writeContext) -> {
+						ReadWriteContextCustomData contextData = writeContext.extensionsData()
 								.get(readWriteContextDataAccess);
 						if (contextData == null || contextData.attributeFilters().isEmpty()) {
-							innerCasted.write(writer, value, entry, context);
+							innerCasted.write(writer, value, entry, writeContext);
 							return;
 						}
 
@@ -234,7 +236,7 @@ public class AttributesReadWriteFilterExtensionImpl
 						}
 
 						if (doFiltersMatch(entry, contextData)) {
-							innerCasted.write(writer, value, entry, context);
+							innerCasted.write(writer, value, entry, writeContext);
 						} else {
 							try {
 								writer.visitValue(TWEED_DATA_NOTHING_VALUE);

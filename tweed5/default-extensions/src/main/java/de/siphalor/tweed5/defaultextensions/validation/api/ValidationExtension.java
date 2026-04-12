@@ -8,6 +8,7 @@ import de.siphalor.tweed5.defaultextensions.validation.api.result.ValidationResu
 import de.siphalor.tweed5.defaultextensions.validation.api.validators.SimpleValidatorMiddleware;
 import de.siphalor.tweed5.defaultextensions.validation.impl.ValidationExtensionImpl;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -55,7 +56,10 @@ public interface ValidationExtension extends TweedExtension {
 			lastId = id;
 		}
 	}
-	<T> void addValidatorMiddleware(ConfigEntry<T> entry, Middleware<ConfigEntryValidator> validator);
+	<T> void addValidatorMiddleware(
+			ConfigEntry<T> entry,
+			Middleware<ConfigEntryValidator, ValidatorMiddlewareContext> validator
+	);
 
 	ValidationIssues captureValidationIssues(Patchwork readContextExtensionsData);
 

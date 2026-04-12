@@ -6,6 +6,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtension;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.core.api.middleware.DefaultMiddlewareContainer;
+import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducerMiddlewareContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteExtensionSetupContext;
 import de.siphalor.tweed5.serde.extension.api.extension.ReadWriteRelatedExtension;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentExtension;
@@ -20,7 +21,7 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	private final ConfigContainer<?> configContainer;
 	@Getter
 	private final PatchworkPartAccess<CustomEntryData> customEntryDataAccess;
-	private final DefaultMiddlewareContainer<CommentProducer> middlewareContainer;
+	private final DefaultMiddlewareContainer<CommentProducer, CommentProducerMiddlewareContext> middlewareContainer;
 	@Getter
 	private @Nullable PatchworkPartAccess<Boolean> writerInstalledReadWriteContextAccess;
 
@@ -71,7 +72,10 @@ public class CommentExtensionImpl implements ReadWriteRelatedExtension, CommentE
 	public void recomputeFullComments() {
 		configContainer.rootEntry().visitInOrder(entry -> {
 			CustomEntryData entryData = getOrCreateCustomEntryData(entry);
-			entryData.commentProducer(middlewareContainer.process(_entry -> entryData.baseComment()));
+			entryData.commentProducer(middlewareContainer.process(
+					_entry -> entryData.baseComment(),
+					CommentProducerMiddlewareContext.builder().entry(entry).build()
+			));
 		});
 	}
 
