@@ -324,6 +324,14 @@ public class TweedCoatMappersImpl {
 								public Patchwork extensionsData() {
 									return readExtData;
 								}
+
+								@Override
+								public <T, C extends ConfigEntry<T>> TweedReadResult<T> readSubEntry(
+										TweedDataReader reader,
+										C entry
+								) {
+									return TweedReadResult.empty();
+								}
 							}
 					);
 				}

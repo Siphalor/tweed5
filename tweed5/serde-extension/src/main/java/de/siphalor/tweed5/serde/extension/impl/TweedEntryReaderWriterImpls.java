@@ -13,7 +13,6 @@ import de.siphalor.tweed5.serde_api.api.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
@@ -51,8 +50,7 @@ public class TweedEntryReaderWriterImpls {
 				return TweedReadResult.failed(TweedReadIssue.error(e, context));
 			}
 
-			TweedEntryReader<T, ConfigEntry<T>> nonNullReader = context.readWriteExtension().getReaderChain(entry.nonNullEntry());
-			return nonNullReader.read(reader, entry.nonNullEntry(), context);
+			return context.readSubEntry(reader, entry.nonNullEntry());
 		}
 
 		@Override
@@ -65,8 +63,7 @@ public class TweedEntryReaderWriterImpls {
 			if (value == null) {
 				writer.visitNull();
 			} else {
-				TweedEntryWriter<T, ConfigEntry<T>> nonNullWriter = context.readWriteExtension().getWriterChain(entry.nonNullEntry());
-				nonNullWriter.write(writer, value, entry.nonNullEntry(), context);
+				context.writeSubEntry(writer, value, entry.nonNullEntry());
 			}
 		}
 	}
@@ -161,8 +158,6 @@ public class TweedEntryReaderWriterImpls {
 				}
 
 				ConfigEntry<T> elementEntry = entry.elementEntry();
-				TweedEntryReader<T, ConfigEntry<T>> elementReader = context.readWriteExtension().getReaderChain(elementEntry);
-
 				List<T> list = new ArrayList<>(20);
 				List<TweedReadIssue> issues = new ArrayList<>();
 				while (true) {
@@ -172,7 +167,7 @@ public class TweedEntryReaderWriterImpls {
 							reader.readToken();
 							break;
 						} else if (token.isListValue()) {
-							TweedReadResult<T> elementResult = elementReader.read(reader, elementEntry, context);
+							TweedReadResult<T> elementResult = context.readSubEntry(reader, elementEntry);
 							issues.addAll(Arrays.asList(elementResult.issues()));
 							if (elementResult.isFailed() || elementResult.isError()) {
 								return TweedReadResult.failed(issues.toArray(new TweedReadIssue[0]));
@@ -207,11 +202,10 @@ public class TweedEntryReaderWriterImpls {
 			}
 
 			ConfigEntry<T> elementEntry = entry.elementEntry();
-			TweedEntryWriter<T, ConfigEntry<T>> elementWriter = context.readWriteExtension().getWriterChain(elementEntry);
 
 			writer.visitListStart();
 			for (T element : value) {
-				elementWriter.write(writer, element, elementEntry, context);
+				context.writeSubEntry(writer, element, elementEntry);
 			}
 			writer.visitListEnd();
 		}
@@ -242,8 +236,7 @@ public class TweedEntryReaderWriterImpls {
 								}
 								continue;
 							}
-							val subEntryReaderChain = context.readWriteExtension().getReaderChain(subEntry);
-							TweedReadResult<Object> subEntryResult = subEntryReaderChain.read(reader, subEntry, context);
+							TweedReadResult<Object> subEntryResult = context.readSubEntry(reader, subEntry);
 							issues.addAll(Arrays.asList(subEntryResult.issues()));
 							if (subEntryResult.isFailed() || subEntryResult.isError()) {
 								return TweedReadResult.failed(issues.toArray(new TweedReadIssue[0]));
@@ -281,10 +274,8 @@ public class TweedEntryReaderWriterImpls {
 				String key = e.getKey();
 				ConfigEntry<Object> subEntry = e.getValue();
 
-				TweedEntryWriter<Object, ConfigEntry<Object>> subEntryWriterChain = context.readWriteExtension().getWriterChain(subEntry);
-
 				writer.visitMapEntryKey(key);
-				subEntryWriterChain.write(writer, entry.get(value, key), subEntry, context);
+				context.writeSubEntry(writer, entry.get(value, key), subEntry);
 			}
 
 			writer.visitMapEnd();

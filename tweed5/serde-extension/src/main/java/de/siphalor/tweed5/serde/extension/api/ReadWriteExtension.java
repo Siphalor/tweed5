@@ -126,6 +126,4 @@ public interface ReadWriteExtension extends TweedExtension {
 			Patchwork contextExtensionsData
 	) throws TweedEntryWriteException;
 
-	<T, C extends ConfigEntry<T>> TweedEntryReader<T, C> getReaderChain(C entry);
-	<T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> getWriterChain(C entry);
 }

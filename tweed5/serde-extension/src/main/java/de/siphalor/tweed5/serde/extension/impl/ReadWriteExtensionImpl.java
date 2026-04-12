@@ -179,14 +179,12 @@ public class ReadWriteExtensionImpl implements ReadWriteExtension {
 		private TweedEntryWriter<?, ?> writerChain;
 	}
 
-	@Override
-	public <T, C extends ConfigEntry<T>> TweedEntryReader<T, C> getReaderChain(C entry) {
+	<T, C extends ConfigEntry<T>> TweedEntryReader<T, C> getReaderChain(C entry) {
 		//noinspection unchecked
 		return (TweedEntryReader<T, C>) entry.extensionsData().get(customEntryDataAccess).readerChain();
 	}
 
-	@Override
-	public <T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> getWriterChain(C entry) {
+	<T, C extends ConfigEntry<T>> TweedEntryWriter<T, C> getWriterChain(C entry) {
 		//noinspection unchecked
 		return (TweedEntryWriter<T, C>) entry.extensionsData().get(customEntryDataAccess).writerChain();
 	}

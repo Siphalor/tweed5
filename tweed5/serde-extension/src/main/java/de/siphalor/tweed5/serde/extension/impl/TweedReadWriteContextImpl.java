@@ -1,13 +1,34 @@
 package de.siphalor.tweed5.serde.extension.impl;
 
-import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
-import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
-import de.siphalor.tweed5.serde.extension.api.TweedWriteContext;
+import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.serde.extension.api.*;
+import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
-import lombok.Value;
+import de.siphalor.tweed5.serde_api.api.TweedDataReader;
+import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
+import de.siphalor.tweed5.serde_api.api.TweedDataWriteException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
-@Value
-public class TweedReadWriteContextImpl implements TweedReadContext, TweedWriteContext {
-	ReadWriteExtension readWriteExtension;
-	Patchwork extensionsData;
+@RequiredArgsConstructor
+class TweedReadWriteContextImpl implements TweedReadContext, TweedWriteContext {
+	@Getter
+	private final ReadWriteExtensionImpl readWriteExtension;
+	@Getter
+	private final Patchwork extensionsData;
+
+	@Override
+	public <T extends @Nullable Object, C extends ConfigEntry<T>> TweedReadResult<T> readSubEntry(
+			TweedDataReader reader, C entry
+	) {
+		return readWriteExtension.getReaderChain(entry).read(reader, entry, this);
+	}
+
+	@Override
+	public <T extends @Nullable Object, C extends ConfigEntry<T>> void writeSubEntry(
+			TweedDataVisitor writer, @Nullable T value, C entry
+	) throws TweedEntryWriteException, TweedDataWriteException {
+		readWriteExtension.getWriterChain(entry).write(writer, value, entry, this);
+	}
 }
