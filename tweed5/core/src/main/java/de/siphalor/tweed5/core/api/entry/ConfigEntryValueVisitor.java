@@ -8,18 +8,11 @@ public interface ConfigEntryValueVisitor {
 		return true;
 	}
 
-	default boolean enterAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
+	default boolean enterSubEntry(SubEntryKey subEntryKey) {
 		return true;
 	}
 
-	default boolean enterStructuredSubEntry(String entryKey, String valueKey) {
-		return true;
-	}
-
-	default void leaveAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
-	}
-
-	default void leaveStructuredSubEntry(String entryKey, String valueKey) {
+	default void leaveSubEntry(SubEntryKey subEntryKey) {
 	}
 
 	default <T> void leaveStructuredEntry(StructuredConfigEntry<T> entry, T value) {

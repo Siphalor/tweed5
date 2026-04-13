@@ -12,5 +12,5 @@ public interface MutableStructuredConfigEntry<T> extends AddressableStructuredCo
 	}
 
 	@NonNull T instantiateValue();
-	void set(T value, String key, Object subValue);
+	void set(T value, String dataKey, Object subValue);
 }

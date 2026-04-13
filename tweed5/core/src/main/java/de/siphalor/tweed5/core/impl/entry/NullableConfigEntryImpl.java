@@ -5,6 +5,7 @@ import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +26,7 @@ public class NullableConfigEntryImpl<T extends @Nullable Object> extends BaseCon
 	}
 
 	@Override
-	public T get(T value, String key) {
+	public T get(T value, String dataKey) {
 		return value;
 	}
 
@@ -38,9 +39,10 @@ public class NullableConfigEntryImpl<T extends @Nullable Object> extends BaseCon
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (value != null) {
 			if (visitor.enterStructuredEntry(this, value)) {
-				if (visitor.enterAddressableStructuredSubEntry(NON_NULL_KEY, NON_NULL_KEY, NON_NULL_KEY)) {
+				SubEntryKey subEntryKey = SubEntryKey.transparentAddressable(NON_NULL_KEY, NON_NULL_KEY);
+				if (visitor.enterSubEntry(subEntryKey)) {
 					nonNullEntry.visitInOrder(visitor, value);
-					visitor.leaveAddressableStructuredSubEntry(NON_NULL_KEY, NON_NULL_KEY, NON_NULL_KEY);
+					visitor.leaveSubEntry(subEntryKey);
 				}
 				visitor.leaveStructuredEntry(this, value);
 			}

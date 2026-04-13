@@ -3,6 +3,7 @@ package de.siphalor.tweed5.defaultextensions.pather.api;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
 import de.siphalor.tweed5.core.api.entry.StructuredConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 
@@ -22,32 +23,21 @@ public class PathTrackingConfigEntryValueVisitor implements ConfigEntryValueVisi
 	}
 
 	@Override
-	public boolean enterAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
-		boolean enter = delegate.enterAddressableStructuredSubEntry(entryKey, valueKey, dataKey);
+	public boolean enterSubEntry(SubEntryKey subEntryKey) {
+		boolean enter = delegate.enterSubEntry(subEntryKey);
 		if (enter) {
-			pathTracking.pushPathPart(entryKey, valueKey);
+			if (subEntryKey.value() != null) {
+				pathTracking.pushPathPart(subEntryKey.entry(), subEntryKey.value());
+			} else  {
+				pathTracking.pushEmptyValuePathPart(subEntryKey.entry());
+			}
 		}
 		return enter;
 	}
 
 	@Override
-	public boolean enterStructuredSubEntry(String entryKey, String valueKey) {
-		boolean enter = delegate.enterStructuredSubEntry(entryKey, valueKey);
-		if (enter) {
-			pathTracking.pushPathPart(entryKey, valueKey);
-		}
-		return enter;
-	}
-
-	@Override
-	public void leaveAddressableStructuredSubEntry(String entryKey, String valueKey, String dataKey) {
-		delegate.leaveAddressableStructuredSubEntry(entryKey, valueKey, dataKey);
-		pathTracking.popPathPart();
-	}
-
-	@Override
-	public void leaveStructuredSubEntry(String entryKey, String valueKey) {
-		delegate.leaveStructuredSubEntry(entryKey, valueKey);
+	public void leaveSubEntry(SubEntryKey subEntryKey) {
+		delegate.leaveSubEntry(subEntryKey);
 		pathTracking.popPathPart();
 	}
 

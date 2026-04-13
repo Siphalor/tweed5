@@ -9,5 +9,5 @@ public interface AddressableStructuredConfigEntry<T> extends StructuredConfigEnt
 		return this;
 	}
 
-	Object get(T value, String key);
+	Object get(T value, String dataKey);
 }

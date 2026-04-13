@@ -18,6 +18,17 @@ public final class ValuePathTracking implements PathTracking {
 	}
 
 	@Override
+	public void pushEmptyPathPart() {
+		entryPathTracking.pushEmptyPathPart();
+		valuePathTracking.pushEmptyPathPart();
+	}
+
+	public void pushEmptyValuePathPart(String entryPathPart) {
+		entryPathTracking.pushPathPart(entryPathPart);
+		valuePathTracking.pushEmptyPathPart();
+	}
+
+	@Override
 	public void popPathPart() {
 		valuePathTracking.popPathPart();
 		entryPathTracking.popPathPart();
@@ -30,5 +41,14 @@ public final class ValuePathTracking implements PathTracking {
 
 	public String currentEntryPath() {
 		return entryPathTracking.currentPath();
+	}
+
+	@Override
+	public String[] currentPathParts() {
+		return valuePathTracking.currentPathParts();
+	}
+
+	public String[] currentEntryPathParts() {
+		return entryPathTracking.currentPathParts();
 	}
 }

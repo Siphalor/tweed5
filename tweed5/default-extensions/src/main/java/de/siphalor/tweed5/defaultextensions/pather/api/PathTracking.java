@@ -9,7 +9,11 @@ public interface PathTracking {
 
 	void pushPathPart(String pathPart);
 
+	void pushEmptyPathPart();
+
 	void popPathPart();
 
 	String currentPath();
+
+	String[] currentPathParts();
 }

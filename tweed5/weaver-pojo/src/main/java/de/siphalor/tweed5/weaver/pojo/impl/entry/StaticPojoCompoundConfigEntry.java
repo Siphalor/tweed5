@@ -5,6 +5,7 @@ import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.BaseConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntryValueVisitor;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCompoundConfigEntry;
 
 import java.util.Collections;
@@ -40,30 +41,30 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	}
 
 	@Override
-	public void set(T compoundValue, String key, Object value) {
-		SubEntry subEntry = subEntries.get(key);
+	public void set(T compoundValue, String dataKey, Object value) {
+		SubEntry subEntry = subEntries.get(dataKey);
 		if (subEntry == null) {
-			throw new IllegalArgumentException("Unknown config entry: " + key);
+			throw new IllegalArgumentException("Unknown config entry: " + dataKey);
 		}
 
 		try {
 			subEntry.setter().invoke(compoundValue, value);
 		} catch (Throwable e) {
-			throw new IllegalStateException("Failed to set value for config entry \"" + key + "\"", e);
+			throw new IllegalStateException("Failed to set value for config entry \"" + dataKey + "\"", e);
 		}
 	}
 
 	@Override
-	public Object get(T compoundValue, String key) {
-		SubEntry subEntry = subEntries.get(key);
+	public Object get(T compoundValue, String dataKey) {
+		SubEntry subEntry = subEntries.get(dataKey);
 		if (subEntry == null) {
-			throw new IllegalArgumentException("Unknown config entry: " + key);
+			throw new IllegalArgumentException("Unknown config entry: " + dataKey);
 		}
 
 		try {
 			return subEntry.getter().invoke(compoundValue);
 		} catch (Throwable e) {
-			throw new IllegalStateException("Failed to get value for config entry \"" + key + "\"", e);
+			throw new IllegalStateException("Failed to get value for config entry \"" + dataKey + "\"", e);
 		}
 	}
 
@@ -80,12 +81,13 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
 			subEntries.forEach((key, entry) -> {
-				if (visitor.enterAddressableStructuredSubEntry(key, key, key)) {
+				SubEntryKey subEntryKey = SubEntryKey.addressable(key, key, key);
+				if (visitor.enterSubEntry(subEntryKey)) {
 					try {
 						Object subValue = entry.getter().invoke(value);
 						//noinspection unchecked
 						((ConfigEntry<Object>) entry.configEntry()).visitInOrder(visitor, subValue);
-						visitor.leaveAddressableStructuredSubEntry(key, key, key);
+						visitor.leaveSubEntry(subEntryKey);
 					} catch (Throwable e) {
 						throw new RuntimeException("Failed to get compound sub entry value \"" + key + "\"");
 					}

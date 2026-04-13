@@ -29,15 +29,15 @@ public class StaticMapCompoundConfigEntryImpl<T extends @NonNull Map<String, Obj
 	}
 
 	@Override
-	public void set(T compoundValue, String key, Object value) {
-		requireKey(key);
-		compoundValue.put(key, value);
+	public void set(T compoundValue, String dataKey, Object value) {
+		requireKey(dataKey);
+		compoundValue.put(dataKey, value);
 	}
 
 	@Override
-	public Object get(T compoundValue, String key) {
-		requireKey(key);
-		return compoundValue.get(key);
+	public Object get(T compoundValue, String dataKey) {
+		requireKey(dataKey);
+		return compoundValue.get(dataKey);
 	}
 
 	private void requireKey(String key) {
@@ -55,10 +55,11 @@ public class StaticMapCompoundConfigEntryImpl<T extends @NonNull Map<String, Obj
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
 			compoundEntries.forEach((key, entry) -> {
-				if (visitor.enterAddressableStructuredSubEntry(key, key, key)) {
+				SubEntryKey subEntryKey = SubEntryKey.addressable(key, key, key);
+				if (visitor.enterSubEntry(subEntryKey)) {
 					//noinspection unchecked
 					((ConfigEntry<Object>) entry).visitInOrder(visitor, value.get(key));
-					visitor.leaveAddressableStructuredSubEntry(key, key, key);
+					visitor.leaveSubEntry(subEntryKey);
 				}
 			});
 			visitor.leaveStructuredEntry(this, value);
