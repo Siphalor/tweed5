@@ -80,19 +80,21 @@ public class StaticPojoCompoundConfigEntry<T> extends BaseConfigEntry<T> impleme
 	@Override
 	public void visitInOrder(ConfigEntryValueVisitor visitor, T value) {
 		if (visitor.enterStructuredEntry(this, value)) {
-			subEntries.forEach((key, entry) -> {
+			for (Map.Entry<String, SubEntry> entry : subEntries.entrySet()) {
+				String key = entry.getKey();
 				SubEntryKey subEntryKey = SubEntryKey.addressable(key, key, key);
 				if (visitor.enterSubEntry(subEntryKey)) {
+					Object subValue;
 					try {
-						Object subValue = entry.getter().invoke(value);
-						//noinspection unchecked
-						((ConfigEntry<Object>) entry.configEntry()).visitInOrder(visitor, subValue);
-						visitor.leaveSubEntry(subEntryKey);
+						subValue = entry.getValue().getter().invoke(value);
 					} catch (Throwable e) {
 						throw new RuntimeException("Failed to get compound sub entry value \"" + key + "\"");
 					}
+					//noinspection unchecked
+					((ConfigEntry<Object>) entry.getValue().configEntry()).visitInOrder(visitor, subValue);
+					visitor.leaveSubEntry(subEntryKey);
 				}
-			});
+			}
 			visitor.leaveStructuredEntry(this, value);
 		}
 	}

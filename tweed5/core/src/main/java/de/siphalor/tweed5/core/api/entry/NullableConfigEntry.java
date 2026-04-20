@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 public interface NullableConfigEntry<T extends @Nullable Object> extends AddressableStructuredConfigEntry<T> {
 	String NON_NULL_KEY = ":nonNull";
+	SubEntryKey NON_NULL_SUB_ENTRY_KEY = SubEntryKey.transparentAddressable(NON_NULL_KEY, NON_NULL_KEY);
 
 	@Override
 	default NullableConfigEntry<T> apply(Consumer<ConfigEntry<T>> function) {

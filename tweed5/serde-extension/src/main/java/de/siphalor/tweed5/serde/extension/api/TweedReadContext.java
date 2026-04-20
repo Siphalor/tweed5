@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.serde.extension.api;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
@@ -11,6 +12,6 @@ public interface TweedReadContext {
 	Patchwork extensionsData();
 
 	<T extends @Nullable Object, C extends ConfigEntry<T>> TweedReadResult<T> readSubEntry(
-			TweedDataReader reader, C entry
+			TweedDataReader reader, C entry, SubEntryKey key
 	);
 }

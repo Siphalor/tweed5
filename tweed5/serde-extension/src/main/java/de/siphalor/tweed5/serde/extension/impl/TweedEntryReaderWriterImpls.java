@@ -1,9 +1,6 @@
 package de.siphalor.tweed5.serde.extension.impl;
 
-import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
-import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
-import de.siphalor.tweed5.core.api.entry.ConfigEntry;
-import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
+import de.siphalor.tweed5.core.api.entry.*;
 import de.siphalor.tweed5.serde.extension.api.*;
 import de.siphalor.tweed5.serde.extension.api.read.result.ThrowingReadFunction;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadIssue;
@@ -13,6 +10,7 @@ import de.siphalor.tweed5.serde_api.api.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
@@ -50,7 +48,7 @@ public class TweedEntryReaderWriterImpls {
 				return TweedReadResult.failed(TweedReadIssue.error(e, context));
 			}
 
-			return context.readSubEntry(reader, entry.nonNullEntry());
+			return context.readSubEntry(reader, entry.nonNullEntry(), NullableConfigEntry.NON_NULL_SUB_ENTRY_KEY);
 		}
 
 		@Override
@@ -63,7 +61,7 @@ public class TweedEntryReaderWriterImpls {
 			if (value == null) {
 				writer.visitNull();
 			} else {
-				context.writeSubEntry(writer, value, entry.nonNullEntry());
+				context.writeSubEntry(writer, entry.nonNullEntry(), NullableConfigEntry.NON_NULL_SUB_ENTRY_KEY, value);
 			}
 		}
 	}
@@ -124,7 +122,7 @@ public class TweedEntryReaderWriterImpls {
 	}
 
 	@RequiredArgsConstructor
-	public static class EnumReaderWriter<T extends Enum<?>> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
+	public static class EnumReaderWriter<T extends @Nullable Enum<?>> implements TweedEntryReaderWriter<T, ConfigEntry<T>> {
 		@Override
 		public TweedReadResult<T> read(TweedDataReader reader, ConfigEntry<T> entry, TweedReadContext context) {
 			//noinspection unchecked,rawtypes
@@ -140,7 +138,7 @@ public class TweedEntryReaderWriterImpls {
 		@Override
 		public void write(
 				TweedDataVisitor writer,
-				@Nullable T value,
+				T value,
 				ConfigEntry<T> entry,
 				TweedWriteContext context
 		) throws TweedEntryWriteException, TweedDataWriteException {
@@ -149,7 +147,7 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CollectionReaderWriter<T extends @Nullable Object, C extends Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
+	public static class CollectionReaderWriter<T extends @Nullable Object, C extends @Nullable Collection<T>> implements TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> {
 		@Override
 		public TweedReadResult<C> read(TweedDataReader reader, CollectionConfigEntry<T, C> entry, TweedReadContext context) {
 			return requireToken(reader, TweedDataToken::isListStart, "Expected list start", context).andThen(_token -> {
@@ -160,6 +158,7 @@ public class TweedEntryReaderWriterImpls {
 				ConfigEntry<T> elementEntry = entry.elementEntry();
 				List<T> list = new ArrayList<>(20);
 				List<TweedReadIssue> issues = new ArrayList<>();
+				int i = 0;
 				while (true) {
 					try {
 						TweedDataToken token = reader.peekToken();
@@ -167,7 +166,11 @@ public class TweedEntryReaderWriterImpls {
 							reader.readToken();
 							break;
 						} else if (token.isListValue()) {
-							TweedReadResult<T> elementResult = context.readSubEntry(reader, elementEntry);
+							TweedReadResult<T> elementResult = context.readSubEntry(
+									reader,
+									elementEntry,
+									SubEntryKey.structured(CollectionConfigEntry.ELEMENT_KEY, Integer.toString(i))
+							);
 							issues.addAll(Arrays.asList(elementResult.issues()));
 							if (elementResult.isFailed() || elementResult.isError()) {
 								return TweedReadResult.failed(issues.toArray(new TweedReadIssue[0]));
@@ -184,6 +187,7 @@ public class TweedEntryReaderWriterImpls {
 					} catch (TweedDataReadException e) {
 						issues.add(TweedReadIssue.error(e, context));
 					}
+					i++;
 				}
 				C result = entry.instantiateCollection(list.size());
 				result.addAll(list);
@@ -201,12 +205,16 @@ public class TweedEntryReaderWriterImpls {
 				return;
 			}
 
-			ConfigEntry<T> elementEntry = entry.elementEntry();
-
 			writer.visitListStart();
-			for (T element : value) {
-				context.writeSubEntry(writer, element, elementEntry);
-			}
+
+			visitStructuredEntryShallow(entry, value, new ShallowValueVisitor() {
+				@Override
+				public <U extends @Nullable Object> void visit(ConfigEntry<U> entry, SubEntryKey key, U value)
+						throws TweedDataWriteException, TweedEntryWriteException {
+					context.writeSubEntry(writer, entry, key, value);
+				}
+			});
+
 			writer.visitListEnd();
 		}
 	}
@@ -236,7 +244,13 @@ public class TweedEntryReaderWriterImpls {
 								}
 								continue;
 							}
-							TweedReadResult<Object> subEntryResult = context.readSubEntry(reader, subEntry);
+
+							TweedReadResult<Object> subEntryResult = context.readSubEntry(
+									reader,
+									subEntry,
+									SubEntryKey.addressable(key, key, key)
+							);
+
 							issues.addAll(Arrays.asList(subEntryResult.issues()));
 							if (subEntryResult.isFailed() || subEntryResult.isError()) {
 								return TweedReadResult.failed(issues.toArray(new TweedReadIssue[0]));
@@ -268,15 +282,16 @@ public class TweedEntryReaderWriterImpls {
 
 			writer.visitMapStart();
 
-			//noinspection unchecked
-			Map<String, ConfigEntry<Object>> compoundEntries = (Map<String, ConfigEntry<Object>>)(Map<?, ?>) entry.subEntries();
-			for (Map.Entry<String, ConfigEntry<Object>> e : compoundEntries.entrySet()) {
-				String key = e.getKey();
-				ConfigEntry<Object> subEntry = e.getValue();
-
-				writer.visitMapEntryKey(key);
-				context.writeSubEntry(writer, entry.get(value, key), subEntry);
-			}
+			visitStructuredEntryShallow(entry, value, new ShallowValueVisitor() {
+				@Override
+				public <U extends @Nullable Object> void visit(ConfigEntry<U> subEntry, SubEntryKey key, U subValue)
+						throws TweedDataWriteException, TweedEntryWriteException {
+					if (key.value() != null) {
+						writer.visitMapEntryKey(key.value());
+						context.writeSubEntry(writer, subEntry, key, subValue);
+					}
+				}
+			});
 
 			writer.visitMapEnd();
 		}
@@ -284,7 +299,11 @@ public class TweedEntryReaderWriterImpls {
 
 	public static class NoopReaderWriter implements TweedEntryReaderWriter<@Nullable Object, ConfigEntry<Object>> {
 		@Override
-		public TweedReadResult<@Nullable Object> read(TweedDataReader reader, ConfigEntry<Object> entry, TweedReadContext context) {
+		public TweedReadResult<@Nullable Object> read(
+				TweedDataReader reader,
+				ConfigEntry<@Nullable Object> entry,
+				TweedReadContext context
+		) {
 			try {
 				TweedDataToken token = reader.readToken();
 				if (!token.isListStart() && !token.isMapStart()) {
@@ -317,7 +336,12 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, @Nullable Object value, ConfigEntry<Object> entry, TweedWriteContext context) throws TweedDataWriteException {
+		public void write(
+				TweedDataVisitor writer,
+				@Nullable Object value,
+				ConfigEntry<@Nullable Object> entry,
+				TweedWriteContext context
+		) throws TweedDataWriteException {
 			writer.visitNull();
 		}
 
@@ -326,11 +350,11 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	private interface PrimitiveReadFunction<T extends Object> {
+	private interface PrimitiveReadFunction<T> {
 		T read(TweedDataToken token) throws TweedDataReadException;
 	}
 
-	private interface PrimitiveWriteFunction<T extends Object> {
+	private interface PrimitiveWriteFunction<T> {
 		void write(TweedDataVisitor writer, T value) throws TweedDataWriteException;
 	}
 
@@ -362,5 +386,45 @@ public class TweedEntryReaderWriterImpls {
 		} catch (TweedDataReadException e) {
 			return TweedReadResult.failed(TweedReadIssue.error(e, context));
 		}
+	}
+
+	private static <T extends @Nullable Object> void visitStructuredEntryShallow(
+			StructuredConfigEntry<T> entry,
+			T value,
+			ShallowValueVisitor shallowValueVisitor
+	) throws TweedDataWriteException, TweedEntryWriteException {
+		entry.visitInOrder(new ConfigEntryValueVisitor() {
+			private @Nullable SubEntryKey currentSubEntryKey;
+
+			@Override
+			public <U> boolean enterStructuredEntry(StructuredConfigEntry<U> vEntry, U vValue) {
+				if (entry == vEntry) {
+					return true;
+				}
+				visitEntry(vEntry, vValue);
+				return false;
+			}
+
+			@Override
+			public boolean enterSubEntry(SubEntryKey subEntryKey) {
+				currentSubEntryKey = subEntryKey;
+				return true;
+			}
+
+			@Override
+			@SneakyThrows
+			public <U> void visitEntry(ConfigEntry<U> vEntry, U vValue) {
+				if (currentSubEntryKey != null) {
+					shallowValueVisitor.visit(vEntry, currentSubEntryKey, vValue);
+					currentSubEntryKey = null;
+				}
+			}
+		}, value);
+	}
+
+	@FunctionalInterface
+	private interface ShallowValueVisitor {
+		<T extends @Nullable Object> void visit(ConfigEntry<T> entry, SubEntryKey key, T value)
+				throws TweedDataWriteException, TweedEntryWriteException;
 	}
 }

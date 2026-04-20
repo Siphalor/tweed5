@@ -1,6 +1,7 @@
 package de.siphalor.tweed5.serde.extension.impl;
 
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import de.siphalor.tweed5.serde.extension.api.*;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
@@ -20,14 +21,14 @@ class TweedReadWriteContextImpl implements TweedReadContext, TweedWriteContext {
 
 	@Override
 	public <T extends @Nullable Object, C extends ConfigEntry<T>> TweedReadResult<T> readSubEntry(
-			TweedDataReader reader, C entry
+			TweedDataReader reader, C entry, SubEntryKey key
 	) {
 		return readWriteExtension.getReaderChain(entry).read(reader, entry, this);
 	}
 
 	@Override
 	public <T extends @Nullable Object, C extends ConfigEntry<T>> void writeSubEntry(
-			TweedDataVisitor writer, @Nullable T value, C entry
+			TweedDataVisitor writer, C entry, SubEntryKey key, @Nullable T value
 	) throws TweedEntryWriteException, TweedDataWriteException {
 		readWriteExtension.getWriterChain(entry).write(writer, value, entry, this);
 	}

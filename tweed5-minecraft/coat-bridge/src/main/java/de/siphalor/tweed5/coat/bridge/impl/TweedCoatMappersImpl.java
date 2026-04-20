@@ -21,6 +21,7 @@ import de.siphalor.tweed5.coat.bridge.api.mapping.handler.BasicTweedCoatEntryHan
 import de.siphalor.tweed5.coat.bridge.api.mapping.handler.ConvertingTweedCoatEntryHandler;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.SubEntryKey;
 import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
@@ -328,7 +329,8 @@ public class TweedCoatMappersImpl {
 								@Override
 								public <T, C extends ConfigEntry<T>> TweedReadResult<T> readSubEntry(
 										TweedDataReader reader,
-										C entry
+										C entry,
+										SubEntryKey key
 								) {
 									return TweedReadResult.empty();
 								}
