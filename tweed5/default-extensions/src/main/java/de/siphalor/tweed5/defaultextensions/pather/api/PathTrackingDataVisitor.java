@@ -71,7 +71,7 @@ public class PathTrackingDataVisitor implements TweedDataVisitor {
 
 	@Override
 	public void visitValue(@Nullable Object value) throws TweedDataUnsupportedValueException {
-		TweedDataVisitor.super.visitValue(value);
+		delegate.visitValue(value);
 		valueVisited();
 	}
 

@@ -106,6 +106,7 @@ public class DelegatingTweedDataWriter implements TweedDataWriter {
 
 	@Override
 	public void visitValue(@Nullable Object value) throws TweedDataUnsupportedValueException {
+		beforeValueWrite();
 		delegate.visitValue(value);
 	}
 
