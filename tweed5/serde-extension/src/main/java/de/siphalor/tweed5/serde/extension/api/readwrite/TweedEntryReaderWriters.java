@@ -3,6 +3,7 @@ package de.siphalor.tweed5.serde.extension.api.readwrite;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.core.api.entry.MutableStructuredConfigEntry;
 import de.siphalor.tweed5.core.api.entry.NullableConfigEntry;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriter;
@@ -77,6 +78,11 @@ public class TweedEntryReaderWriters {
 	public static <T, C extends Collection<T>> TweedEntryReaderWriter<C, CollectionConfigEntry<T, C>> collectionReaderWriter() {
 		//noinspection unchecked
 		return (TweedEntryReaderWriter<C, @NonNull CollectionConfigEntry<T, C>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COLLECTION_READER_WRITER;
+	}
+
+	public static <T, E extends MutableStructuredConfigEntry<T>> TweedEntryReaderWriter<T, E> mutableStructuredReaderWriter() {
+		//noinspection unchecked
+		return (TweedEntryReaderWriter<T, E>) TweedEntryReaderWriterImpls.MUTABLE_STRUCTURED_READER_WRITER;
 	}
 
 	public static <T> TweedEntryReaderWriter<T, CompoundConfigEntry<T>> compoundReaderWriter() {

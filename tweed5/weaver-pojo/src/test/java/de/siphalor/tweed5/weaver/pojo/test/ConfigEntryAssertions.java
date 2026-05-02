@@ -4,6 +4,7 @@ import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.entry.SimpleConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableStringMapConfigEntry;
 
 import java.util.function.Consumer;
 
@@ -31,6 +32,23 @@ public class ConfigEntryAssertions {
 						compoundEntry -> assertThat(compoundEntry.valueClass())
 								.as("Value class of compound entry should match")
 								.isEqualTo(compoundClass),
+						condition::accept
+				);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static Consumer<Object> isStringMapEntryForClass(
+			Class<?> mapClass,
+			Consumer<WeavableStringMapConfigEntry<?, ?>> condition
+	) {
+		return object -> assertThat(object)
+				.as("Should be a string map config entry for class " + mapClass.getName())
+				.asInstanceOf(type(WeavableStringMapConfigEntry.class))
+				.as("String map entry for class " + mapClass.getSimpleName())
+				.satisfies(
+						mapEntry -> assertThat(mapEntry.valueClass())
+								.as("Value class of string map entry should match")
+								.isEqualTo(mapClass),
 						condition::accept
 				);
 	}

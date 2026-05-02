@@ -12,6 +12,11 @@ public interface CompoundConfigEntry<T> extends MutableStructuredConfigEntry<T> 
 	}
 
 	@Override
+	default ConfigEntry<?> getEntry(String dataKey) {
+		return subEntries().get(dataKey);
+	}
+
+	@Override
 	default void visitInOrder(ConfigEntryVisitor visitor) {
 		if (visitor.enterStructuredEntry(this)) {
 			subEntries().forEach((key, entry) -> {

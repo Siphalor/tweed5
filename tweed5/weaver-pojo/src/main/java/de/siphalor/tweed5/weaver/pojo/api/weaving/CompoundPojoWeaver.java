@@ -15,8 +15,7 @@ import de.siphalor.tweed5.typeutils.api.type.TypeAnnotationLayer;
 import de.siphalor.tweed5.weaver.pojo.impl.entry.StaticPojoCompoundConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoClassIntrospector;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfig;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.compound.CompoundWeavingConfigImpl;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.config.CompoundWeavingConfig;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
  * A weaver that weaves classes with the {@link CompoundWeaving} annotation as compound entries.
  */
 public class CompoundPojoWeaver implements TweedPojoWeavingExtension {
-	private static final CompoundWeavingConfig DEFAULT_WEAVING_CONFIG = CompoundWeavingConfigImpl.builder()
+	private static final CompoundWeavingConfig DEFAULT_WEAVING_CONFIG = CompoundWeavingConfig.builder()
 			.compoundSourceNamingFormat(NamingFormats.camelCase())
 			.compoundTargetNamingFormat(NamingFormats.camelCase())
 			.compoundEntryClass(StaticPojoCompoundConfigEntry.class)
@@ -84,7 +83,7 @@ public class CompoundPojoWeaver implements TweedPojoWeavingExtension {
 			return parent;
 		}
 
-		return CompoundWeavingConfigImpl.withOverrides(parent, local);
+		return CompoundWeavingConfig.withOverrides(parent, local);
 	}
 
 	private @Nullable CompoundWeavingConfig createWeavingConfigFromAnnotations(AnnotatedElement annotations) {
@@ -93,7 +92,7 @@ public class CompoundPojoWeaver implements TweedPojoWeavingExtension {
 			return null;
 		}
 
-		CompoundWeavingConfigImpl.CompoundWeavingConfigImplBuilder builder = CompoundWeavingConfigImpl.builder();
+		CompoundWeavingConfig.CompoundWeavingConfigBuilder builder = CompoundWeavingConfig.builder();
 		builder.compoundSourceNamingFormat(NamingFormats.camelCase());
 		if (!annotation.namingFormat().isEmpty()) {
 			builder.compoundTargetNamingFormat(getNamingFormatById(annotation.namingFormat()));

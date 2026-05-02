@@ -9,8 +9,7 @@ import de.siphalor.tweed5.weaver.pojo.api.annotation.CollectionWeaving;
 import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableCollectionConfigEntry;
 import de.siphalor.tweed5.weaver.pojo.impl.entry.CollectionConfigEntryImpl;
 import de.siphalor.tweed5.weaver.pojo.impl.weaving.PojoWeavingException;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfig;
-import de.siphalor.tweed5.weaver.pojo.impl.weaving.collection.CollectionWeavingConfigImpl;
+import de.siphalor.tweed5.weaver.pojo.impl.weaving.config.CollectionWeavingConfig;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
@@ -21,7 +20,7 @@ import java.util.*;
 import java.util.function.IntFunction;
 
 public class CollectionPojoWeaver implements TweedPojoWeavingExtension {
-	private static final CollectionWeavingConfig DEFAULT_WEAVING_CONFIG = CollectionWeavingConfigImpl.builder()
+	private static final CollectionWeavingConfig DEFAULT_WEAVING_CONFIG = CollectionWeavingConfig.builder()
 			.collectionEntryClass(CollectionConfigEntryImpl.class)
 			.build();
 
@@ -80,7 +79,7 @@ public class CollectionPojoWeaver implements TweedPojoWeavingExtension {
 			return parent;
 		}
 
-		return CollectionWeavingConfigImpl.withOverrides(parent, local);
+		return CollectionWeavingConfig.withOverrides(parent, local);
 	}
 
 	private @Nullable CollectionWeavingConfig createWeavingConfigFromAnnotations(AnnotatedElement annotations) {
@@ -89,7 +88,7 @@ public class CollectionPojoWeaver implements TweedPojoWeavingExtension {
 			return null;
 		}
 
-		CollectionWeavingConfigImpl.CollectionWeavingConfigImplBuilder builder = CollectionWeavingConfigImpl.builder();
+		CollectionWeavingConfig.CollectionWeavingConfigBuilder builder = CollectionWeavingConfig.builder();
 		if (annotation.entryClass() != null) {
 			builder.collectionEntryClass(annotation.entryClass());
 		}

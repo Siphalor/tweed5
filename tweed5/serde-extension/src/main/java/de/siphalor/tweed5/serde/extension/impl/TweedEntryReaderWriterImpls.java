@@ -32,7 +32,8 @@ public class TweedEntryReaderWriterImpls {
 
 	public static final TweedEntryReaderWriter<Object, NullableConfigEntry<Object>> NULLABLE_READER_WRITER = new NullableReaderWriter<>();
 	public static final TweedEntryReaderWriter<Collection<Object>, CollectionConfigEntry<Object, Collection<Object>>> COLLECTION_READER_WRITER = new CollectionReaderWriter<>();
-	public static final TweedEntryReaderWriter<Object, CompoundConfigEntry<Object>> COMPOUND_READER_WRITER = new CompoundReaderWriter<>();
+	public static final TweedEntryReaderWriter<Object, MutableStructuredConfigEntry<Object>> MUTABLE_STRUCTURED_READER_WRITER = new MutableStructuredReaderWriter<>();
+	public static final TweedEntryReaderWriter<Object, CompoundConfigEntry<Object>> COMPOUND_READER_WRITER = new MutableStructuredReaderWriter<>();
 
 	public static final TweedEntryReaderWriter<Object, ConfigEntry<Object>> NOOP_READER_WRITER = new NoopReaderWriter();
 
@@ -219,11 +220,15 @@ public class TweedEntryReaderWriterImpls {
 		}
 	}
 
-	public static class CompoundReaderWriter<T> implements TweedEntryReaderWriter<T, CompoundConfigEntry<T>> {
+	public static class MutableStructuredReaderWriter<T, E extends MutableStructuredConfigEntry<T>>
+			implements TweedEntryReaderWriter<T, E> {
 		@Override
-		public TweedReadResult<T> read(TweedDataReader reader, CompoundConfigEntry<T> entry, TweedReadContext context) {
+		public TweedReadResult<T> read(
+				TweedDataReader reader,
+				E entry,
+				TweedReadContext context
+		) {
 			return requireToken(reader, TweedDataToken::isMapStart, "Expected map start", context).andThen(_token -> {
-				Map<String, ConfigEntry<?>> compoundEntries = entry.subEntries();
 				T compoundValue = entry.instantiateValue();
 				List<TweedReadIssue> issues = new ArrayList<>();
 				while (true) {
@@ -235,7 +240,7 @@ public class TweedEntryReaderWriterImpls {
 							String key = token.readAsString();
 
 							//noinspection unchecked
-							ConfigEntry<Object> subEntry = (ConfigEntry<Object>) compoundEntries.get(key);
+							ConfigEntry<Object> subEntry = (ConfigEntry<Object>) entry.getEntry(key);
 							if (subEntry == null) {
 								TweedReadResult<Object> noopResult = NOOP_READER_WRITER.read(reader, null, context);
 								issues.addAll(Arrays.asList(noopResult.issues()));
@@ -277,7 +282,12 @@ public class TweedEntryReaderWriterImpls {
 		}
 
 		@Override
-		public void write(TweedDataVisitor writer, @Nullable T value, CompoundConfigEntry<T> entry, TweedWriteContext context) throws TweedEntryWriteException, TweedDataWriteException {
+		public void write(
+				TweedDataVisitor writer,
+				@Nullable T value,
+				E entry,
+				TweedWriteContext context
+		) throws TweedEntryWriteException, TweedDataWriteException {
 			requireNonNullWriteValue(value, context);
 
 			writer.visitMapStart();

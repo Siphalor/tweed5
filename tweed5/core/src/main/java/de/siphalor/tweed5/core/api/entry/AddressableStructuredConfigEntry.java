@@ -1,5 +1,7 @@
 package de.siphalor.tweed5.core.api.entry;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.function.Consumer;
 
 public interface AddressableStructuredConfigEntry<T> extends StructuredConfigEntry<T> {
@@ -8,6 +10,8 @@ public interface AddressableStructuredConfigEntry<T> extends StructuredConfigEnt
 		StructuredConfigEntry.super.apply(function);
 		return this;
 	}
+
+	@Nullable ConfigEntry<?> getEntry(String dataKey);
 
 	Object get(T value, String dataKey);
 }

@@ -1,7 +1,7 @@
 package de.siphalor.tweed5.core.api.entry;
 
 import de.siphalor.tweed5.core.api.Arity;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -16,6 +16,11 @@ public interface NullableConfigEntry<T extends @Nullable Object> extends Address
 	}
 
 	ConfigEntry<T> nonNullEntry();
+
+	@Override
+	default @Nullable ConfigEntry<?> getEntry(String dataKey) {
+		return dataKey.equals(NON_NULL_KEY) ? nonNullEntry() : null;
+	}
 
 	@Override
 	default void visitInOrder(ConfigEntryVisitor visitor) {
