@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 public interface MutableStructuredConfigEntry<T> extends AddressableStructuredConfigEntry<T> {
 	@Override
-	default AddressableStructuredConfigEntry<T> apply(Consumer<ConfigEntry<T>> function) {
+	default MutableStructuredConfigEntry<T> apply(Consumer<ConfigEntry<T>> function) {
 		AddressableStructuredConfigEntry.super.apply(function);
 		return this;
 	}
