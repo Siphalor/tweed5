@@ -51,6 +51,12 @@ public class DefaultTweedEntryReaderWriterImplsProvider implements TweedReaderWr
 		));
 		context.registerReaderFactory("tweed5.collection", new StaticReaderWriterFactory<>(collectionReaderWriter()));
 		context.registerWriterFactory("tweed5.collection", new StaticReaderWriterFactory<>(collectionReaderWriter()));
+		context.registerReaderFactory("tweed5.mutatableStruct", new StaticReaderWriterFactory<>(
+				mutableStructuredReaderWriter()
+		));
+		context.registerWriterFactory("tweed5.mutatableStruct", new StaticReaderWriterFactory<>(
+				mutableStructuredReaderWriter()
+		));
 		context.registerReaderFactory("tweed5.compound", new StaticReaderWriterFactory<>(compoundReaderWriter()));
 		context.registerWriterFactory("tweed5.compound", new StaticReaderWriterFactory<>(compoundReaderWriter()));
 	}

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that allows to get a subentry by its data key.
 - `serde-extension`: Introduce a more generic `ReaderWriter` for `MutableStructuredConfigEntry`s.
 - `weaver-pojo`: Make maps with string keys into their own weavable entry type.
+- `weaver-pojo-serde-ext`: Such string map entries get serde using the `MutableStructuredConfigEntry` interface.
 
 ## [0.8.1] - 2026-04-26
 

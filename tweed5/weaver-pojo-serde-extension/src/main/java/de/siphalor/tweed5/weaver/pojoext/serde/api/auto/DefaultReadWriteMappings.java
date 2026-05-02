@@ -3,12 +3,14 @@ package de.siphalor.tweed5.weaver.pojoext.serde.api.auto;
 import de.siphalor.tweed5.annotationinheritance.api.AnnotationInheritance;
 import de.siphalor.tweed5.core.api.entry.CollectionConfigEntry;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.api.entry.WeavableStringMapConfigEntry;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.Map;
 
 @AnnotationInheritance(passOn = AutoReadWriteMapping.class)
 @AutoReadWriteMapping(valueClasses = {boolean.class, Boolean.class}, spec = "tweed5.bool")
@@ -29,6 +31,11 @@ import java.util.Collection;
 		entryClasses = CompoundConfigEntry.class,
 		valueClasses = Object.class,
 		spec = "tweed5.compound"
+)
+@AutoReadWriteMapping(
+		entryClasses = WeavableStringMapConfigEntry.class,
+		valueClasses = Map.class,
+		spec = "tweed5.mutatableStruct"
 )
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE, ElementType.ANNOTATION_TYPE})
