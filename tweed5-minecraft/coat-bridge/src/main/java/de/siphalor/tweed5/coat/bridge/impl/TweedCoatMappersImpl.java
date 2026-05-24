@@ -26,6 +26,7 @@ import de.siphalor.tweed5.patchwork.api.Patchwork;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryReader;
 import de.siphalor.tweed5.serde.extension.api.TweedReadContext;
+import de.siphalor.tweed5.serde.extension.api.path.EntryPath;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReadException;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
@@ -53,6 +54,8 @@ import static de.siphalor.tweed5.coat.bridge.api.TweedCoatMappingUtils.*;
 @CustomLog
 @SuppressWarnings("unchecked")
 public class TweedCoatMappersImpl {
+	private static final EntryPath EMPTY_ENTRY_PATH = new EntryPath(Collections.emptyList(), "");
+
 	public static TweedCoatMapper<Byte> BYTE_TEXT_MAPPER = convertingTextMapper(
 			new Class[]{Byte.class, byte.class},
 			value -> Byte.toString(value),
@@ -325,6 +328,16 @@ public class TweedCoatMappersImpl {
 								@Override
 								public Patchwork extensionsData() {
 									return readExtData;
+								}
+
+								@Override
+								public EntryPath currentEntryPath() {
+									return EMPTY_ENTRY_PATH;
+								}
+
+								@Override
+								public EntryPath currentValuePath() {
+									return EMPTY_ENTRY_PATH;
 								}
 
 								@Override
