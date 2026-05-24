@@ -149,14 +149,14 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 	private String formatIssuesLogMessage(File file, String type, TweedReadIssue[] issues) {
 		String filePath = file.getAbsolutePath();
 
-		StringBuilder stringBuilder = new StringBuilder(20 + filePath.length() + type.length() + issues.length * 50);
+		StringBuilder stringBuilder = new StringBuilder(20 + filePath.length() + type.length() + issues.length * 70);
 		stringBuilder.append("Encountered ");
 		stringBuilder.append(type);
 		stringBuilder.append(" while reading ");
 		stringBuilder.append(filePath);
 		stringBuilder.append(": \n");
 		for (TweedReadIssue issue : issues) {
-			stringBuilder.append("  - ").append(issue).append("\n");
+			stringBuilder.append("  - at ").append(issue.valuePath()).append(": ").append(issue).append("\n");
 		}
 		return stringBuilder.toString();
 	}

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `minecraft-fabric-helper`: Add value paths to error log message.
 - `serde-extension`, `default-extensions`: Integrate path tracking into `ReadWriteExtension`, deprecate the existing
   `PatherExtension`
 - `serde-extension`: Expose entry and value path in `TweedReadIssue` and the message of `TweedEntryWriteException`.
