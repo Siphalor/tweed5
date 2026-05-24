@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `minecraft-fabric-helper`: Fixed missing new line in error log message.
 - `serde-extension`, `default-extensions`: Integrate path tracking into `ReadWriteExtension`, deprecate the existing
   `PatherExtension`
+- `serde-extension`: Expose entry and value path in `TweedReadIssue` and the message of `TweedEntryWriteException`.
 - `type-utls`: Fixed missing `@Nullable` annotation on `ActualType#getAnnotation`.
 - `weaver-pojo`: Fixed `StringMapPojoWeaver` weaving entries without `@StringMapWeaving` annotation.
 

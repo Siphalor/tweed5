@@ -7,22 +7,22 @@ public class TweedEntryWriteException extends Exception {
 	private final TweedWriteContext context;
 
 	public TweedEntryWriteException(String message, TweedWriteContext context) {
-		super(message);
+		super("At " + context.currentValuePath() + ": " + message);
 		this.context = context;
 	}
 
 	public TweedEntryWriteException(String message, Throwable cause, TweedWriteContext context) {
-		super(message, cause);
+		super("At " + context.currentValuePath() + ": " + message, cause);
 		this.context = context;
 	}
 
 	public TweedEntryWriteException(String message, TweedEntryWriteException cause) {
-		super(message, cause);
+		super("At " + cause.context.currentValuePath() + ": " + message, cause);
 		this.context = cause.context;
 	}
 
 	public TweedEntryWriteException(Throwable cause, TweedWriteContext context) {
-		super(cause);
+		super("At " + context.currentValuePath() + ": " + cause.getMessage(), cause);
 		this.context = context;
 	}
 }
