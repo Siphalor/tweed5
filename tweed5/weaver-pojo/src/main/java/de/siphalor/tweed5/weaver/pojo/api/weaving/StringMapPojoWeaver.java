@@ -41,6 +41,10 @@ public class StringMapPojoWeaver implements TweedPojoWeavingExtension {
 	public <T> @Nullable ConfigEntry<T> weaveEntry(ActualType<T> valueType, WeavingContext context) {
 		assert weavingConfigAccess != null;
 
+		if (!valueType.isAnnotationPresent(StringMapWeaving.class)) {
+			return null;
+		}
+
 		List<ActualType<?>> mapTypeParams = valueType.getTypesOfSuperArguments(Map.class);
 		if (mapTypeParams == null || mapTypeParams.get(0).declaredType() != String.class) {
 			return null;

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `core`: Fixed return type of `MutableStructuredConfigEntry#apply` to correctly be itself.
+- `weaver-pojo`: Fixed `StringMapPojoWeaver` weaving entries without `@StringMapWeaving` annotation.
 
 ## [0.8.1] - 2026-04-26
 
