@@ -154,7 +154,7 @@ public class FabricConfigContainerHelper<T extends @Nullable Object> {
 		stringBuilder.append(type);
 		stringBuilder.append(" while reading ");
 		stringBuilder.append(filePath);
-		stringBuilder.append(": ");
+		stringBuilder.append(": \n");
 		for (TweedReadIssue issue : issues) {
 			stringBuilder.append("  - ").append(issue).append("\n");
 		}
