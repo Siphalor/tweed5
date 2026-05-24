@@ -15,13 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `weaver-pojo`: Make maps with string keys into their own weavable entry type.
 - `weaver-pojo-serde-ext`: Such string map entries get serde using the `MutableStructuredConfigEntry` interface.
 
+### Changed
+
+- `serde-extension`, `default-extensions`: Integrate path tracking into `ReadWriteExtension`, deprecate the existing
+  `PatherExtension`
+- `serde-extension`: Expose entry and value path in `TweedReadIssue` and the message of `TweedEntryWriteException`.
+
 ### Fixed
 
 - `core`: Fixed return type of `MutableStructuredConfigEntry#apply` to correctly be itself.
 - `minecraft-fabric-helper`: Fixed missing new line in error log message.
-- `serde-extension`, `default-extensions`: Integrate path tracking into `ReadWriteExtension`, deprecate the existing
-  `PatherExtension`
-- `serde-extension`: Expose entry and value path in `TweedReadIssue` and the message of `TweedEntryWriteException`.
 - `type-utls`: Fixed missing `@Nullable` annotation on `ActualType#getAnnotation`.
 - `weaver-pojo`: Fixed `StringMapPojoWeaver` weaving entries without `@StringMapWeaving` annotation.
 
