@@ -6,7 +6,6 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.impl.DefaultConfigContainer;
 import de.siphalor.tweed5.core.impl.entry.SimpleConfigEntryImpl;
 import de.siphalor.tweed5.core.impl.entry.StaticMapCompoundConfigEntryImpl;
-import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.presets.api.PresetsExtension;
 import de.siphalor.tweed5.defaultextensions.readfallback.api.ReadFallbackExtension;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
@@ -77,7 +76,6 @@ class ReadFallbackExtensionImplTest {
 	void nestedWithPather(LogsCaptor<ReadFallbackExtensionImpl> logsCaptor) {
 		DefaultConfigContainer<Map<String, Object>> configContainer = new DefaultConfigContainer<>();
 		configContainer.registerExtension(ReadWriteExtension.class);
-		configContainer.registerExtension(PatherExtension.class);
 		configContainer.registerExtension(PresetsExtension.class);
 		configContainer.registerExtension(ReadFallbackExtension.DEFAULT);
 		configContainer.finishExtensionSetup();

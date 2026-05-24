@@ -14,7 +14,6 @@ import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducer;
 import de.siphalor.tweed5.defaultextensions.comment.api.CommentProducerMiddlewareContext;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTracking;
 import de.siphalor.tweed5.defaultextensions.pather.api.PathTrackingConfigEntryValueVisitor;
-import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.defaultextensions.pather.api.ValuePathTracking;
 import de.siphalor.tweed5.defaultextensions.validation.api.ConfigEntryValidator;
 import de.siphalor.tweed5.defaultextensions.validation.api.ValidationExtension;
@@ -35,7 +34,6 @@ import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadIssue;
 import de.siphalor.tweed5.serde.extension.api.read.result.TweedReadResult;
 import de.siphalor.tweed5.serde_api.api.TweedDataReader;
 import lombok.*;
-import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -77,12 +75,10 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 	private final MiddlewareContainer<ConfigEntryValidator, ValidatorMiddlewareContext>
 			entryValidatorMiddlewareContainer = new DefaultMiddlewareContainer<>();
 	private @Nullable PatchworkPartAccess<ValidationIssues> readContextValidationIssuesAccess;
-	private @Nullable PatherExtension patherExtension;
 
 	public ValidationExtensionImpl(ConfigContainer<?> configContainer, TweedExtensionSetupContext context) {
 		this.configContainer = configContainer;
 		this.customEntryDataAccess = context.registerEntryExtensionData(CustomEntryData.class);
-		context.registerExtension(PatherExtension.class);
 	}
 
 	@Override
@@ -95,9 +91,6 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 			}
 		}
 		entryValidatorMiddlewareContainer.seal();
-
-		patherExtension = configContainer.extension(PatherExtension.class)
-				.orElseThrow(() -> new IllegalStateException("Missing requested PatherExtension"));
 	}
 
 	@Override
@@ -236,13 +229,8 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 		}
 
 		@Override
-		public Set<String> mustComeBefore() {
-			return Collections.singleton(PatherExtension.EXTENSION_ID);
-		}
-
-		@Override
 		public TweedEntryReader<?, ?> process(TweedEntryReader<?, ?> inner, ReaderMiddlewareContext context) {
-			assert readContextValidationIssuesAccess != null && patherExtension != null;
+			assert readContextValidationIssuesAccess != null;
 
 			//noinspection unchecked
 			TweedEntryReader<Object, ConfigEntry<Object>> castedInner = (TweedEntryReader<Object, ConfigEntry<Object>>) inner;
@@ -261,11 +249,10 @@ public class ValidationExtensionImpl implements ReadWriteRelatedExtension, Valid
 						return TweedReadResult.ok(validationResult.value());
 					}
 
-					String path = patherExtension.getPath(readContext);
-					validationIssues.issuesByPath().put(path, new ValidationIssues.EntryIssues(
-							entry,
-							validationResult.issues()
-					));
+					validationIssues.issuesByPath().put(
+							readContext.currentEntryPath().toString(),
+							new ValidationIssues.EntryIssues(entry, validationResult.issues())
+					);
 					if (validationResult.hasError()) {
 						return TweedReadResult.failed(
 								mapValidationIssuesToReadIssues(validationResult.issues(), readContext)

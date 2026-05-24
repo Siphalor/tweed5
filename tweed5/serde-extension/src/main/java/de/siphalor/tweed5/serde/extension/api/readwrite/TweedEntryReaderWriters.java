@@ -89,4 +89,9 @@ public class TweedEntryReaderWriters {
 		//noinspection unchecked
 		return (TweedEntryReaderWriter<T, @NonNull CompoundConfigEntry<T>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.COMPOUND_READER_WRITER;
 	}
+
+	public static <T extends @Nullable Object> TweedEntryReaderWriter<T, ConfigEntry<T>> noopReaderWriter() {
+		//noinspection unchecked
+		return (TweedEntryReaderWriter<T, ConfigEntry<T>>) (TweedEntryReaderWriter<?, ?>) TweedEntryReaderWriterImpls.NOOP_READER_WRITER;
+	}
 }
