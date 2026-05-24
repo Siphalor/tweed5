@@ -100,7 +100,7 @@ public class ActualType<T> implements AnnotatedElement {
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+	public <A extends Annotation> @Nullable A getAnnotation(Class<A> annotationClass) {
 		return layeredTypeAnnotations.getAnnotation(annotationClass);
 	}
 
