@@ -12,6 +12,7 @@ import de.siphalor.tweed5.core.api.entry.ConfigEntry;
 import de.siphalor.tweed5.core.api.extension.TweedExtensionSetupContext;
 import de.siphalor.tweed5.patchwork.api.PatchworkPartAccess;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -67,7 +68,12 @@ public class TweedCoatBridgeExtensionImpl implements TweedCoatBridgeExtension {
 		} else {
 			title = translatableComponent(params.translationKeyPrefix() + ".title");
 		}
-		ConfigScreen configScreen = new ConfigScreen(minecraft.screen, title, Collections.singletonList(contentWidget));
+		//# if MC_VERSION_NUMBER >= 260200
+		Screen parent = minecraft.gui.screen();
+		//# else
+		//- Screen parent = minecraft.screen;
+		//# end
+		ConfigScreen configScreen = new ConfigScreen(parent, title, Collections.singletonList(contentWidget));
 		if (params.saveHandler() != null) {
 			configScreen.setOnSave(() -> params.saveHandler().accept(value));
 		}

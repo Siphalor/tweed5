@@ -38,7 +38,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
+//- import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 //- import net.minecraft.resources.ResourceLocation;
@@ -592,7 +593,11 @@ public class TweedCoatMappersImpl {
 					);
 
 					String descriptionKey = translationKey + ".description";
-					if (I18n.exists(descriptionKey)) {
+					//# if MC_VERSION_NUMBER >= 260200
+					if (Language.getInstance().has(descriptionKey)) {
+					//# else
+					//- if (I18n.exists(descriptionKey)) {
+					//# end
 						categoryWidget.addEntry(new ConfigListTextEntry(
 								translatableComponent(descriptionKey).withStyle(ChatFormatting.GRAY)
 						));

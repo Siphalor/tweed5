@@ -83,7 +83,11 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 
 		@Override
 		public boolean onPressedPriority() {
-			if (!(Minecraft.getInstance().screen instanceof TitleScreen)) {
+			//# if MC_VERSION_NUMBER >= 260200
+			if (!(Minecraft.getInstance().gui.screen() instanceof TitleScreen)) {
+			//# else
+			//- if (!(Minecraft.getInstance().screen instanceof TitleScreen)) {
+			//# end
 				return false;
 			}
 
@@ -101,7 +105,11 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 							})
 							.build()
 			);
-			Minecraft.getInstance().setScreen(configScreen);
+			//# if MC_VERSION_NUMBER >= 260200
+			Minecraft.getInstance().gui.setScreen(configScreen);
+			//# else
+			//- Minecraft.getInstance().setScreen(configScreen);
+			//# end
 			return true;
 		}
 	}
