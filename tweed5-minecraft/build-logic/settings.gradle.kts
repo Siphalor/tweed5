@@ -27,6 +27,6 @@ dependencyResolutionManagement {
 	}
 }
 
-includeBuild("../../conventions")
+includeBuild("../../build-logic")
 
-rootProject.name = "tweed5-minecraft-conventions"
+rootProject.name = "tweed5-minecraft-build-logic"

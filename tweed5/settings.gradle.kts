@@ -1,7 +1,7 @@
 rootProject.name = "tweed5"
 
 pluginManagement {
-	includeBuild("../conventions")
+	includeBuild("../build-logic")
 }
 
 dependencyResolutionManagement {

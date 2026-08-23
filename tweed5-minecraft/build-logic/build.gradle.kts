@@ -5,8 +5,8 @@ plugins {
 }
 
 dependencies {
-	implementation("de.siphalor.tweed5:tweed5-conventions")
-	implementation("de.siphalor.tweed5:tweed5-conventions-helpers")
+	implementation("de.siphalor.tweed5:tweed5-build-logic")
+	implementation("de.siphalor.tweed5:tweed5-build-logic-helpers")
 	implementation(pluginMarker(mcCommonLibs.plugins.smcmtk))
 	implementation(pluginMarker(mcCommonLibs.plugins.jcyo))
 	implementation(pluginMarker(mcLibs.plugins.fabric.loom))

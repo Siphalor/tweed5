@@ -1,7 +1,10 @@
 rootProject.name = "tweed5-minecraft"
 
 pluginManagement {
-	includeBuild("../conventions")
+	includeBuild("../build-logic")
+	includeBuild("build-logic") {
+		name = "minecraft-build-logic"
+	}
 
 	repositories {
 		gradlePluginPortal()

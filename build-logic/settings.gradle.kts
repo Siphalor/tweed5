@@ -17,7 +17,7 @@ dependencyResolutionManagement {
 	}
 }
 
-include(":tweed5-conventions-helpers")
-project(":tweed5-conventions-helpers").projectDir = file("helpers")
+include(":tweed5-build-logic-helpers")
+project(":tweed5-build-logic-helpers").projectDir = file("helpers")
 
-rootProject.name = "tweed5-conventions"
+rootProject.name = "tweed5-build-logic"
