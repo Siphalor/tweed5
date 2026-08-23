@@ -2,6 +2,8 @@ plugins {
 	id("com.gradleup.shadow")
 	java
 	`java-library`
+	id("de.siphalor.tweed5.root-properties")
+	id("de.siphalor.tweed5.module-info")
 	id("de.siphalor.tweed5.shadow.explicit")
 	id("de.siphalor.tweed5.minecraft.mod.component")
 }
@@ -24,9 +26,9 @@ fun formatJarsForJson(jars: FileCollection): String {
 tasks.register<Sync>("processMinecraftModResources") {
 	inputs.property("id", project.name)
 	inputs.property("version", project.version)
-	inputs.property("name", properties["module.name"])
-	inputs.property("description", properties["module.description"])
-	inputs.property("repoUrl", properties["git.url"])
+	inputs.property("name", moduleInfo.name)
+	inputs.property("description", moduleInfo.description)
+	inputs.property("repoUrl", rootProperties["git.url"])
 	inputs.files(minecraftJijElements)
 
 	val jars = objects.fileCollection().apply { from(minecraftJijElements) }
@@ -36,9 +38,9 @@ tasks.register<Sync>("processMinecraftModResources") {
 			mapOf(
 				"id" to project.name.replace('-', '_'),
 				"version" to project.version,
-				"name" to properties["module.name"],
-				"description" to properties["module.description"],
-				"repoUrl" to properties["git.url"],
+				"name" to moduleInfo.name,
+				"description" to moduleInfo.description,
+				"repoUrl" to rootProperties["git.url"].get(),
 				"jars" to formatJarsForJson(jars)
 			)
 		)
@@ -52,9 +54,9 @@ tasks.register<Sync>("processMinecraftModResources") {
 tasks.register<Sync>("processMinecraftTestmodResources") {
 	inputs.property("id", project.name)
 	inputs.property("version", project.version)
-	inputs.property("name", properties["module.name"])
-	inputs.property("description", properties["module.description"])
-	inputs.property("repoUrl", properties["git.url"])
+	inputs.property("name", moduleInfo.name)
+	inputs.property("description", moduleInfo.description)
+	inputs.property("repoUrl", rootProperties["git.url"])
 	inputs.files(minecraftJijElements)
 
 	val jars = objects.fileCollection().apply { from(minecraftJijElements) }
@@ -64,9 +66,9 @@ tasks.register<Sync>("processMinecraftTestmodResources") {
 			mapOf(
 				"id" to "${project.name.replace('-', '_')}_testmod",
 				"version" to project.version,
-				"name" to "${properties["module.name"]} (test mod)",
-				"description" to properties["module.description"],
-				"repoUrl" to properties["git.url"],
+				"name" to "${moduleInfo.name.get()} (test mod)",
+				"description" to moduleInfo.description,
+				"repoUrl" to rootProperties["git.url"].get(),
 				"jars" to formatJarsForJson(jars)
 			)
 		)

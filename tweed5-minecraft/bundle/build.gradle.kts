@@ -2,6 +2,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.bundle")
 }
 
+moduleInfo {
+    name = "Tweed 5 Bundle"
+    description = "Bundle of pre-packaged Tweed modules that are usually required for your Minecraft mod config needs."
+}
+
 dependencies {
 	minecraftJij("de.siphalor.tweed5:tweed5-attributes-extension:${project.version}")
 	minecraftJij("de.siphalor.tweed5:tweed5-construct:${project.version}")

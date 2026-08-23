@@ -1,6 +1,8 @@
 plugins {
 	`java-library`
 	`maven-publish`
+	id("de.siphalor.tweed5.root-properties")
+	id("de.siphalor.tweed5.module-info")
 }
 
 group = rootProject.group
@@ -23,11 +25,11 @@ publishing {
 	publications.all {
 		if (this is MavenPublication) {
 			pom {
-				name = project.property("module.name") as String
-				description = project.property("module.description") as String
-				url = project.property("git.url") as String
+				name = moduleInfo.name
+				description = moduleInfo.description
+				url = rootProperties["git.url"]
 				scm {
-					url = project.property("git.url") as String
+					url = rootProperties["git.url"]
 				}
 			}
 		}

@@ -2,8 +2,8 @@ import org.gradle.api.publish.internal.PublicationInternal
 
 plugins {
 	`maven-publish`
-	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.minecraft.mod.base")
+	id("de.siphalor.tweed5.publishing")
 }
 
 val minecraftModJar = tasks.register<Jar>("minecraftModJar") {

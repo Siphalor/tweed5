@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.siphalor.tweed5"
-version = project.property("tweed5.version").toString()
+version = rootProperties["tweed5.version"].get()
 
 configurations.aggregateTestReportResults {
 	attributes {
@@ -32,10 +32,10 @@ dependencies {
 
 reporting {
 	reports {
-		val aggregatedTestReport by creating(AggregateTestReport::class) {
+		create<AggregateTestReport>("aggregatedTestReport") {
 			testSuiteName = "test"
 		}
-		val aggregatedCoverageReport by creating(JacocoCoverageReport::class) {
+		create<JacocoCoverageReport>("aggregatedCoverageReport") {
 			testSuiteName = "test"
 		}
 	}

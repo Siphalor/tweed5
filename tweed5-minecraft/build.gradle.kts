@@ -4,4 +4,4 @@ plugins {
 }
 
 group = "de.siphalor.tweed5.minecraft"
-version = project.property("tweed5.version").toString()
+version = rootProperties["tweed5.version"].get()

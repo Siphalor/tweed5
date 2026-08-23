@@ -3,6 +3,11 @@ plugins {
     id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
 
+moduleInfo {
+    name = "Tweed 5 Weaver POJO"
+    description = "Provides a mechanism to derive a Tweed 5 entry structure from a POJO using its structure and annotations."
+}
+
 dependencies {
     implementation(project(":tweed5-construct"))
     api(project(":tweed5-annotation-inheritance"))

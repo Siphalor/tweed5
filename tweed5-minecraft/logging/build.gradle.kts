@@ -2,6 +2,12 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
 
+moduleInfo {
+    name = "Tweed 5 Logging"
+    description = """Fork and relocation of Apache Commons Logging.
+Contains a small fix to support older Log4j versions. Also removes some obsolete classes."""
+}
+
 val vendoredCommonsLogging = project.layout.settingsDirectory.file("vendor/commons-logging").asFile
 
 dependencies {

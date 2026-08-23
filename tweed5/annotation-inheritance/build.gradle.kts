@@ -3,6 +3,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
 
+moduleInfo {
+    name = "Tweed 5 Annotation Inheritance"
+    description = "Provides a mechanism to create meta-annotations. This allows bundling annotations that are commonly used together into a single convenience annotation."
+}
+
 configurations.minecraftModApiElements {
 	exclude("org.ow2.asm", "asm")
 }

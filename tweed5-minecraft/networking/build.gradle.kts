@@ -3,6 +3,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.cross-version")
 }
 
+moduleInfo {
+    name = "Tweed 5 Netwoking"
+    description = "Minecraft networking support for Tweed 5"
+}
+
 dependencies {
 	modCompileOnly(fabricApi.module("fabric-networking-api-v1", mcLibs.versions.fabric.api.get()))
 	compileOnly("de.siphalor.tweed5:tweed5-core")

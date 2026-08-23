@@ -3,6 +3,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.cross-version")
 }
 
+moduleInfo {
+    name = "Tweed 5 Fabric Helper"
+    description = "A collection of utility classes to make working with Tweed 5 configurations easier on Fabric."
+}
+
 dependencies {
 	modCompileOnly(fabricApi.module("fabric-networking-api-v1", mcLibs.versions.fabric.api.get()))
 	compileOnly("de.siphalor.tweed5:tweed5-comment-loader-extension")

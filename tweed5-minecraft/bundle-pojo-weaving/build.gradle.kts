@@ -2,6 +2,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.bundle")
 }
 
+moduleInfo {
+    name = "Tweed 5 Bundle for POJO weaving"
+    description = "Bundle of pre-packaged Tweed modules for creating configs from POJOs."
+}
+
 dependencies {
 	minecraftJij("de.siphalor.tweed5:tweed5-annotation-inheritance:${project.version}")
 	minecraftJij("de.siphalor.tweed5:tweed5-naming-format:${project.version}")

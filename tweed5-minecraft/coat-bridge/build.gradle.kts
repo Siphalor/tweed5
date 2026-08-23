@@ -3,6 +3,11 @@ plugins {
 	id("de.siphalor.tweed5.minecraft.mod.cross-version")
 }
 
+moduleInfo {
+    name = "Tweed 5 Coat Bridge"
+    description = "Provides a system that allows to generate a Coat config screen for a Tweed config."
+}
+
 dependencies {
 	compileOnly("de.siphalor.tweed5:tweed5-core")
 	compileOnly("de.siphalor.tweed5:tweed5-attributes-extension")

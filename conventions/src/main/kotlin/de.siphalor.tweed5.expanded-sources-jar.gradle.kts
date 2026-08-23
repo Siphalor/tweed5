@@ -17,7 +17,7 @@ val expandedSourcesElements = configurations.consumable("expandedSourcesElements
 
 val delombok = tasks.getByName<Delombok>("delombok")
 
-val sourcesJar by tasks.registering(Jar::class) {
+val sourcesJar = tasks.register<Jar>("sourcesJar") {
 	group = LifecycleBasePlugin.BUILD_GROUP
 
 	dependsOn(delombok)

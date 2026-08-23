@@ -3,13 +3,12 @@ import de.siphalor.tweed5.gradle.plugin.minecraft.mod.MinecraftModded
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.task.RemapJarTask
 import net.fabricmc.loom.util.Constants
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import java.util.Properties
 
 plugins {
 	java
 	id("de.siphalor.minecraft-modding-toolkit.project-plugin")
+	id("de.siphalor.tweed5.root-properties")
 	id("de.siphalor.tweed5.unit-tests")
 	id("de.siphalor.tweed5.publishing")
 	id("de.siphalor.tweed5.expanded-sources-jar")
@@ -40,11 +39,11 @@ val archivesBaseName = "${project.name}-mc$minecraftVersionDescriptor"
 base {
 	archivesName.set(archivesBaseName)
 }
-val shortVersion = project.property("tweed5.version").toString()
+val shortVersion = rootProperties["tweed5.version"].get()
 val minecraftVersion = getMcCatalogVersion("minecraft")
 version = "$shortVersion+mc$minecraftVersion"
 
-val testmod by sourceSets.creating {
+val testmod = sourceSets.create("testmod") {
 	compileClasspath += sourceSets.main.get().compileClasspath
 	runtimeClasspath += sourceSets.main.get().runtimeClasspath
 }
@@ -56,10 +55,12 @@ smcmtk {
 
 extensions.configure<LoomGradleExtensionAPI>() {
 	runs {
-		create("testmodClient") {
-			client()
-			name("${properties["module.name"]} Test Mod (client)")
-			source(testmod)
+		afterEvaluate {
+			register("testmodClient") {
+				client()
+				name("${moduleInfo.name.get()} Test Mod (client)")
+				source(testmod)
+			}
 		}
 	}
 }
