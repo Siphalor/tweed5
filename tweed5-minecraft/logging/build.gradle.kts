@@ -24,7 +24,7 @@ tasks.register<Exec>("compileCommonsLogging") {
 	inputs.file(vendoredCommonsLogging.resolve("pom.xml"))
 	inputs.dir(vendoredCommonsLogging.resolve("src"))
 	outputs.dir(vendoredCommonsLogging.resolve("target"))
-	commandLine("mvn", "package", "-DskipTests")
+	commandLine(if (System.getProperty("os.name").lowercase().contains("windows")) "mvn.cmd" else "mvn", "package", "-DskipTests")
 	workingDir(vendoredCommonsLogging)
 }
 
