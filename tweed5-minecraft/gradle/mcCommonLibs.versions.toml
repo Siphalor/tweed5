@@ -1,5 +1,5 @@
 [versions]
-fabric-loader = "0.18.5"
+fabric-loader = "0.20.1"
 jcyo = "0.6.1"
 smcmtk = "0.1.0"
 

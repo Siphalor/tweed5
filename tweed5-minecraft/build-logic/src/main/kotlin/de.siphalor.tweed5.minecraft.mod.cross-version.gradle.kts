@@ -58,8 +58,8 @@ extensions.configure<LoomGradleExtensionAPI>() {
 		afterEvaluate {
 			register("testmodClient") {
 				client()
-				name("${moduleInfo.name.get()} Test Mod (client)")
-				source(testmod)
+				displayName = "${moduleInfo.name.get()} Test Mod (client)"
+				sourceSet = "testmod"
 			}
 		}
 	}

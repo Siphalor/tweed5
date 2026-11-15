@@ -2,7 +2,7 @@
 amecs-priorityKeyMappings = "1.0.1"
 coat = "1.0.0-beta.24"
 fabric-api = "0.77.0+1.18.2"
-fabric-loom = "1.15-SNAPSHOT"
+fabric-loom = "1.19-SNAPSHOT"
 java = "17"
 minecraft = "1.18.2"
 parchment = "2022.11.06"
