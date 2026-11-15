@@ -14,7 +14,7 @@ import de.siphalor.tweed5.serde.hjson.HjsonLexer;
 import de.siphalor.tweed5.serde.hjson.HjsonReader;
 import de.siphalor.tweed5.serde.hjson.HjsonWriter;
 import de.siphalor.tweed5.serde_api.api.TweedDataVisitor;
-import de.siphalor.tweed5.testutils.generic.entry.TestMapConfigEntry;
+import de.siphalor.tweed5.weaver.pojo.impl.entry.StringMapConfigEntryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,9 +58,10 @@ class ReadWriteExtensionImplTest {
 						.apply(entryReaderWriter(booleanReaderWriter()))
 		).apply(entryReaderWriter(collectionReaderWriter()));
 
-		MutableStructuredConfigEntry<Map<String, Integer>> mapEntry = new TestMapConfigEntry<>(
+		MutableStructuredConfigEntry<Map<String, Integer>> mapEntry = new StringMapConfigEntryImpl<>(
 				configContainer,
 				(Class<Map<String, Integer>>)(Class) Map.class,
+				HashMap::new,
 				new SimpleConfigEntryImpl<>(configContainer, Integer.class)
 						.apply(entryReaderWriter(intReaderWriter()))
 		).apply(entryReaderWriter(mutableStructuredReaderWriter()));

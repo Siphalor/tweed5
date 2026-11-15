@@ -3,13 +3,17 @@ package de.siphalor.tweed5.weaver.pojoext.serde.api.nullable;
 import de.siphalor.tweed5.core.api.container.ConfigContainer;
 import de.siphalor.tweed5.core.api.entry.CompoundConfigEntry;
 import de.siphalor.tweed5.core.api.entry.ConfigEntry;
+import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.serde.extension.api.ReadWriteExtension;
 import de.siphalor.tweed5.serde.extension.api.TweedEntryWriteException;
 import de.siphalor.tweed5.serde.extension.impl.TweedEntryReaderWriterImpls;
 import de.siphalor.tweed5.serde.hjson.HjsonWriter;
-import de.siphalor.tweed5.defaultextensions.pather.api.PatherExtension;
 import de.siphalor.tweed5.weaver.pojo.api.TweedPojoWeaver;
-import de.siphalor.tweed5.weaver.pojo.api.annotation.*;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.CompoundWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.DefaultWeavingExtensions;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeaving;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.PojoWeavingExtension;
+import de.siphalor.tweed5.weaver.pojo.api.annotation.TweedExtension;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.ReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.AutoReadWritePojoWeavingProcessor;
 import de.siphalor.tweed5.weaver.pojoext.serde.api.auto.DefaultReadWriteMappings;
@@ -136,7 +140,8 @@ class AutoNullableReadWritePojoWeavingProcessorTest {
 				container.rootEntry(),
 				readWriteExtension.createReadWriteContextExtensionsData()
 		)).isInstanceOf(TweedEntryWriteException.class)
-				.hasMessageContaining("at .boxedInteger");
+				.message()
+				.containsIgnoringCase("at .boxedInteger");
 	}
 
 	@PojoWeaving

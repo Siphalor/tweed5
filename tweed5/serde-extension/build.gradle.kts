@@ -14,4 +14,5 @@ dependencies {
     api(project(":tweed5-serde-api"))
 
     testImplementation(project(":tweed5-serde-hjson"))
+    testImplementation(project(":tweed5-weaver-pojo"))
 }
