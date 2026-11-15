@@ -1,5 +1,6 @@
 package de.siphalor.tweed5.coat.bridge.testmod;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import de.siphalor.amecs.priority_key_mappings.api.AmecsPriorityKeyMapping;
 import de.siphalor.coat.screen.ConfigScreen;
 import de.siphalor.tweed5.coat.bridge.api.ConfigScreenCreateParams;
@@ -17,7 +18,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
-import org.lwjgl.glfw.GLFW;
+//- import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
 
@@ -61,10 +62,11 @@ public class TweedCoatBridgeTestMod implements ClientModInitializer {
 		//- KeyBindingHelper.registerKeyBinding(new ScreenKeyBinding(
 		//# end
 				MOD_ID + ".config",
-				GLFW.GLFW_KEY_T,
 				//# if MC_VERSION_NUMBER >= 12109
+				InputConstants.KEY_T,
 				KeyMapping.Category.MISC
 				//# else
+				//- GLFW.GLFW_KEY_T,
 				//- "key.categories.misc"
 				//# end
 		));
