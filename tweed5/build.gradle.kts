@@ -1,8 +1,8 @@
 plugins {
 	`test-report-aggregation`
 	`jacoco-report-aggregation`
-	`maven-publish`
 	id("de.siphalor.tweed5.root-properties")
+	id("de.siphalor.tweed5.transitive-tasks")
 }
 
 group = "de.siphalor.tweed5"
@@ -41,9 +41,8 @@ reporting {
 	}
 }
 
-tasks.register("test") {
+tasks.named("test") {
 	group = LifecycleBasePlugin.VERIFICATION_GROUP
 	description = "Runs all tests"
-	subprojects.mapNotNull { it.tasks.findByName("test") }.forEach { dependsOn(it) }
 	finalizedBy(tasks.named("aggregatedTestReport"), tasks.named("aggregatedCoverageReport"))
 }

@@ -1,6 +1,6 @@
 plugins {
-	`maven-publish`
 	id("de.siphalor.tweed5.root-properties")
+	id("de.siphalor.tweed5.transitive-tasks")
 }
 
 group = "de.siphalor.tweed5.minecraft"
