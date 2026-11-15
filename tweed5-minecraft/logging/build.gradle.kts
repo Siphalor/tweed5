@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
 	id("de.siphalor.tweed5.minecraft.mod.dummy")
 }
@@ -24,7 +26,8 @@ tasks.register<Exec>("compileCommonsLogging") {
 	inputs.file(vendoredCommonsLogging.resolve("pom.xml"))
 	inputs.dir(vendoredCommonsLogging.resolve("src"))
 	outputs.dir(vendoredCommonsLogging.resolve("target"))
-	commandLine(if (System.getProperty("os.name").lowercase().contains("windows")) "mvn.cmd" else "mvn", "package", "-DskipTests")
+	val mvnCmd = if (Os.isFamily(Os.FAMILY_WINDOWS)) { "mvn.cmd" } else { "mvn" }
+	commandLine(mvnCmd, "package", "-DskipTests")
 	workingDir(vendoredCommonsLogging)
 }
 
